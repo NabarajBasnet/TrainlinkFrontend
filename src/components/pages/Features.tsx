@@ -98,7 +98,7 @@ const Features = () => {
                 <div className="text-center mt-16">
                     <div className="inline-flex items-center space-x-4 bg-white bg-opacity-20 backdrop-blur-lg rounded-full px-4 py-2 border border-white border-opacity-30">
                         <span className="text-orange-500 font-medium">Ready to get started?</span>
-                        <button className="bg-orange-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-orange-50 transition-colors duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                        <button className="bg-orange-500 text-white px-6 py-2 rounded-full font-semibold hover:bg-orange-500 cursor-pointer transition-all duration-500 shadow-lg hover:shadow-xl transform hover:scale-105">
                             Join Now
                         </button>
                     </div>
