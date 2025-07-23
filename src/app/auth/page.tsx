@@ -34,7 +34,7 @@ export default function TrainLinkAuth() {
                     <div className="mb-8">
                         <div className="flex items-center justify-center mb-6">
                             <Dumbbell className="h-12 w-12 text-orange-500 mr-3" />
-                            <h1 className="text-4xl font-bold text-gray-900">TrainLink</h1>
+                            <h1 onClick={() => window.location.href = '/'} className="cursor-pointer text-4xl font-bold text-gray-900">TrainLink</h1>
                         </div>
                         <p className="text-xl text-gray-600 mb-8">
                             Connecting personal trainers and members for better fitness journeys
@@ -68,10 +68,10 @@ export default function TrainLinkAuth() {
                         </div>
 
                         {/* Form Toggle */}
-                        <div className="flex bg-gray-100 rounded-lg p-1 mb-8">
+                        <div className="flex bg-gray-100 rounded-sm p-1 mb-8">
                             <button
                                 onClick={() => setIsLogin(true)}
-                                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${isLogin
+                                className={`flex-1 py-2 px-4 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 ${isLogin
                                     ? 'bg-white text-orange-600 shadow-sm'
                                     : 'text-gray-600 hover:text-gray-900'
                                     }`}
@@ -80,7 +80,7 @@ export default function TrainLinkAuth() {
                             </button>
                             <button
                                 onClick={() => setIsLogin(false)}
-                                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${!isLogin
+                                className={`flex-1 py-2 px-4 cursor-pointer rounded-md text-sm font-medium transition-all duration-200 ${!isLogin
                                     ? 'bg-white text-orange-600 shadow-sm'
                                     : 'text-gray-600 hover:text-gray-900'
                                     }`}
@@ -217,7 +217,7 @@ export default function TrainLinkAuth() {
                             <button
                                 type="button"
                                 onClick={handleSubmit}
-                                className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
+                                className="w-full bg-orange-500 cursor-pointer hover:bg-orange-600 text-white font-semibold py-4 px-4 rounded-sm transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
                             >
                                 {isLogin ? 'Log In' : 'Create Account'}
                             </button>
@@ -230,7 +230,7 @@ export default function TrainLinkAuth() {
                                 <button
                                     type="button"
                                     onClick={() => setIsLogin(!isLogin)}
-                                    className="text-orange-600 hover:text-orange-700 font-medium"
+                                    className="text-orange-600 cursor-pointer hover:text-orange-700 font-medium"
                                 >
                                     {isLogin ? 'Sign up' : 'Log in'}
                                 </button>
