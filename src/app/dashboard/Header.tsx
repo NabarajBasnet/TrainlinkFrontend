@@ -1,6 +1,6 @@
 const Header = () => {
     return (
-        <div className="w-full flex items-center justify-between p-4 dark:bg-gray-900 bg-white shadow">
+        <div className="w-full sticky top-0 flex items-center justify-between p-4 dark:bg-gray-900 bg-white shadow">
             <div>
                 <h1>Close</h1>
             </div>
