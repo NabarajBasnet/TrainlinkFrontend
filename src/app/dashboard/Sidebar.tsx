@@ -95,7 +95,7 @@ const Sidebar = () => {
             border-r border-gray-200 dark:border-gray-700
         `}>
             {/* Header */}
-            <header className="px-4 py-2.5 border-b border-gray-200 dark:border-gray-700">
+            <header className="p-4 border-b border-gray-200 dark:border-gray-700">
                 <div className={`
                     ${clientSidebar ? 'justify-center' : 'justify-start px-4'}
                     flex items-center h-10
