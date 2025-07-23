@@ -34,10 +34,10 @@ const Features = () => {
     ];
 
     return (
-        <div className="relative min-h-screen bg-orange-500 overflow-hidden">
+        <div className="w-full relative min-h-screen bg-orange-500 overflow-hidden">
 
             {/* Background Shapes */}
-            <div className="absolute inset-0 pointer-events-none">
+            <div className="w-full absolute inset-0 pointer-events-none">
                 <div className="absolute top-20 left-10 w-32 h-32 bg-white bg-opacity-10 rounded-full animate-pulse"></div>
                 <div className="absolute top-40 right-16 w-20 h-20 bg-white bg-opacity-10 rotate-45 animate-bounce"></div>
                 <div className="absolute bottom-32 left-8 w-24 h-24 bg-white bg-opacity-10 rounded-lg animate-pulse"></div>
@@ -46,7 +46,7 @@ const Features = () => {
             </div>
 
             {/* Main Content */}
-            <div className="relative z-10 container mx-auto px-6 py-16">
+            <div className="w-full relative z-10 container mx-auto px-6 py-16">
                 {/* Header */}
                 <div className="text-center mb-16">
                     <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">
@@ -58,7 +58,7 @@ const Features = () => {
                 </div>
 
                 {/* Features Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+                <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full mx-auto">
                     {features.map((feature) => {
                         const IconComponent = feature.icon;
                         return (
