@@ -17,7 +17,7 @@ export default function TrainLinkHero() {
     ];
 
     return (
-        <div className="relative min-h-screen bg-orange-500 overflow-hidden">
+        <div className="w-full relative lg:px-10 pt-12 px-6 min-h-screen bg-orange-500 overflow-hidden">
 
             {/* Background Elements */}
             <div className="absolute inset-0">
@@ -27,8 +27,8 @@ export default function TrainLinkHero() {
             </div>
 
             {/* Hero Content */}
-            <div className="relative z-10 px-6 pt-12 pb-20">
-                <div className="max-w-7xl mx-auto">
+            <div className="relative z-10 pb-20">
+                <div className="w-full mx-auto">
                     <div className="grid lg:grid-cols-2 gap-12 items-center">
 
                         {/* Left Column - Content */}
@@ -42,7 +42,7 @@ export default function TrainLinkHero() {
 
                             {/* Main Headline */}
                             <h1 className="text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-                                <span className="bg-gradient-to-b from-white to-white/80 bg-clip-text text-transparent">
+                                <span className="bg-gradient-to-r from-white via-white to-white/70 bg-clip-text text-transparent">
                                     Train Smarter.
                                 </span>
                                 <br />
@@ -57,11 +57,11 @@ export default function TrainLinkHero() {
 
                             {/* CTA Buttons */}
                             <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                                <button className="group bg-white text-orange-500 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center">
+                                <button onClick={() => window.location.href = '/auth'} className="cursor-pointer group bg-white text-orange-500 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center">
                                     Get Started
                                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                                 </button>
-                                <button className="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white/10 transition-all duration-200 transform hover:scale-105">
+                                <button onClick={() => window.location.href = '/auth'} className="cursor-pointer border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white/10 transition-all duration-200 transform hover:scale-105">
                                     Become a Trainer
                                 </button>
                             </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Dumbbell, Menu, X, ChevronDown, User, Bell, Search } from 'lucide-react';
+import { Dumbbell, Menu, X, ChevronDown, User, Bell, Search, LogIn, Zap } from 'lucide-react';
 
 export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -48,11 +48,11 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
 
     return (
         <>
-            <nav className={`sticky top-0 z-50 transition-all duration-300 ${scrolled
+            <nav className={`sticky top-0 z-50 lg:px-10 px-6 transition-all duration-300 ${scrolled
                 ? 'bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm'
                 : 'bg-white'
                 }`}>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="w-full mx-auto">
                     <div className="flex items-center justify-between h-16">
 
                         {/* Logo */}
@@ -63,7 +63,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                 }`}>
                                 <Dumbbell className="h-5 w-5 text-white" />
                             </div>
-                            <span className={`text-xl font-bold transition-colors ${scrolled
+                            <span onClick={() => window.location.href = '/'} className={`text-xl font-bold transition-colors ${scrolled
                                 ? 'text-gray-900'
                                 : 'text-gray-900'
                                 }`}>
@@ -126,7 +126,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                         </div>
 
                         {/* Right Side Actions */}
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-3">
 
                             {/* Search - Desktop Only */}
                             <button className={`hidden md:flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200 hover:scale-105 ${scrolled
@@ -146,22 +146,23 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                             </button>
 
                             {/* Sign In Button */}
-                            <button className={`hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 ${scrolled
-                                ? 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
-                                : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
+                            <button className={`hidden md:flex cursor-pointer items-center space-x-2 px-4 py-2.5 rounded-sm text-sm font-semibold transition-all duration-200 hover:scale-105 ${scrolled
+                                ? 'text-gray-700 hover:text-orange-600 hover:bg-orange-50 border border-gray-200 hover:border-orange-200'
+                                : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50 border border-gray-200 hover:border-orange-200'
                                 }`}>
-                                <User className="h-4 w-4" />
+                                <LogIn className="h-4 w-4" />
                                 <span onClick={() => window.location.href = '/auth'}>Log In</span>
                             </button>
 
                             {/* Get Started CTA */}
                             <button
                                 onClick={() => window.location.href = '/auth'}
-                                className={`px-4 hidden md:flex py-1.5 text-sm rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${scrolled
-                                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md hover:shadow-lg'
-                                    : 'bg-orange-500 hover:bg-orange-600 text-white shadow-md hover:shadow-lg'
+                                className={`px-5 hidden cursor-pointer md:flex items-center space-x-2 py-2.5 text-sm rounded-sm font-bold transition-all duration-200 transform hover:scale-105 active:scale-95 ${scrolled
+                                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl'
+                                    : 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl'
                                     }`}>
-                                Get Started
+                                <Zap className="h-4 w-4" />
+                                <span>Get Started</span>
                             </button>
 
                             {/* Mobile Menu Button */}
@@ -224,13 +225,14 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                 </div>
                             ))}
 
-                            <div className="pt-3 mt-3 border-t border-gray-100 space-y-2">
-                                <button onClick={() => window.location.href = '/auth'} className="w-full flex items-center space-x-2 px-3 py-2.5 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg text-sm font-medium transition-all duration-200">
-                                    <User className="h-4 w-4" />
+                            <div className="pt-4 mt-4 border-t border-gray-100 space-y-3">
+                                <button onClick={() => window.location.href = '/auth'} className="w-full flex items-center justify-center space-x-2 px-4 py-3 text-gray-700 hover:text-orange-600 hover:bg-orange-50 border border-gray-200 hover:border-orange-200 rounded-lg text-sm font-semibold transition-all duration-200">
+                                    <LogIn className="h-4 w-4" />
                                     <span>Log In</span>
                                 </button>
-                                <button onClick={() => window.location.href = '/auth'} className="w-full bg-orange-500 hover:bg-orange-600 text-white px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 transform hover:scale-[1.02] active:scale-95 shadow-md">
-                                    Get Started
+                                <button onClick={() => window.location.href = '/auth'} className="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-lg text-sm font-bold transition-all duration-200 transform hover:scale-[1.02] active:scale-95 shadow-lg hover:shadow-xl flex items-center justify-center space-x-2">
+                                    <Zap className="h-4 w-4" />
+                                    <span>Get Started</span>
                                 </button>
                             </div>
                         </div>
