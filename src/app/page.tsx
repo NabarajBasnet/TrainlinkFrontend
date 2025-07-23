@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Dumbbell, Play, Star, Users, Target, TrendingUp, ArrowRight } from 'lucide-react';
+import React from 'react';
 import MainNavbar from '@/components/pages/Navbar';
 import TrainLinkHero from '@/components/pages/Home';
 

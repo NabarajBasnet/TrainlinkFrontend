@@ -146,19 +146,21 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                             </button>
 
                             {/* Sign In Button */}
-                            <button className={`hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 ${scrolled
+                            <button className={`hidden md:flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 ${scrolled
                                 ? 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
                                 : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
                                 }`}>
                                 <User className="h-4 w-4" />
-                                <span>Sign In</span>
+                                <span onClick={() => window.location.href = '/auth'}>Log In</span>
                             </button>
 
                             {/* Get Started CTA */}
-                            <button className={`px-4 py-1.5 text-sm rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${scrolled
-                                ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md hover:shadow-lg'
-                                : 'bg-orange-500 hover:bg-orange-600 text-white shadow-md hover:shadow-lg'
-                                }`}>
+                            <button
+                                onClick={() => window.location.href = '/auth'}
+                                className={`px-4 hidden md:flex py-1.5 text-sm rounded-lg font-semibold transition-all duration-200 transform hover:scale-105 active:scale-95 ${scrolled
+                                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md hover:shadow-lg'
+                                    : 'bg-orange-500 hover:bg-orange-600 text-white shadow-md hover:shadow-lg'
+                                    }`}>
                                 Get Started
                             </button>
 
@@ -223,11 +225,11 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                             ))}
 
                             <div className="pt-3 mt-3 border-t border-gray-100 space-y-2">
-                                <button className="w-full flex items-center space-x-2 px-3 py-2.5 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg text-sm font-medium transition-all duration-200">
+                                <button onClick={() => window.location.href = '/auth'} className="w-full flex items-center space-x-2 px-3 py-2.5 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg text-sm font-medium transition-all duration-200">
                                     <User className="h-4 w-4" />
-                                    <span>Sign In</span>
+                                    <span>Log In</span>
                                 </button>
-                                <button className="w-full bg-orange-500 hover:bg-orange-600 text-white px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 transform hover:scale-[1.02] active:scale-95 shadow-md">
+                                <button onClick={() => window.location.href = '/auth'} className="w-full bg-orange-500 hover:bg-orange-600 text-white px-3 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 transform hover:scale-[1.02] active:scale-95 shadow-md">
                                     Get Started
                                 </button>
                             </div>
