@@ -1,20 +1,26 @@
 'use client';
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuGroup,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuPortal,
+    DropdownMenuSeparator,
+    DropdownMenuShortcut,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
     Sheet,
-    SheetClose,
     SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { RiSidebarUnfoldLine, RiSidebarFoldLine } from "react-icons/ri";
-import { useTheme } from "next-themes";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleAdminSidebar } from "@/states/slicer";
 import { Sun, Moon } from "lucide-react";
@@ -32,8 +38,14 @@ import {
     FaChartLine,
     FaCalendarAlt
 } from 'react-icons/fa';
+import { useUser } from "@/components/Providers/LoggedInUser/LoggedInUserProvider";
 
 const Header = () => {
+    const LoggedInUser = useUser();
+    const { user, loading } = LoggedInUser || {};
+
+    console.log(user)
+
     const dispatch = useDispatch();
     const router = useRouter();
     const clientSidebar = useSelector((state: any) => state.rtkreducer.sidebarMinimized);
@@ -196,8 +208,7 @@ const Header = () => {
                     </SheetContent>
                 </Sheet>
             </div>
-            <div></div>
-            <div>
+            <div className="flex items-center space-x-4">
                 {/* Theme Toggle */}
                 <button
                     onClick={toggleTheme}
@@ -219,6 +230,69 @@ const Header = () => {
                         />
                     </div>
                 </button>
+
+                {/* Account dropdown */}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button className="rounded-full px-2.5 cursor-pointer">
+                            <h1>
+                                {user?.fullName
+                                    ?.split(' ')
+                                    .map(word => word[0])
+                                    .join('')}
+                            </h1>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="start">
+                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem>
+                                Profile
+                                <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                Billing
+                                <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                Settings
+                                <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                Keyboard shortcuts
+                                <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuGroup>
+                            <DropdownMenuItem>Team</DropdownMenuItem>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger>Invite users</DropdownMenuSubTrigger>
+                                <DropdownMenuPortal>
+                                    <DropdownMenuSubContent>
+                                        <DropdownMenuItem>Email</DropdownMenuItem>
+                                        <DropdownMenuItem>Message</DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem>More...</DropdownMenuItem>
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuPortal>
+                            </DropdownMenuSub>
+                            <DropdownMenuItem>
+                                New Team
+                                <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
+                            </DropdownMenuItem>
+                        </DropdownMenuGroup>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>GitHub</DropdownMenuItem>
+                        <DropdownMenuItem>Support</DropdownMenuItem>
+                        <DropdownMenuItem disabled>API</DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem>
+                            Log out
+                            <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </div>
     )

@@ -1,34 +1,90 @@
 'use client'
 
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, Mail, Lock, User, Dumbbell, Users } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+
+type FormData = {
+    fullName: string;
+    email: string;
+    password: string;
+    role: 'Member' | 'Trainer';
+};
+
+type LoginData = {
+    email: string;
+    password: string;
+};
 
 export default function TrainLinkAuth() {
     const [isLogin, setIsLogin] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
-    const [selectedRole, setSelectedRole] = useState('member');
-    const [formData, setFormData] = useState({
-        fullName: '',
-        email: '',
-        password: ''
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const router = useRouter();
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        reset,
+        watch,
+        setValue,
+    } = useForm<FormData>({
+        defaultValues: {
+            role: 'Member',
+        },
     });
 
-    const handleInputChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+    const selectedRole = watch('role');
+
+    const onSubmit = async (data: FormData | LoginData) => {
+        setIsSubmitting(true);
+        setError(null);
+
+        try {
+            const endpoint = isLogin ? 'login' : 'signup';
+            const response = await fetch(`http://localhost:3000/api/auth/${endpoint}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+            const resBody = await response.json();
+            console.log(resBody)
+            if (response.ok) {
+                toast.success(resBody.message);
+                window.location.href = resBody.redirect;
+            } else {
+                toast.error(resBody.message)
+                throw new Error(resBody.message || 'Request failed');
+            }
+
+        } catch (err: any) {
+            console.error(err);
+            setError(
+                err.message ||
+                (isLogin
+                    ? 'Failed to log in. Please try again.'
+                    : 'Failed to create account. Please try again.')
+            );
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log('Form submitted:', { ...formData, role: selectedRole });
+    const toggleAuthMode = () => {
+        setIsLogin(!isLogin);
+        reset();
+        setError(null);
     };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 to-white flex items-center justify-center p-4">
             <div className="w-full max-w-6xl mx-auto grid lg:grid-cols-2 gap-8 items-center">
-
                 {/* Left Side - Illustration/Branding */}
                 <div className="hidden lg:flex flex-col items-center justify-center text-center p-8">
                     <div className="mb-8">
@@ -60,7 +116,6 @@ export default function TrainLinkAuth() {
                 {/* Right Side - Auth Forms */}
                 <div className="w-full max-w-md mx-auto">
                     <div className="bg-white rounded-2xl shadow-xl p-8">
-
                         {/* Mobile Logo */}
                         <div className="lg:hidden flex items-center justify-center mb-8">
                             <Dumbbell className="h-8 w-8 text-orange-500 mr-2" />
@@ -102,9 +157,15 @@ export default function TrainLinkAuth() {
                             </p>
                         </div>
 
-                        {/* Auth Form */}
-                        <div className="space-y-6">
+                        {/* Error Message */}
+                        {error && (
+                            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+                                {error}
+                            </div>
+                        )}
 
+                        {/* Auth Form */}
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                             {/* Full Name - Registration Only */}
                             {!isLogin && (
                                 <div>
@@ -115,13 +176,20 @@ export default function TrainLinkAuth() {
                                         <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                         <input
                                             type="text"
-                                            name="fullName"
-                                            value={formData.fullName}
-                                            onChange={handleInputChange}
+                                            {...register('fullName', {
+                                                required: !isLogin && 'Full name is required',
+                                                minLength: {
+                                                    value: 2,
+                                                    message: 'Full name must be at least 2 characters'
+                                                }
+                                            })}
                                             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                                             placeholder="Enter your full name"
                                         />
                                     </div>
+                                    {errors.fullName && (
+                                        <p className="mt-1 text-sm text-red-600">{errors.fullName.message}</p>
+                                    )}
                                 </div>
                             )}
 
@@ -134,13 +202,20 @@ export default function TrainLinkAuth() {
                                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     <input
                                         type="email"
-                                        name="email"
-                                        value={formData.email}
-                                        onChange={handleInputChange}
+                                        {...register('email', {
+                                            required: 'Email is required',
+                                            pattern: {
+                                                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                                message: 'Invalid email address'
+                                            }
+                                        })}
                                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                                         placeholder="Enter your email"
                                     />
                                 </div>
+                                {errors.email && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                                )}
                             </div>
 
                             {/* Password */}
@@ -152,9 +227,13 @@ export default function TrainLinkAuth() {
                                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                                     <input
                                         type={showPassword ? 'text' : 'password'}
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleInputChange}
+                                        {...register('password', {
+                                            required: 'Password is required',
+                                            minLength: {
+                                                value: 8,
+                                                message: 'Password must be at least 8 characters'
+                                            }
+                                        })}
                                         className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                                         placeholder="Enter your password"
                                     />
@@ -166,6 +245,9 @@ export default function TrainLinkAuth() {
                                         {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                                     </button>
                                 </div>
+                                {errors.password && (
+                                    <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+                                )}
                                 {!isLogin && (
                                     <p className="text-xs text-gray-500 mt-1">Minimum 8 characters required</p>
                                 )}
@@ -180,8 +262,8 @@ export default function TrainLinkAuth() {
                                     <div className="grid grid-cols-2 gap-3">
                                         <button
                                             type="button"
-                                            onClick={() => setSelectedRole('member')}
-                                            className={`p-4 border-2 rounded-lg transition-all duration-200 ${selectedRole === 'member'
+                                            onClick={() => setValue('role', 'Member')}
+                                            className={`p-4 cursor-pointer border-2 rounded-lg transition-all duration-200 ${selectedRole === 'Member'
                                                 ? 'border-orange-500 bg-orange-50 text-orange-700'
                                                 : 'border-gray-200 hover:border-gray-300'
                                                 }`}
@@ -191,8 +273,8 @@ export default function TrainLinkAuth() {
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => setSelectedRole('trainer')}
-                                            className={`p-4 border-2 rounded-lg transition-all duration-200 ${selectedRole === 'trainer'
+                                            onClick={() => setValue('role', 'Trainer')}
+                                            className={`p-4 cursor-pointer border-2 rounded-lg transition-all duration-200 ${selectedRole === 'Trainer'
                                                 ? 'border-orange-500 bg-orange-50 text-orange-700'
                                                 : 'border-gray-200 hover:border-gray-300'
                                                 }`}
@@ -201,13 +283,18 @@ export default function TrainLinkAuth() {
                                             <span className="block text-sm font-medium">Trainer</span>
                                         </button>
                                     </div>
+                                    <input type="hidden" {...register('role')} />
                                 </div>
                             )}
 
                             {/* Forgot Password - Login Only */}
                             {isLogin && (
                                 <div className="text-right">
-                                    <button className="text-sm text-orange-600 hover:text-orange-700 font-medium">
+                                    <button
+                                        type="button"
+                                        onClick={() => router.push('/forgot-password')}
+                                        className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                                    >
                                         Forgot password?
                                     </button>
                                 </div>
@@ -215,11 +302,21 @@ export default function TrainLinkAuth() {
 
                             {/* Submit Button */}
                             <button
-                                type="button"
-                                onClick={handleSubmit}
-                                className="w-full bg-orange-500 cursor-pointer hover:bg-orange-600 text-white font-semibold py-4 px-4 rounded-sm transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full bg-orange-500 cursor-pointer hover:bg-orange-600 text-white font-semibold py-4 px-4 rounded-sm transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl disabled:opacity-70 disabled:cursor-not-allowed"
                             >
-                                {isLogin ? 'Log In' : 'Create Account'}
+                                {isSubmitting ? (
+                                    <span className="flex items-center justify-center">
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        {isLogin ? 'Logging in...' : 'Creating account...'}
+                                    </span>
+                                ) : (
+                                    isLogin ? 'Log In' : 'Create Account'
+                                )}
                             </button>
 
                             {/* Switch Form Link */}
@@ -229,22 +326,34 @@ export default function TrainLinkAuth() {
                                 </span>
                                 <button
                                     type="button"
-                                    onClick={() => setIsLogin(!isLogin)}
+                                    onClick={toggleAuthMode}
                                     className="text-orange-600 cursor-pointer hover:text-orange-700 font-medium"
                                 >
                                     {isLogin ? 'Sign up' : 'Log in'}
                                 </button>
                             </div>
-                        </div>
+                        </form>
                     </div>
 
                     {/* Terms & Privacy - Registration Only */}
                     {!isLogin && (
                         <p className="text-xs text-gray-500 text-center mt-4">
                             By creating an account, you agree to our{' '}
-                            <button className="text-orange-600 hover:underline">Terms of Service</button>
+                            <button
+                                type="button"
+                                onClick={() => router.push('/terms')}
+                                className="text-orange-600 hover:underline"
+                            >
+                                Terms of Service
+                            </button>
                             {' '}and{' '}
-                            <button className="text-orange-600 hover:underline">Privacy Policy</button>
+                            <button
+                                type="button"
+                                onClick={() => router.push('/privacy')}
+                                className="text-orange-600 hover:underline"
+                            >
+                                Privacy Policy
+                            </button>
                         </p>
                     )}
                 </div>
