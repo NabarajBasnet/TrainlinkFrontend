@@ -6,6 +6,7 @@ import TrainLinkHero from '@/components/pages/Home';
 import Features from '@/components/pages/Features';
 import HowItWorks from '@/components/pages/Workflow';
 import FAQSection from '@/components/pages/FAQ';
+import Footer from '@/components/pages/Footer';
 
 export default function Home() {
 
@@ -16,6 +17,7 @@ export default function Home() {
       <Features />
       <HowItWorks />
       <FAQSection />
+      <Footer />
     </div>
   );
 }

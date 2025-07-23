@@ -74,7 +74,7 @@ const HowItWorks = () => {
   );
 
   return (
-    <section className="w-full bg-orange-500 py-20 px-4 md:px-6 relative overflow-hidden">
+    <section className="w-full bg-orange-500 py-20 px-4 md:px-10 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-20">
         <div className="absolute top-10 left-10 w-72 h-72 bg-gradient-to-br from-white to-orange-200 rounded-full blur-3xl"></div>
