@@ -191,12 +191,6 @@ export default function TrainLinkHero() {
                 </div>
             </div>
 
-            {/* Bottom Wave */}
-            <div className="absolute bottom-0 left-0 right-0">
-                <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-20 fill-white">
-                    <path d="M0,120 C150,80 350,40 600,60 C850,80 1050,100 1200,80 L1200,120 Z"></path>
-                </svg>
-            </div>
         </div>
     );
 }
