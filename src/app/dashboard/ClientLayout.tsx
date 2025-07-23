@@ -1,26 +1,30 @@
-'use client'
+'use client';
 
 import React from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 
 type ClientLayoutProps = {
-    children: React.ReactNode
-}
+    children: React.ReactNode;
+};
 
-const ClientLayout = ({ children }: ClientLayoutProps) => {
+const DashboardClientLayout = ({ children }: ClientLayoutProps) => {
     return (
-        <div>
-            <div>
+        <div className="flex min-h-screen bg-gray-100">
+            {/* Sidebar */}
+            <aside className="w-64 bg-white dark:bg-gray-800 border-r">
                 <Sidebar />
-            </div>
+            </aside>
 
-            <div>
+            {/* Main content area */}
+            <div className="flex flex-col flex-1">
                 <Header />
+                <main className="p-4">
+                    {children}
+                </main>
             </div>
-            {children}
         </div>
     );
-}
+};
 
-export default ClientLayout;
+export default DashboardClientLayout;

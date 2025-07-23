@@ -1,6 +1,6 @@
 const Header = () => {
     return (
-        <div className="w-full flex itms-center justify-between dark:bg-gray-900">
+        <div className="w-full flex items-center justify-between p-4 dark:bg-gray-900 bg-white shadow">
             <div>
                 <h1>Close</h1>
             </div>
@@ -13,4 +13,4 @@ const Header = () => {
         </div>
     )
 }
-export default Header
+export default Header;
