@@ -6,6 +6,8 @@ import ReactQueryClientProvider from "@/components/Providers/ReactQuery/ReactQue
 import ReactReduxProvider from "@/components/Providers/Redux/ReduxProvider";
 import SonnerToastProvider from "@/components/Providers/SonnerProvider/SonnerProvider";
 import LoggedInUserProvider from "@/components/Providers/LoggedInUser/LoggedInUserProvider";
+import MainNavbar from "@/components/pages/Navbar";
+import RootClientLayout from "./clientLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -83,7 +85,9 @@ export default function RootLayout({
             <ReactReduxProvider>
               <ThemeProvider>
                 <ReactQueryClientProvider>
-                  {children}
+                  <RootClientLayout>
+                    {children}
+                  </RootClientLayout>
                 </ReactQueryClientProvider>
               </ThemeProvider>
             </ReactReduxProvider>

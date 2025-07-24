@@ -241,7 +241,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                 {navItems.map((item, index) => (
                                     <div key={index} className="relative group">
                                         <button
-                                            className="flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
+                                            className="flex items-center cursor-pointer space-x-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
                                             onMouseEnter={() => setActiveDropdown(index)}
                                             onMouseLeave={() => setActiveDropdown(null)}
                                         >
@@ -263,7 +263,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                                 <button
                                                     key={subIndex}
                                                     onClick={() => handleNavigation(subItem.path)}
-                                                    className="w-full flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
+                                                    className="w-full flex cursor-pointer items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
                                                 >
                                                     <subItem.icon className="h-4 w-4" />
                                                     <span>{subItem.name}</span>
@@ -332,14 +332,14 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                             <div className="relative" ref={helpRef}>
                                 <button
                                     onClick={() => setShowHelp(!showHelp)}
-                                    className="hidden md:flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
+                                    className="hidden cursor-pointer md:flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
                                 >
                                     <HelpCircle className="h-4 w-4" />
                                 </button>
 
                                 {/* Help Dropdown */}
                                 {showHelp && (
-                                    <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                                    <div className="absolute cursor-pointer top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
                                         <div className="p-3 border-b border-gray-100">
                                             <h3 className="text-sm font-medium text-gray-900">Help & Support</h3>
                                         </div>
@@ -364,7 +364,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                             <div className="relative" ref={notificationRef}>
                                 <button
                                     onClick={() => setShowNotifications(!showNotifications)}
-                                    className="hidden md:flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200 relative"
+                                    className="hidden md:flex items-center justify-center cursor-pointer w-9 h-9 rounded-lg text-gray-600 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200 relative"
                                 >
                                     <Bell className="h-4 w-4" />
                                     {notifications.filter(n => n.unread).length > 0 && (
@@ -434,7 +434,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                             <div className="relative" ref={profileRef}>
                                 <button
                                     onClick={() => setShowProfile(!showProfile)}
-                                    className="hidden md:flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
+                                    className="hidden md:flex items-center cursor-pointer space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
                                 >
                                     <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
                                         <User className="h-4 w-4 text-white" />
@@ -447,7 +447,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                 {showProfile && (
                                     <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
                                         <div className="p-4 border-b border-gray-100">
-                                            <div className="flex items-center space-x-3">
+                                            <div className="flex items-center space-x-3 cursor-pointer">
                                                 <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
                                                     <User className="h-5 w-5 text-white" />
                                                 </div>
@@ -463,7 +463,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                                     handleNavigation('/profile');
                                                     setShowProfile(false);
                                                 }}
-                                                className="w-full flex items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
+                                                className="w-full flex items-center cursor-pointer space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
                                             >
                                                 <User className="h-4 w-4" />
                                                 <span>View Profile</span>
@@ -473,7 +473,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                                     handleNavigation('/settings');
                                                     setShowProfile(false);
                                                 }}
-                                                className="w-full flex items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
+                                                className="w-full flex items-center cursor-pointer space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
                                             >
                                                 <Settings className="h-4 w-4" />
                                                 <span>Settings</span>
