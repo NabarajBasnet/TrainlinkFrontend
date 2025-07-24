@@ -1,5 +1,6 @@
 'use client'
 
+import { GrYoga } from "react-icons/gr";
 import React, { useState, useEffect, useRef } from 'react';
 import {
     Dumbbell,
@@ -32,7 +33,8 @@ import {
     Target,
     CheckCircle,
     AlertCircle,
-    Info
+    Info,
+    HeartPulse, Bike, ChefHat, BrainCircuit, LucideIcon
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -108,10 +110,10 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
     // Navigation structure similar to Upwork
     const navItems = [
         {
-            name: 'Find Work',
+            name: 'Traing Programs',
             dropdown: [
-                { name: 'Find Work', path: '/find-work', icon: Search },
-                { name: 'Saved Jobs', path: '/saved-jobs', icon: Bookmark },
+                { name: 'Find Programs', path: '/find-programs', icon: Search },
+                { name: 'Saved Programs', path: '/saved-programs', icon: Bookmark },
                 { name: 'Proposals', path: '/proposals', icon: MessageSquare },
                 { name: 'Profile', path: '/profile', icon: User },
                 { name: 'My Stats', path: '/stats', icon: TrendingUp },
@@ -119,9 +121,9 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
             ]
         },
         {
-            name: 'My Jobs',
+            name: 'My Programs',
             dropdown: [
-                { name: 'My Jobs', path: '/my-jobs', icon: Briefcase },
+                { name: 'My Programs', path: '/my-programs', icon: Briefcase },
                 { name: 'All Contracts', path: '/contracts', icon: Users },
                 { name: 'Work Diary', path: '/work-diary', icon: Clock },
                 { name: 'Reports', path: '/reports', icon: TrendingUp }
@@ -130,14 +132,13 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
         {
             name: 'Browse',
             dropdown: [
-                { name: 'Browse Categories', path: '/browse', icon: Globe },
-                { name: 'Web Development', path: '/browse/web-development', icon: Code },
-                { name: 'Mobile Development', path: '/browse/mobile-development', icon: Smartphone },
-                { name: 'Design & Creative', path: '/browse/design-creative', icon: PenTool },
-                { name: 'Data Science', path: '/browse/data-science', icon: Database },
-                { name: 'Writing & Translation', path: '/browse/writing', icon: BookOpen },
-                { name: 'Marketing', path: '/browse/marketing', icon: Target },
-                { name: 'Photography', path: '/browse/photography', icon: Camera }
+                { name: 'Browse Categories', path: '/browse', icon: Dumbbell },
+                { name: 'Personal Training', path: '/browse/personal-training', icon: HeartPulse },
+                { name: 'Weight Loss Programs', path: '/browse/weight-loss', icon: Bike },
+                { name: 'Nutrition & Diet Plans', path: '/browse/nutrition', icon: ChefHat },
+                { name: 'Mental Wellness & Mindset', path: '/browse/mental-wellness', icon: BrainCircuit },
+                { name: 'Yoga & Flexibility', path: '/browse/yoga', icon: GrYoga },
+                { name: 'Group Fitness & Bootcamps', path: '/browse/group-training', icon: Users },
             ]
         }
     ];
@@ -203,14 +204,12 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
 
     // Popular search suggestions
     const searchSuggestions = [
-        'React Developer',
-        'UI/UX Design',
-        'Content Writing',
-        'Data Analysis',
-        'Mobile App Development',
-        'SEO Specialist',
-        'Graphic Design',
-        'WordPress Development'
+        'Personal Training',
+        'Weight Loss Programs',
+        'Nutrition & Diet Plans',
+        'Mental Wellness & Mindset',
+        'Yoga & Flexibility',
+        'Group Fitness & Bootcamps',
     ];
 
     return (
