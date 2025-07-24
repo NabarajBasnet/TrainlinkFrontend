@@ -29,6 +29,10 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
 
     const navItems = [
         {
+            name: 'Find Programs',
+            dropdown: ['Find Programs', 'Saved Programs']
+        },
+        {
             name: 'Platform',
             dropdown: ['For Members', 'For Trainers', 'Mobile App', 'API Access']
         },
@@ -77,7 +81,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                 <div key={index} className="relative group">
                                     {item.dropdown ? (
                                         <button
-                                            className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${scrolled
+                                            className={`flex items-center space-x-1 px-1 cursor-pointer py-2 rounded-lg text-sm font-medium transition-all duration-200 ${scrolled
                                                 ? 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
                                                 : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
                                                 }`}
