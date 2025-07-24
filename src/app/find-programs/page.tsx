@@ -4,8 +4,13 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Clock, DollarSign, Heart, Filter, Search, ChevronDown } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Star, Clock, DollarSign, Heart, Filter, Search, RotateCcw, Zap, Target } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 
 interface Program {
     id: string;
@@ -83,6 +88,21 @@ const dummyPrograms: Program[] = [
         reviews: 42,
         level: "Intermediate",
         isFavorite: false
+    },
+    {
+        id: "5",
+        title: "Strength Training Fundamentals",
+        trainerName: "Jordan Smith",
+        trainerAvatar: "https://i.pravatar.cc/100?img=25",
+        description: "Learn proper form and technique while building functional strength with this comprehensive program.",
+        price: 160,
+        tags: ["Strength", "Form", "Fundamentals"],
+        duration: "8 Weeks",
+        createdAt: "1 day ago",
+        rating: 4.9,
+        reviews: 203,
+        level: "Beginner",
+        isFavorite: false
     }
 ];
 
@@ -90,11 +110,11 @@ export default function FindPrograms() {
     const [programs, setPrograms] = useState<Program[]>([]);
     const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
+    const [priceRange, setPriceRange] = useState([500]);
     const [filters, setFilters] = useState({
         duration: "All",
         goal: "All",
-        level: "All",
-        priceRange: [0, 500]
+        level: "All"
     });
 
     useEffect(() => {
@@ -113,9 +133,20 @@ export default function FindPrograms() {
         ));
     };
 
+    const resetFilters = () => {
+        setSearch("");
+        setPriceRange([500]);
+        setFilters({
+            duration: "All",
+            goal: "All",
+            level: "All"
+        });
+    };
+
     const filtered = programs.filter((p) => {
         const matchesSearch = p.title.toLowerCase().includes(search.toLowerCase()) ||
-            p.description.toLowerCase().includes(search.toLowerCase());
+            p.description.toLowerCase().includes(search.toLowerCase()) ||
+            p.trainerName.toLowerCase().includes(search.toLowerCase());
 
         const matchesDuration = filters.duration === "All" ||
             (filters.duration === "4 Weeks" && p.duration.includes("4")) ||
@@ -128,144 +159,197 @@ export default function FindPrograms() {
             );
 
         const matchesLevel = filters.level === "All" || p.level === filters.level;
-
-        const matchesPrice = p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1];
+        const matchesPrice = p.price <= priceRange[0];
 
         return matchesSearch && matchesDuration && matchesGoal && matchesLevel && matchesPrice;
     });
 
+    const getLevelVariant = (level?: string) => {
+        switch (level) {
+            case "Advanced": return "destructive";
+            case "Intermediate": return "secondary";
+            case "Beginner": return "outline";
+            default: return "secondary";
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-gradient-to-b from-orange-50 to-orange-100 text-gray-800 p-4 md:p-8">
-            <div className="max-w-7xl mx-auto">
+        <div className="min-h-screen bg-orange-500">
+            <div className="container mx-auto px-4 py-8">
                 {/* Header */}
-                <header className="mb-8">
-                    <h1 className="text-3xl md:text-4xl font-bold text-orange-800 mb-2">Find Your Perfect Fitness Program</h1>
-                    <p className="text-gray-600">Browse our curated selection of professional training programs</p>
+                <header className="mb-8 text-center">
+                    <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-white/20 rounded-full text-white text-sm font-medium">
+                        <Zap size={16} />
+                        Find Your Perfect Trainer
+                    </div>
+                    <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+                        Discover Expert Fitness Programs
+                    </h1>
+                    <p className="text-xl text-white/90 max-w-2xl mx-auto">
+                        Connect with certified trainers and transform your fitness journey with personalized programs
+                    </p>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Sidebar Filters */}
-                    <aside className="lg:col-span-1 sticky top-24 h-fit space-y-6 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                        <div className="flex items-center justify-between">
-                            <h2 className="text-xl font-semibold flex items-center gap-2">
-                                <Filter size={18} /> Filters
-                            </h2>
-                            <Button variant="ghost" size="sm" className="text-orange-600">
-                                Reset
-                            </Button>
-                        </div>
+                    <aside className="lg:col-span-1 space-y-6">
+                        <Card className="p-6 sticky top-18 rounded-sm">
+                            <CardHeader className="px-0 pt-0">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                                        <Filter size={18} className="text-primary" />
+                                        Filters
+                                    </h2>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={resetFilters}
+                                        className="text-primary hover:text-primary/80 hover:bg-primary/10"
+                                    >
+                                        <RotateCcw size={14} className="mr-1" />
+                                        Reset
+                                    </Button>
+                                </div>
+                            </CardHeader>
 
-                        {/* Search inside filters */}
-                        <div className="relative">
-                            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                            <Input
-                                type="text"
-                                placeholder="Search programs..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full pl-9"
-                            />
-                        </div>
+                            <CardContent className="px-0 space-y-6">
+                                {/* Search */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Search Programs</label>
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            type="text"
+                                            placeholder="Title, trainer, or keyword..."
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            className="pl-9"
+                                        />
+                                    </div>
+                                </div>
 
-                        {/* Price Range Filter */}
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Price Range</label>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-gray-500">${filters.priceRange[0]}</span>
-                                <span className="text-sm text-gray-500">${filters.priceRange[1]}</span>
-                            </div>
-                            <input
-                                type="range"
-                                min="0"
-                                max="500"
-                                value={filters.priceRange[1]}
-                                onChange={(e) => setFilters({ ...filters, priceRange: [0, parseInt(e.target.value)] })}
-                                className="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer"
-                            />
-                        </div>
+                                {/* Price Range */}
+                                <div className="space-y-3">
+                                    <label className="text-sm font-medium">Maximum Price</label>
+                                    <div className="px-3">
+                                        <Slider
+                                            value={priceRange}
+                                            onValueChange={setPriceRange}
+                                            max={500}
+                                            min={50}
+                                            step={25}
+                                            className="w-full"
+                                        />
+                                    </div>
+                                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                                        <span>$50</span>
+                                        <div className="flex items-center gap-1">
+                                            <DollarSign size={14} />
+                                            <span className="font-medium text-primary">{priceRange[0]}</span>
+                                        </div>
+                                        <span>$500+</span>
+                                    </div>
+                                </div>
 
-                        {/* Duration Filter */}
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Duration</label>
-                            <select
-                                className="w-full border border-gray-300 rounded-lg p-2 text-sm"
-                                value={filters.duration}
-                                onChange={(e) => setFilters({ ...filters, duration: e.target.value })}
-                            >
-                                <option>All</option>
-                                <option>4 Weeks</option>
-                                <option>6 Weeks</option>
-                                <option>8+ Weeks</option>
-                            </select>
-                        </div>
+                                {/* Duration Filter */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Program Duration</label>
+                                    <Select value={filters.duration} onValueChange={(value) => setFilters({ ...filters, duration: value })}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="All">All Durations</SelectItem>
+                                            <SelectItem value="4 Weeks">4 Weeks</SelectItem>
+                                            <SelectItem value="6 Weeks">6 Weeks</SelectItem>
+                                            <SelectItem value="8+ Weeks">8+ Weeks</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
 
-                        {/* Goal Filter */}
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Goal</label>
-                            <select
-                                className="w-full border border-gray-300 rounded-lg p-2 text-sm"
-                                value={filters.goal}
-                                onChange={(e) => setFilters({ ...filters, goal: e.target.value })}
-                            >
-                                <option>All</option>
-                                <option>Fat Loss</option>
-                                <option>Muscle Gain</option>
-                                <option>Endurance</option>
-                                <option>Flexibility</option>
-                            </select>
-                        </div>
+                                {/* Goal Filter */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Fitness Goal</label>
+                                    <Select value={filters.goal} onValueChange={(value) => setFilters({ ...filters, goal: value })}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="All">All Goals</SelectItem>
+                                            <SelectItem value="Weight Loss">Weight Loss</SelectItem>
+                                            <SelectItem value="Muscle Gain">Muscle Gain</SelectItem>
+                                            <SelectItem value="Strength">Strength Training</SelectItem>
+                                            <SelectItem value="Endurance">Endurance</SelectItem>
+                                            <SelectItem value="Flexibility">Flexibility</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
 
-                        {/* Level Filter */}
-                        <div>
-                            <label className="block text-sm font-medium mb-2">Experience Level</label>
-                            <select
-                                className="w-full border border-gray-300 rounded-lg p-2 text-sm"
-                                value={filters.level}
-                                onChange={(e) => setFilters({ ...filters, level: e.target.value })}
-                            >
-                                <option>All</option>
-                                <option>Beginner</option>
-                                <option>Intermediate</option>
-                                <option>Advanced</option>
-                            </select>
-                        </div>
+                                {/* Level Filter */}
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium">Experience Level</label>
+                                    <Select value={filters.level} onValueChange={(value) => setFilters({ ...filters, level: value })}>
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="All">All Levels</SelectItem>
+                                            <SelectItem value="Beginner">Beginner</SelectItem>
+                                            <SelectItem value="Intermediate">Intermediate</SelectItem>
+                                            <SelectItem value="Advanced">Advanced</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </CardContent>
+                        </Card>
                     </aside>
 
                     {/* Main Content */}
                     <main className="lg:col-span-3 space-y-6">
                         {/* Results Count */}
                         <div className="flex items-center justify-between">
-                            <p className="text-sm text-gray-600">
-                                Showing <span className="font-medium">{filtered.length}</span> programs
-                            </p>
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-600">Sort by:</span>
-                                <Button variant="ghost" size="sm" className="flex items-center gap-1">
-                                    Recommended <ChevronDown size={16} />
-                                </Button>
+                                <Target size={20} className="text-white" />
+                                <p className="text-sm font-medium text-white">
+                                    <span className="text-white font-bold">{filtered.length}</span> programs found
+                                </p>
                             </div>
+                            <Select defaultValue="recommended">
+                                <SelectTrigger className="w-48 text-white bg-transparent cursor-pointer shadow-none border-none outline-none">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="recommended">Recommended</SelectItem>
+                                    <SelectItem value="rating">Highest Rated</SelectItem>
+                                    <SelectItem value="price-low">Price: Low to High</SelectItem>
+                                    <SelectItem value="price-high">Price: High to Low</SelectItem>
+                                    <SelectItem value="newest">Newest First</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
 
                         {/* Loading State */}
                         {loading && (
                             <div className="space-y-4">
                                 {[...Array(3)].map((_, i) => (
-                                    <div key={i} className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
-                                        <div className="flex justify-between">
-                                            <Skeleton className="h-6 w-48" />
-                                            <Skeleton className="h-4 w-16" />
+                                    <Card key={i} className="p-6">
+                                        <div className="flex gap-4">
+                                            <Skeleton className="h-12 w-12 rounded-full" />
+                                            <div className="flex-1 space-y-3">
+                                                <Skeleton className="h-6 w-48" />
+                                                <Skeleton className="h-4 w-full" />
+                                                <Skeleton className="h-4 w-3/4" />
+                                                <div className="flex gap-2">
+                                                    <Skeleton className="h-6 w-20 rounded-full" />
+                                                    <Skeleton className="h-6 w-20 rounded-full" />
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <Skeleton className="h-4 w-24" />
+                                                    <Skeleton className="h-8 w-24" />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <Skeleton className="h-4 w-full" />
-                                        <Skeleton className="h-4 w-3/4" />
-                                        <div className="flex gap-2">
-                                            <Skeleton className="h-6 w-20 rounded-full" />
-                                            <Skeleton className="h-6 w-20 rounded-full" />
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <Skeleton className="h-4 w-24" />
-                                            <Skeleton className="h-8 w-24" />
-                                        </div>
-                                    </div>
+                                    </Card>
                                 ))}
                             </div>
                         )}
@@ -275,112 +359,104 @@ export default function FindPrograms() {
                             <div className="space-y-4">
                                 {filtered.length > 0 ? (
                                     filtered.map((program) => (
-                                        <div
-                                            key={program.id}
-                                            className="bg-white border border-gray-200 rounded-xl p-6 flex flex-col gap-4 hover:border-orange-300 transition-all shadow-sm hover:shadow-md"
-                                        >
-                                            <div className="flex justify-between items-start">
-                                                <div className="flex items-start gap-4">
-                                                    <img
-                                                        src={program.trainerAvatar}
-                                                        alt="trainer"
-                                                        className="w-12 h-12 rounded-full border-2 border-orange-200"
-                                                    />
-                                                    <div>
-                                                        <h3 className="text-xl font-bold text-gray-900">
-                                                            {program.title}
-                                                        </h3>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <span className="text-sm text-gray-600">
-                                                                {program.trainerName}
-                                                            </span>
-                                                            {program.rating && (
-                                                                <div className="flex items-center gap-1 text-sm bg-orange-100 text-orange-800 px-2 py-0.5 rounded-full">
-                                                                    <Star size={14} className="fill-orange-500 text-orange-500" />
-                                                                    <span>{program.rating}</span>
-                                                                    <span className="text-gray-500">({program.reviews})</span>
-                                                                </div>
-                                                            )}
+                                        <Card key={program.id} className="group hover:shadow-lg transition-all duration-300 hover:border-primary/20 rounded-sm">
+                                            <CardContent className="p-6">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="flex items-start gap-4">
+                                                        <Avatar className="h-12 w-12 border-2 border-primary/20">
+                                                            <AvatarImage src={program.trainerAvatar} alt={program.trainerName} />
+                                                            <AvatarFallback>{program.trainerName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                                        </Avatar>
+                                                        <div>
+                                                            <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">
+                                                                {program.title}
+                                                            </h3>
+                                                            <div className="flex items-center gap-3 mt-1">
+                                                                <span className="text-sm text-muted-foreground font-medium">
+                                                                    by {program.trainerName}
+                                                                </span>
+                                                                {program.rating && (
+                                                                    <div className="flex items-center gap-1 text-sm bg-yellow-50 text-yellow-800 px-2 py-0.5 rounded-full">
+                                                                        <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                                                                        <span className="font-medium">{program.rating}</span>
+                                                                        <span className="text-yellow-600">({program.reviews})</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-sm text-gray-500">{program.createdAt}</span>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8"
-                                                        onClick={() => toggleFavorite(program.id)}
-                                                    >
-                                                        <Heart
-                                                            size={18}
-                                                            className={program.isFavorite ? "fill-orange-500 text-orange-500" : "text-gray-400"}
-                                                        />
-                                                    </Button>
-                                                </div>
-                                            </div>
-
-                                            <p className="text-gray-700">{program.description}</p>
-
-                                            <div className="flex flex-wrap gap-2">
-                                                {program.tags.map((tag, i) => (
-                                                    <Badge key={i} variant="secondary" className="px-3 py-1 rounded-full">
-                                                        {tag}
-                                                    </Badge>
-                                                ))}
-                                                {program.level && (
-                                                    <Badge variant={program.level === "Advanced" ? "destructive" : program.level === "Intermediate" ? "default" : "outline"}>
-                                                        {program.level}
-                                                    </Badge>
-                                                )}
-                                            </div>
-
-                                            <div className="flex items-center justify-between mt-2">
-                                                <div className="flex items-center gap-4 text-sm text-gray-800">
-                                                    <div className="flex items-center gap-1">
-                                                        <DollarSign size={16} className="text-green-600" />
-                                                        <span className="font-semibold text-green-600">${program.price}</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1">
-                                                        <Clock size={16} className="text-orange-600" />
-                                                        <span>{program.duration}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm text-muted-foreground">{program.createdAt}</span>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8"
+                                                            onClick={() => toggleFavorite(program.id)}
+                                                        >
+                                                            <Heart
+                                                                size={16}
+                                                                className={program.isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground hover:text-red-500"}
+                                                            />
+                                                        </Button>
                                                     </div>
                                                 </div>
-                                                <div className="flex gap-2">
-                                                    <Button variant="outline" size="sm">
-                                                        Details
-                                                    </Button>
-                                                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
-                                                        Enroll Now
-                                                    </Button>
+
+                                                <p className="text-muted-foreground mb-4 leading-relaxed">{program.description}</p>
+
+                                                <div className="flex flex-wrap gap-2 mb-4">
+                                                    {program.tags.map((tag, i) => (
+                                                        <Badge key={i} variant="secondary" className="px-3 py-1">
+                                                            {tag}
+                                                        </Badge>
+                                                    ))}
+                                                    {program.level && (
+                                                        <Badge variant={getLevelVariant(program.level)}>
+                                                            {program.level}
+                                                        </Badge>
+                                                    )}
                                                 </div>
-                                            </div>
-                                        </div>
+
+                                                <Separator className="my-4" />
+
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-6 text-sm">
+                                                        <div className="flex items-center gap-2 text-green-600 font-semibold">
+                                                            <DollarSign size={16} />
+                                                            <span>${program.price}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 text-muted-foreground">
+                                                            <Clock size={16} />
+                                                            <span>{program.duration}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex gap-3">
+                                                        <Button variant="outline" size="sm">
+                                                            View Details
+                                                        </Button>
+                                                        <Button size="sm" className="bg-primary hover:bg-primary/90">
+                                                            Enroll Now
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
                                     ))
                                 ) : (
-                                    <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+                                    <Card className="p-12 text-center">
                                         <div className="mx-auto max-w-md">
-                                            <Search size={48} className="mx-auto text-gray-400 mb-4" />
-                                            <h3 className="text-xl font-semibold text-gray-900 mb-2">No programs found</h3>
-                                            <p className="text-gray-600 mb-4">
-                                                Try adjusting your search or filter criteria to find what you're looking for.
+                                            <div className="w-16 h-16 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
+                                                <Search size={32} className="text-primary" />
+                                            </div>
+                                            <h3 className="text-xl font-semibold mb-2">No programs found</h3>
+                                            <p className="text-muted-foreground mb-6">
+                                                Try adjusting your search criteria or explore different filter options to discover the perfect fitness program for you.
                                             </p>
-                                            <Button
-                                                variant="outline"
-                                                onClick={() => {
-                                                    setSearch("");
-                                                    setFilters({
-                                                        duration: "All",
-                                                        goal: "All",
-                                                        level: "All",
-                                                        priceRange: [0, 500]
-                                                    });
-                                                }}
-                                            >
-                                                Reset Filters
+                                            <Button onClick={resetFilters} variant="outline">
+                                                <RotateCcw size={16} className="mr-2" />
+                                                Reset All Filters
                                             </Button>
                                         </div>
-                                    </div>
+                                    </Card>
                                 )}
                             </div>
                         )}
