@@ -3,6 +3,7 @@
 import { GrYoga } from "react-icons/gr";
 import React, { useState, useEffect, useRef } from 'react';
 import {
+    LogIn, UserPlus, KeyRound,
     Dumbbell,
     Menu,
     X,
@@ -37,6 +38,7 @@ import {
     HeartPulse, Bike, ChefHat, BrainCircuit, LucideIcon
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useUser } from "../Providers/LoggedInUser/LoggedInUserProvider";
 
 export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -48,11 +50,23 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
     const [showHelp, setShowHelp] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
     const router = useRouter();
+    const { user, loading } = useUser();
 
     const searchRef = useRef(null);
     const notificationRef = useRef(null);
     const helpRef = useRef(null);
     const profileRef = useRef(null);
+
+    function getInitials(name: string | undefined) {
+        if (!name) return 'U';
+        return name
+            .split(' ')
+            .map(word => word[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    }
+
 
     useEffect(() => {
         const handleScroll = () => {
@@ -429,67 +443,112 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                 )}
                             </div>
 
-                            {/* Profile */}
+                            {/* Profile / Account Dropdown */}
                             <div className="relative" ref={profileRef}>
+                                {/* Toggle Button */}
                                 <button
                                     onClick={() => setShowProfile(!showProfile)}
-                                    className="hidden md:flex items-center cursor-pointer space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
+                                    className="flex items-center cursor-pointer space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
                                 >
-                                    <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                                        <User className="h-4 w-4 text-white" />
+                                    <div className="w-8 h-8 bg-orange-500 cursor-pointer rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                        {user ? getInitials(user.fullName) : <User className="h-4 w-4" />}
                                     </div>
-                                    <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${showProfile ? 'rotate-180' : ''
-                                        }`} />
+                                    <ChevronDown
+                                        className={`h-4 w-4 transition-transform duration-200 ${showProfile ? 'rotate-180' : ''}`}
+                                    />
                                 </button>
 
-                                {/* Profile Dropdown */}
+                                {/* Dropdown */}
                                 {showProfile && (
-                                    <div className="absolute top-full right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
-                                        <div className="p-4 border-b border-gray-100">
-                                            <div className="flex items-center space-x-3 cursor-pointer">
-                                                <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
-                                                    <User className="h-5 w-5 text-white" />
+                                    <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                                        {user ? (
+                                            <>
+                                                {/* Authenticated User Dropdown */}
+                                                <div className="p-4 border-b border-gray-100">
+                                                    <div className="flex items-center space-x-3 cursor-pointer">
+                                                        <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                                            {getInitials(user?.fullName)}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-medium text-gray-900">
+                                                                {user?.fullName || 'Unknown'}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500">{user?.email || 'youremail@gmail.com'}</p>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-900">John Doe</p>
-                                                    <p className="text-xs text-gray-500">john.doe@example.com</p>
+                                                <div className="py-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            handleNavigation('/profile');
+                                                            setShowProfile(false);
+                                                        }}
+                                                        className="w-full flex cursor-pointer items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
+                                                    >
+                                                        <User className="h-4 w-4" />
+                                                        <span>View Profile</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            handleNavigation('/settings');
+                                                            setShowProfile(false);
+                                                        }}
+                                                        className="w-full flex cursor-pointer items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
+                                                    >
+                                                        <Settings className="h-4 w-4" />
+                                                        <span>Settings</span>
+                                                    </button>
+                                                    <div className="border-t border-gray-100 mt-2 pt-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                handleNavigation('/logout');
+                                                                setShowProfile(false);
+                                                            }}
+                                                            className="w-full flex cursor-pointer items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors duration-200"
+                                                        >
+                                                            <LogOut className="h-4 w-4" />
+                                                            <span>Log Out</span>
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <div className="py-2">
-                                            <button
-                                                onClick={() => {
-                                                    handleNavigation('/profile');
-                                                    setShowProfile(false);
-                                                }}
-                                                className="w-full flex items-center cursor-pointer space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
-                                            >
-                                                <User className="h-4 w-4" />
-                                                <span>View Profile</span>
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    handleNavigation('/settings');
-                                                    setShowProfile(false);
-                                                }}
-                                                className="w-full flex items-center cursor-pointer space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
-                                            >
-                                                <Settings className="h-4 w-4" />
-                                                <span>Settings</span>
-                                            </button>
-                                            <div className="border-t border-gray-100 mt-2 pt-2">
-                                                <button
-                                                    onClick={() => {
-                                                        handleNavigation('/logout');
-                                                        setShowProfile(false);
-                                                    }}
-                                                    className="w-full flex items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors duration-200"
-                                                >
-                                                    <LogOut className="h-4 w-4" />
-                                                    <span>Log Out</span>
-                                                </button>
-                                            </div>
-                                        </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                {/* Guest User Dropdown */}
+                                                <div className="py-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            handleNavigation('/auth');
+                                                            setShowProfile(false);
+                                                        }}
+                                                        className="w-full flex items-center cursor-pointer space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                                                    >
+                                                        <LogIn className="h-4 w-4" />
+                                                        <span>Sign In</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            handleNavigation('/auth');
+                                                            setShowProfile(false);
+                                                        }}
+                                                        className="w-full flex items-center cursor-pointer space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                                                    >
+                                                        <UserPlus className="h-4 w-4" />
+                                                        <span>Sign Up</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            handleNavigation('/auth/forgot-password');
+                                                            setShowProfile(false);
+                                                        }}
+                                                        className="w-full flex items-center cursor-pointer space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                                                    >
+                                                        <KeyRound className="h-4 w-4" />
+                                                        <span>Forgot Password</span>
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 )}
                             </div>
