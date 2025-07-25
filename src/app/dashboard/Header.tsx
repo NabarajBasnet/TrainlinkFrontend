@@ -1,20 +1,6 @@
 'use client';
 
-import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuPortal,
-    DropdownMenuSeparator,
-    DropdownMenuShortcut,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { toast } from "sonner";
 import {
     Sheet,
     SheetContent,
@@ -23,7 +9,7 @@ import {
 import { RiSidebarUnfoldLine, RiSidebarFoldLine } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleAdminSidebar } from "@/states/slicer";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, KeyRound, UserPlus, LogIn, LogOut, Settings, User, ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -39,18 +25,19 @@ import {
     FaCalendarAlt
 } from 'react-icons/fa';
 import { useUser } from "@/components/Providers/LoggedInUser/LoggedInUserProvider";
+import { useRef } from "react";
 
 const Header = () => {
     const LoggedInUser = useUser();
     const { user, loading } = LoggedInUser || {};
-
-    console.log(user)
 
     const dispatch = useDispatch();
     const router = useRouter();
     const clientSidebar = useSelector((state: any) => state.rtkreducer.sidebarMinimized);
     const [darkMode, setDarkMode] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [showProfile, setShowProfile] = useState(false);
+    const profileRef = useRef(null);
 
     // Theme handling
     useEffect(() => {
@@ -134,6 +121,37 @@ const Header = () => {
             description: 'Account preferences',
         },
     ];
+
+    const handleNavigation = (path: string) => {
+        router.push(path);
+    };
+
+    const logOutUser = async () => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/auth/logout`, {
+                method: "POST",
+                credentials: 'include'
+            });
+            const resBody = await response.json();
+            if (response.ok) {
+                toast.success(resBody.message)
+                window.location.href = resBody.redirect
+            }
+        } catch (error: any) {
+            console.log("Error: ", error);
+            toast.error(error.message);
+        }
+    };
+
+    function getInitials(name: string | undefined) {
+        if (!name) return 'U';
+        return name
+            .split(' ')
+            .map(word => word[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    }
 
     return (
         <div className="w-full sticky top-0 flex items-center justify-between p-4 dark:bg-gray-900 bg-white shadow">
@@ -231,68 +249,115 @@ const Header = () => {
                     </div>
                 </button>
 
-                {/* Account dropdown */}
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button className="rounded-full px-2.5 cursor-pointer">
-                            <h1>
-                                {user?.fullName
-                                    ?.split(' ')
-                                    .map(word => word[0])
-                                    .join('')}
-                            </h1>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56" align="start">
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem>
-                                Profile
-                                <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                Billing
-                                <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                Settings
-                                <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                                Keyboard shortcuts
-                                <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem>Team</DropdownMenuItem>
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger>Invite users</DropdownMenuSubTrigger>
-                                <DropdownMenuPortal>
-                                    <DropdownMenuSubContent>
-                                        <DropdownMenuItem>Email</DropdownMenuItem>
-                                        <DropdownMenuItem>Message</DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem>More...</DropdownMenuItem>
-                                    </DropdownMenuSubContent>
-                                </DropdownMenuPortal>
-                            </DropdownMenuSub>
-                            <DropdownMenuItem>
-                                New Team
-                                <DropdownMenuShortcut>⌘+T</DropdownMenuShortcut>
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>GitHub</DropdownMenuItem>
-                        <DropdownMenuItem>Support</DropdownMenuItem>
-                        <DropdownMenuItem disabled>API</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                            Log out
-                            <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                {/* Profile / Account Dropdown */}
+                <div className="relative" ref={profileRef}>
+                    {/* Toggle Button */}
+                    <button
+                        onClick={() => setShowProfile(!showProfile)}
+                        className="flex items-center cursor-pointer space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
+                    >
+                        <div className="w-8 h-8 bg-orange-500 cursor-pointer rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                            {user ? getInitials(user.fullName) : <User className="h-4 w-4" />}
+                        </div>
+                        <ChevronDown
+                            className={`h-4 w-4 transition-transform duration-200 ${showProfile ? 'rotate-180' : ''}`}
+                        />
+                    </button>
+
+                    {/* Dropdown */}
+                    {showProfile && (
+                        <div className="absolute top-full right-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-50">
+                            {user ? (
+                                <>
+                                    {/* Authenticated User Dropdown */}
+                                    <div className="p-4 border-b border-gray-100">
+                                        <div className="flex items-center space-x-3 cursor-pointer">
+                                            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                                {getInitials(user?.fullName)}
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900">
+                                                    {user?.fullName || 'Unknown'}
+                                                </p>
+                                                <p className="text-xs text-gray-500">{user?.email || 'youremail@gmail.com'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="py-2">
+                                        <button
+                                            onClick={() => {
+                                                handleNavigation('/dashboard/profile');
+                                                setShowProfile(false);
+                                            }}
+                                            className="w-full flex cursor-pointer items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
+                                        >
+                                            <User className="h-4 w-4" />
+                                            <span>View Profile</span>
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                handleNavigation('/dashboard/settings');
+                                                setShowProfile(false);
+                                            }}
+                                            className="w-full flex cursor-pointer items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
+                                        >
+                                            <Settings className="h-4 w-4" />
+                                            <span>Settings</span>
+                                        </button>
+                                        <div className="border-t border-gray-100 mt-2 pt-2">
+                                            <button
+                                                onClick={() => {
+                                                    logOutUser();
+                                                    setShowProfile(false);
+                                                }}
+                                                className="w-full flex cursor-pointer items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors duration-200"
+                                            >
+                                                <LogOut className="h-4 w-4" />
+                                                <span>Log Out</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Guest User Dropdown */}
+                                    <div className="py-2">
+                                        <button
+                                            onClick={() => {
+                                                handleNavigation('/auth');
+                                                setShowProfile(false);
+                                            }}
+                                            className="w-full flex items-center cursor-pointer space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                                        >
+                                            <LogIn className="h-4 w-4" />
+                                            <span>Sign In</span>
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                handleNavigation('/auth');
+                                                setShowProfile(false);
+                                            }}
+                                            className="w-full flex items-center cursor-pointer space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                                        >
+                                            <UserPlus className="h-4 w-4" />
+                                            <span>Sign Up</span>
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                handleNavigation('/auth/forgot-password');
+                                                setShowProfile(false);
+                                            }}
+                                            className="w-full flex items-center cursor-pointer space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50"
+                                        >
+                                            <KeyRound className="h-4 w-4" />
+                                            <span>Forgot Password</span>
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )

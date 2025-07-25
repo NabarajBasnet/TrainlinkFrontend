@@ -147,9 +147,9 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                 { name: 'Find Programs', path: '/find-programs', icon: Search },
                 { name: 'Saved Programs', path: '/saved-programs', icon: Bookmark },
                 { name: 'Proposals', path: '/proposals', icon: MessageSquare },
-                { name: 'Profile', path: '/profile', icon: User },
-                { name: 'My Stats', path: '/stats', icon: TrendingUp },
-                { name: 'Earnings', path: '/earnings', icon: DollarSign }
+                { name: 'Profile', path: '/dashboard/profile', icon: User },
+                { name: 'My Stats', path: '/dashboard/stats', icon: TrendingUp },
+                { name: 'Earnings', path: '/dashboard/earnings', icon: DollarSign }
             ]
         },
         {
@@ -498,7 +498,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                                 <div className="py-2">
                                                     <button
                                                         onClick={() => {
-                                                            handleNavigation('/profile');
+                                                            handleNavigation('/dashboard/profile');
                                                             setShowProfile(false);
                                                         }}
                                                         className="w-full flex cursor-pointer items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-colors duration-200"
@@ -650,7 +650,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                     )}
                                 </button>
                                 <button
-                                    onClick={() => handleNavigation('/profile')}
+                                    onClick={() => handleNavigation('/dashboard/profile')}
                                     className="w-full flex items-center space-x-3 px-3 py-2.5 text-gray-700 hover:text-orange-600 hover:bg-orange-50 rounded-lg text-sm font-medium transition-all duration-200"
                                 >
                                     <User className="h-4 w-4" />

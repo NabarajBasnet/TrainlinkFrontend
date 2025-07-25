@@ -40,50 +40,50 @@ const Sidebar = () => {
         },
         {
             label: 'Messages',
-            path: '/messages',
+            path: '/dashboard/messages',
             icon: <FaCommentDots className="text-lg" />,
             description: 'Chat with your trainer or client',
         },
         {
             label: 'Profile',
-            path: '/profile',
+            path: '/dashboard/profile',
             icon: <FaUser className="text-lg" />,
             description: 'View or update personal info',
         },
         {
             label: 'Workouts',
-            path: '/workouts',
+            path: '/dashboard/workouts',
             icon: <FaDumbbell className="text-lg" />,
             description: 'Training programs',
         },
         {
             label: 'Nutrition',
-            path: '/nutrition',
+            path: '/dashboard/nutrition',
             icon: <FaAppleAlt className="text-lg" />,
             description: 'Meal plans & tracking',
         },
         {
             label: 'Progress',
-            path: '/progress',
+            path: '/dashboard/progress',
             icon: <FaChartLine className="text-lg" />,
             description: 'Metrics & analytics',
         },
         {
             label: 'Calendar',
-            path: '/calendar',
+            path: '/dashboard/calendar',
             icon: <FaCalendarAlt className="text-lg" />,
             description: 'Schedule & appointments',
         },
         {
             label: 'Settings',
-            path: '/settings',
+            path: '/dashboard/settings',
             icon: <FaCog className="text-lg" />,
             description: 'Account preferences',
         },
     ];
 
     if (!mounted) {
-        return null; // Prevent hydration mismatch
+        return null;
     }
 
     return (
