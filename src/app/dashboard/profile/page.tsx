@@ -39,6 +39,10 @@ type Certification = {
     id?: string;
 };
 
+type CertificationsFormValues = {
+    certifications: Certification[];
+};
+
 const ProfilePage = () => {
     const { user, loading, refetch, setRefetch } = useUser();
     console.log(refetch)
@@ -46,6 +50,7 @@ const ProfilePage = () => {
     const [editingField, setEditingField] = useState<string | null>(null);
     const [tempValue, setTempValue] = useState<any>(null);
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [processing, setProcessing] = useState<boolean | null>(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     // Initialize react-hook-form for certifications
@@ -208,6 +213,7 @@ const ProfilePage = () => {
         }
 
         try {
+            setProcessing(true);
             const formData = new FormData();
             formData.append("image", selectedImage); // must match `upload.single("image")`
 
@@ -219,8 +225,10 @@ const ProfilePage = () => {
             const resBody = await response.json();
 
             if (response.ok) {
+                setProcessing(false);
                 setRefetch(!refetch)
                 toast.success("Image uploaded successfully");
+                setEditingField(null);
             } else {
                 setRefetch(!refetch)
                 toast.error(resBody.message || "Upload failed");
@@ -235,6 +243,7 @@ const ProfilePage = () => {
     // Add Trainer Experties
     const addTrainerExperties = async () => {
         try {
+            setProcessing(true);
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/add-trainer-experties`, {
                 method: 'PATCH',
                 headers: {
@@ -244,8 +253,10 @@ const ProfilePage = () => {
             })
             const resBody = await response.json();
             if (response.ok) {
+                setProcessing(false);
                 toast.success(resBody.message);
                 setRefetch(!refetch)
+                setEditingField(null);
             }
         } catch (error: any) {
             console.log("Error: ", error);
@@ -257,6 +268,7 @@ const ProfilePage = () => {
     // Add or update bio
     const addOrUpdateBio = async () => {
         try {
+            setProcessing(true);
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/update-user-bio`, {
                 method: "PATCH",
                 headers: {
@@ -266,8 +278,10 @@ const ProfilePage = () => {
             });
             const resBody = await response.json();
             if (response.ok) {
+                setProcessing(false);
                 toast.success(resBody.message);
                 setRefetch(!refetch)
+                setValue('userBio', user?.trainerProfile?.bio || '');
             } else {
                 setRefetch(!refetch)
                 toast.error(resBody.message);
@@ -279,13 +293,10 @@ const ProfilePage = () => {
         }
     }
 
-    type CertificationsFormValues = {
-        certifications: Certification[];
-    };
-
     // Certification submittion
     const onSubmit = async (data: CertificationsFormValues) => {
         try {
+            setProcessing(true);
             // Transform data to match backend schema
             const transformedCertifications = data.certifications.map(cert => ({
                 name: cert.name,
@@ -310,6 +321,7 @@ const ProfilePage = () => {
             const resBody = await response.json();
 
             if (response.ok) {
+                setProcessing(false);
                 toast.success(resBody.message);
                 closeEditDialog();
                 setRefetch(!refetch)
@@ -798,7 +810,7 @@ const ProfilePage = () => {
                                 onClick={uploadProfileImage}
                                 disabled={!selectedImage && !imagePreview}
                             >
-                                Upload Image
+                                {processing ? 'Uploading...' : 'Upload Image'}
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -838,7 +850,7 @@ const ProfilePage = () => {
                             <Button variant="outline" onClick={closeEditDialog}>
                                 Cancel
                             </Button>
-                            <Button onClick={addOrUpdateBio} className='cursor-pointer'>Save Changes</Button>
+                            <Button onClick={addOrUpdateBio} className='cursor-pointer'>{processing ? 'Saving...' : 'Save Changes'}</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -879,7 +891,9 @@ const ProfilePage = () => {
                                 variant="outline" onClick={closeEditDialog}>
                                 Cancel
                             </Button>
-                            <Button onClick={() => addTrainerExperties()} className='cursor-pointer'>Save Changes</Button>
+                            <Button onClick={() => addTrainerExperties()} className='cursor-pointer'>
+                                {processing ? 'Saving...' : 'Save Changes'}
+                            </Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -1002,7 +1016,7 @@ const ProfilePage = () => {
                                         Cancel
                                     </Button>
                                     <Button type="submit" className="flex-1">
-                                        Save Changes
+                                        {processing ? 'Saving...' : 'Save Changes'}
                                     </Button>
                                 </div>
                             </DialogFooter>
