@@ -190,6 +190,27 @@ const ProfilePage = () => {
         }
     };
 
+    // Add Trainer Experties
+    const addTrainerExperties = async () => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/add-trainer-experties`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(tempValue)
+            })
+            const resBody = await response.json();
+            if (response.ok) {
+                toast.success(resBody.message);
+                window.location.reload();
+            }
+        } catch (error: any) {
+            console.log("Error: ", error);
+            toast.error(error.message);
+        };
+    };
+
     return (
         <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-950">
             <div className="mx-auto p-4">
@@ -727,25 +748,26 @@ const ProfilePage = () => {
                                 <Label>
                                     {user.role === "Trainer" ? "Expertise" : "Goals"} (one per line)
                                 </Label>
-                                <Textarea
+                                <Input
                                     value={Array.isArray(tempValue) ? tempValue.join('\n') : ''}
                                     onChange={(e) => setTempValue(
                                         e.target.value.split('\n').filter(item => item.trim())
                                     )}
-                                    rows={6}
                                     placeholder={
                                         user.role === "Trainer"
-                                            ? "Weight Loss\nStrength Training\nYoga"
-                                            : "Lose 10kg\nBuild muscle\nImprove flexibility"
+                                            ? "Weight Loss"
+                                            : "Lose 10kg"
                                     }
                                 />
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={closeEditDialog}>
+                            <Button
+                                className='cursor-pointer'
+                                variant="outline" onClick={closeEditDialog}>
                                 Cancel
                             </Button>
-                            <Button onClick={saveChanges}>Save Changes</Button>
+                            <Button onClick={() => addTrainerExperties()} className='cursor-pointer'>Save Changes</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
