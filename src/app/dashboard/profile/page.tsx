@@ -30,7 +30,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from 'sonner';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Certification {
     name: string;
@@ -47,7 +46,6 @@ const ProfilePage = () => {
     const [tempValue, setTempValue] = useState<any>(null);
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-
     // Handle image selection
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -163,6 +161,35 @@ const ProfilePage = () => {
         );
     }
 
+    // Uplaod profile image
+    const uploadProfileImage = async () => {
+        if (!selectedImage) {
+            toast.error("No image selected");
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append("image", selectedImage); // must match `upload.single("image")`
+
+            const response = await fetch("http://localhost:3000/api/upload-image", {
+                method: "POST",
+                body: formData, // do NOT set content-type manually
+            });
+
+            const resBody = await response.json();
+
+            if (response.ok) {
+                toast.success("Image uploaded successfully");
+            } else {
+                toast.error(resBody.message || "Upload failed");
+            }
+        } catch (error: any) {
+            console.error("Error: ", error);
+            toast.error(error.message);
+        }
+    };
+
     return (
         <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-950">
             <div className="mx-auto p-4">
@@ -172,7 +199,7 @@ const ProfilePage = () => {
                         <div className="flex items-center space-x-4 relative">
                             <div className="relative group">
                                 <Avatar className="h-20 w-20">
-                                    <AvatarImage src={imagePreview || user.avatar} />
+                                    <AvatarImage src={imagePreview || user.avatarUrl} />
                                     <AvatarFallback>
                                         {user.fullName?.split(' ').map(n => n[0]).join('')}
                                     </AvatarFallback>
@@ -626,14 +653,17 @@ const ProfilePage = () => {
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button variant="outline" onClick={closeEditDialog}>
+                            <Button
+                                className='cursor-pointer'
+                                variant="outline" onClick={closeEditDialog}>
                                 Cancel
                             </Button>
                             <Button
-                                onClick={saveChanges}
+                                className='cursor-pointer'
+                                onClick={uploadProfileImage}
                                 disabled={!selectedImage && !imagePreview}
                             >
-                                Save Changes
+                                Upload Image
                             </Button>
                         </DialogFooter>
                     </DialogContent>
