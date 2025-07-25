@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     User, Star, Award, Calendar, Clock, Bookmark, Settings,
     Briefcase, Heart, Trophy, Shield, BookOpen, CheckCircle,
@@ -30,13 +30,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from 'sonner';
+import { useFieldArray, useForm } from 'react-hook-form';
 
-interface Certification {
+// Types
+type Certification = {
     name: string;
     issuer: string;
     year: string;
     id?: string;
-}
+};
 
 const ProfilePage = () => {
     const { user, loading } = useUser();
@@ -46,6 +48,43 @@ const ProfilePage = () => {
     const [tempValue, setTempValue] = useState<any>(null);
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    // Initialize react-hook-form for certifications
+    const {
+        control,
+        register,
+        handleSubmit,
+        formState: { errors },
+        setValue,
+        watch,
+        reset
+    } = useForm<CertificationsFormValues>({
+        defaultValues: {
+            certifications: [{ name: '', issuer: '', year: '', id: '' }]
+        }
+    });
+
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: "certifications"
+    });
+
+    // Watch userBio
+    let userBio = watch('userBio');
+
+    // Populate user bio in field and certifications if user is a trainer
+    useEffect(() => {
+        if (user) {
+            setValue('userBio', user?.trainerProfile?.bio || '');
+
+            // If user is a trainer and has certifications, set them in the form
+            if (user.role === "Trainer" && user.trainerProfile?.certifications?.length > 0) {
+                reset({
+                    certifications: user.trainerProfile.certifications
+                });
+            }
+        }
+    }, [user, setValue, reset]);
     // Handle image selection
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -90,7 +129,7 @@ const ProfilePage = () => {
             const updatedUser = {
                 ...user,
                 bio: editingField === 'bio' ? updatedValue : user.bio,
-                avatar: editingField === 'avatar' ? updatedValue : user.avatar,
+                avatarUrl: editingField === 'avatarUrl' ? updatedValue : user.avatarUrl,
                 trainerProfile: {
                     ...user.trainerProfile,
                     experties: editingField === 'experties' ? updatedValue : user.trainerProfile?.experties,
@@ -209,6 +248,39 @@ const ProfilePage = () => {
             console.log("Error: ", error);
             toast.error(error.message);
         };
+    };
+
+    // Add or update bio
+    const addOrUpdateBio = async () => {
+        try {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/update-user-bio`, {
+                method: "PATCH",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userBio })
+            });
+            const resBody = await response.json();
+            if (response.ok) {
+                toast.success(resBody.message);
+            } else {
+                toast.error(resBody.message);
+            }
+        } catch (error: any) {
+            console.log("Error: ", error)
+            toast.error(error.message)
+        }
+    }
+
+    type CertificationsFormValues = {
+        certifications: Certification[];
+    };
+
+    // Certification submittion
+    const onSubmit = (data: CertificationsFormValues) => {
+        // Handle form submission - save certifications
+        console.log(data.certifications);
+        closeEditDialog();
     };
 
     return (
@@ -425,9 +497,9 @@ const ProfilePage = () => {
                                         </div>
                                     </CardHeader>
                                     <CardContent>
-                                        {user.bio ? (
+                                        {user?.trainerProfile?.bio ? (
                                             <div className="prose max-w-none">
-                                                <p>{user.bio}</p>
+                                                <p>{user?.trainerProfile?.bio}</p>
                                             </div>
                                         ) : (
                                             <p className="text-sm text-muted-foreground">
@@ -637,7 +709,7 @@ const ProfilePage = () => {
                             <div className="flex flex-col items-center gap-4">
                                 <div className="relative">
                                     <Avatar className="h-32 w-32">
-                                        <AvatarImage src={imagePreview || user.avatar} />
+                                        <AvatarImage src={imagePreview || user.avatarUrl} />
                                         <AvatarFallback>
                                             {user.fullName?.split(' ').map(n => n[0]).join('')}
                                         </AvatarFallback>
@@ -710,8 +782,7 @@ const ProfilePage = () => {
                                 </Label>
                                 <Textarea
                                     id="bio"
-                                    value={tempValue || ''}
-                                    onChange={(e) => setTempValue(e.target.value)}
+                                    {...register('userBio')}
                                     rows={6}
                                     placeholder={
                                         user.role === "Trainer"
@@ -725,7 +796,7 @@ const ProfilePage = () => {
                             <Button variant="outline" onClick={closeEditDialog}>
                                 Cancel
                             </Button>
-                            <Button onClick={saveChanges}>Save Changes</Button>
+                            <Button onClick={addOrUpdateBio} className='cursor-pointer'>Save Changes</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -749,7 +820,6 @@ const ProfilePage = () => {
                                     {user.role === "Trainer" ? "Expertise" : "Goals"} (one per line)
                                 </Label>
                                 <Input
-                                    value={Array.isArray(tempValue) ? tempValue.join('\n') : ''}
                                     onChange={(e) => setTempValue(
                                         e.target.value.split('\n').filter(item => item.trim())
                                     )}
@@ -774,107 +844,113 @@ const ProfilePage = () => {
 
                 {/* Certifications Dialog */}
                 <Dialog open={editingField === 'certifications'} onOpenChange={closeEditDialog}>
-                    <DialogContent className="max-w-2xl">
-                        <DialogHeader>
+                    <DialogContent className="max-w-2xl flex flex-col max-h-[90vh]">
+                        <DialogHeader className="flex-shrink-0">
                             <DialogTitle>Edit Certifications</DialogTitle>
                             <DialogDescription>
                                 Add your professional certifications to build trust with potential clients.
                             </DialogDescription>
                         </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            <div className="space-y-4">
-                                {Array.isArray(tempValue) && tempValue.map((cert: Certification, index: number) => (
-                                    <div key={index} className="border rounded-lg p-4 space-y-3">
-                                        <div className="flex justify-between items-center">
-                                            <h4 className="font-medium">Certification #{index + 1}</h4>
-                                            <button
-                                                onClick={() => {
-                                                    const updated = [...tempValue];
-                                                    updated.splice(index, 1);
-                                                    setTempValue(updated);
-                                                }}
-                                                className="text-destructive hover:text-destructive/80"
-                                                aria-label="Remove certification"
-                                            >
-                                                <X className="h-4 w-4" />
-                                            </button>
+
+                        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col flex-1 overflow-hidden">
+                            {/* Scrollable content area */}
+                            <div className="flex-1 overflow-y-auto py-4 px-6">
+                                <div className="space-y-4">
+                                    {fields.map((field, index) => (
+                                        <div key={field.id} className="border rounded-lg p-4 space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <h4 className="font-medium">Certification #{index + 1}</h4>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => remove(index)}
+                                                    className="text-destructive hover:text-destructive/80"
+                                                    aria-label="Remove certification"
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </button>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <Label htmlFor={`cert-name-${index}`}>Certification Name*</Label>
+                                                    <Input
+                                                        id={`cert-name-${index}`}
+                                                        {...register(`certifications.${index}.name`, { required: true })}
+                                                    />
+                                                    {errors.certifications?.[index]?.name && (
+                                                        <p className="text-sm text-destructive">This field is required</p>
+                                                    )}
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <Label htmlFor={`cert-issuer-${index}`}>Issuing Organization*</Label>
+                                                    <Input
+                                                        id={`cert-issuer-${index}`}
+                                                        {...register(`certifications.${index}.issuer`, { required: true })}
+                                                    />
+                                                    {errors.certifications?.[index]?.issuer && (
+                                                        <p className="text-sm text-destructive">This field is required</p>
+                                                    )}
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <Label htmlFor={`cert-year-${index}`}>Year Obtained*</Label>
+                                                    <Input
+                                                        id={`cert-year-${index}`}
+                                                        type="number"
+                                                        {...register(`certifications.${index}.year`, {
+                                                            required: true,
+                                                            validate: (value) => {
+                                                                const year = parseInt(value);
+                                                                return !isNaN(year) && year > 1900 && year <= new Date().getFullYear();
+                                                            }
+                                                        })}
+                                                    />
+                                                    {errors.certifications?.[index]?.year && (
+                                                        <p className="text-sm text-destructive">
+                                                            {errors.certifications[index]?.year.type === 'validate'
+                                                                ? 'Please enter a valid year'
+                                                                : 'This field is required'}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <Label htmlFor={`cert-id-${index}`}>Certification ID (optional)</Label>
+                                                    <Input
+                                                        id={`cert-id-${index}`}
+                                                        {...register(`certifications.${index}.id`)}
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-1">
-                                                <Label htmlFor={`cert-name-${index}`}>Certification Name</Label>
-                                                <Input
-                                                    id={`cert-name-${index}`}
-                                                    value={cert.name || ''}
-                                                    onChange={(e) => {
-                                                        const updated = [...tempValue];
-                                                        updated[index] = { ...updated[index], name: e.target.value };
-                                                        setTempValue(updated);
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <Label htmlFor={`cert-issuer-${index}`}>Issuing Organization</Label>
-                                                <Input
-                                                    id={`cert-issuer-${index}`}
-                                                    value={cert.issuer || ''}
-                                                    onChange={(e) => {
-                                                        const updated = [...tempValue];
-                                                        updated[index] = { ...updated[index], issuer: e.target.value };
-                                                        setTempValue(updated);
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <Label htmlFor={`cert-year-${index}`}>Year Obtained</Label>
-                                                <Input
-                                                    id={`cert-year-${index}`}
-                                                    type="number"
-                                                    value={cert.year || ''}
-                                                    onChange={(e) => {
-                                                        const updated = [...tempValue];
-                                                        updated[index] = { ...updated[index], year: e.target.value };
-                                                        setTempValue(updated);
-                                                    }}
-                                                />
-                                            </div>
-                                            <div className="space-y-1">
-                                                <Label htmlFor={`cert-id-${index}`}>Certification ID (optional)</Label>
-                                                <Input
-                                                    id={`cert-id-${index}`}
-                                                    value={cert.id || ''}
-                                                    onChange={(e) => {
-                                                        const updated = [...tempValue];
-                                                        updated[index] = { ...updated[index], id: e.target.value };
-                                                        setTempValue(updated);
-                                                    }}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                                <Button
-                                    variant="outline"
-                                    className="w-full"
-                                    onClick={() => {
-                                        setTempValue([...(Array.isArray(tempValue) ? tempValue : []), {
-                                            name: '',
-                                            issuer: '',
-                                            year: '',
-                                            id: ''
-                                        }]);
-                                    }}
-                                >
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Add Certification
-                                </Button>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                        <DialogFooter>
-                            <Button variant="outline" onClick={closeEditDialog}>
-                                Cancel
-                            </Button>
-                            <Button onClick={saveChanges}>Save Changes</Button>
-                        </DialogFooter>
+
+                            {/* Fixed footer */}
+                            <DialogFooter className="flex-shrink-0 bg-background pt-4 border-t">
+                                <div className="flex justify-between w-full">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="w-full"
+                                        onClick={() => append({ name: '', issuer: '', year: '', id: '' })}
+                                    >
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        Add Certification
+                                    </Button>
+                                </div>
+                                <div className="flex gap-2 w-full mt-4">
+                                    <Button type="button" variant="outline" className="flex-1" onClick={closeEditDialog}>
+                                        Cancel
+                                    </Button>
+                                    <Button type="submit" className="flex-1">
+                                        Save Changes
+                                    </Button>
+                                </div>
+                            </DialogFooter>
+                        </form>
                     </DialogContent>
                 </Dialog>
             </div>
