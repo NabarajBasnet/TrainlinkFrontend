@@ -384,7 +384,7 @@ const ProfilePage = () => {
                         {/* Profile Completion */}
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-lg">Profile Strength</CardTitle>
+                                <CardTitle className="text-lg font-bold text-orange-500">Profile Strength</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <Progress value={profileCompletion} className="h-2" />
@@ -407,7 +407,7 @@ const ProfilePage = () => {
                         {/* Details Card */}
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-lg">Details</CardTitle>
+                                <CardTitle className="text-lg font-bold text-orange-500">Details</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="flex items-center space-x-3">
@@ -455,7 +455,7 @@ const ProfilePage = () => {
                         <Card>
                             <CardHeader>
                                 <div className="flex justify-between items-center">
-                                    <CardTitle className="text-lg">
+                                    <CardTitle className="text-lg font-bold text-orange-500">
                                         {user.role === "Trainer" ? "Expertise" : "Fitness Goals"}
                                     </CardTitle>
                                     <button
@@ -526,7 +526,7 @@ const ProfilePage = () => {
                                 <Card>
                                     <CardHeader>
                                         <div className="flex justify-between items-center">
-                                            <CardTitle className='text-lg font-bold'>
+                                            <CardTitle className='text-lg font-bold text-orange-500'>
                                                 {user.role === "Trainer" ? "About Me" : "My Fitness Journey"}
                                             </CardTitle>
                                             <button
@@ -541,7 +541,7 @@ const ProfilePage = () => {
                                     <CardContent>
                                         {user?.trainerProfile?.bio ? (
                                             <div className="prose max-w-none">
-                                                <p>{user?.trainerProfile?.bio}</p>
+                                                <p className='text-sm font-medium'>{user?.trainerProfile?.bio}</p>
                                             </div>
                                         ) : (
                                             <p className="text-sm text-muted-foreground">
@@ -557,7 +557,7 @@ const ProfilePage = () => {
                                     <Card>
                                         <CardHeader>
                                             <div className="flex justify-between items-center">
-                                                <CardTitle className='text-lg font-bold'>Certifications</CardTitle>
+                                                <CardTitle className='text-lg font-bold text-orange-500'>Certifications</CardTitle>
                                                 <button
                                                     onClick={() => openEditDialog(
                                                         'certifications',
@@ -700,14 +700,14 @@ const ProfilePage = () => {
                                                                     <Award className="h-6 w-6 text-primary" />
                                                                     <div>
                                                                         <CardTitle className="text-lg">{cert.name}</CardTitle>
-                                                                        <CardDescription>{cert.issuer}</CardDescription>
+                                                                        <CardDescription>{cert.issuingOrganization}</CardDescription>
                                                                     </div>
                                                                 </div>
                                                             </CardHeader>
                                                             <CardContent>
                                                                 <div className="flex justify-between text-sm">
-                                                                    <span>Issued: {cert.year}</span>
-                                                                    <span>ID: {cert.id || 'N/A'}</span>
+                                                                    <span>Issued: {cert.yearObtained}</span>
+                                                                    <span>ID: {cert.certificationId || 'N/A'}</span>
                                                                 </div>
                                                             </CardContent>
                                                         </Card>
@@ -929,7 +929,7 @@ const ProfilePage = () => {
                                                     <Label htmlFor={`cert-issuer-${index}`}>Issuing Organization*</Label>
                                                     <Input
                                                         id={`cert-issuer-${index}`}
-                                                        defaultValue={field.issuingOrganization} // Pre-fill existing data
+                                                        defaultValue={field.issuingOrganization}
                                                         {...register(`certifications.${index}.issuer`, { required: true })}
                                                     />
                                                     {errors.certifications?.[index]?.issuer && (
@@ -942,7 +942,7 @@ const ProfilePage = () => {
                                                     <Input
                                                         id={`cert-year-${index}`}
                                                         type="number"
-                                                        defaultValue={field.yearObtained} // Pre-fill existing data
+                                                        defaultValue={field.yearObtained}
                                                         {...register(`certifications.${index}.year`, {
                                                             required: true,
                                                             validate: (value) => {
@@ -964,7 +964,7 @@ const ProfilePage = () => {
                                                     <Label htmlFor={`cert-id-${index}`}>Certification ID (optional)</Label>
                                                     <Input
                                                         id={`cert-id-${index}`}
-                                                        defaultValue={field.certificationId} // Pre-fill existing data
+                                                        defaultValue={field.certificationId}
                                                         {...register(`certifications.${index}.id`)}
                                                     />
                                                 </div>
@@ -986,7 +986,7 @@ const ProfilePage = () => {
                                             issuer: '',
                                             year: '',
                                             id: '',
-                                            issuingOrganization: '', // For backend schema
+                                            issuingOrganization: '',
                                             yearObtained: undefined,
                                             certificationId: '',
                                             isVerified: false,
