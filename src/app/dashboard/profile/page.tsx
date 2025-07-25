@@ -1,11 +1,24 @@
 'use client';
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { RxCross2 } from "react-icons/rx";
 import { useEffect, useState } from 'react';
 import {
     User, Star, Award, Calendar, Clock, Bookmark, Settings,
     Briefcase, Heart, Trophy, Shield, BookOpen, CheckCircle,
     Edit, X, Plus, Upload, Image as ImageIcon
 } from 'lucide-react';
+import { FaExclamation } from "react-icons/fa";
 import {
     Card, CardHeader, CardTitle, CardDescription, CardContent,
     CardFooter
@@ -369,6 +382,37 @@ const ProfilePage = () => {
         }
     };
 
+    // Remove Single fitness goal
+    const removeFitnessGoal = async (goal: string) => {
+        try {
+            setProcessing(true);
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/remove-fitness-goal`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ goal })
+            });
+
+            const resBody = await response.json();
+
+            if (response.ok) {
+                setProcessing(false);
+                toast.success(resBody.message);
+                closeEditDialog();
+                setRefetch(!refetch)
+            } else {
+                toast.error(resBody.message);
+                setRefetch(!refetch)
+                throw new Error(resBody.message);
+            }
+        } catch (error: any) {
+            setRefetch(!refetch);
+            toast.error(error.message);
+        }
+    };
+
     return (
         <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-950">
             <div className="mx-auto p-4">
@@ -535,9 +579,38 @@ const ProfilePage = () => {
                                     user.memberProfile?.goals?.length > 0 ? (
                                         <div className="space-y-2">
                                             {user.memberProfile.goals.map((goal, i) => (
-                                                <div key={i} className="flex items-center">
+                                                <div key={i} className="flex space-x-4 items-center">
                                                     <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
                                                     <span className="text-sm">{goal}</span>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <RxCross2 className="text-red-600 cursor-pointer hover:bg-red-100 dark:hover:bg-red-900 hover:rounded-full h-5 w-5 p-0.5 transition" />
+                                                        </AlertDialogTrigger>
+
+                                                        <AlertDialogContent className="bg-white dark:bg-zinc-900 border border-red-500 shadow-xl rounded-xl">
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle className="text-red-600 dark:text-red-400 text-lg font-semibold flex items-center">
+                                                                    <FaExclamation className="h-5 w-5 mr-2 text-red-500 dark:text-red-400" />
+                                                                    Confirm Deletion
+                                                                </AlertDialogTitle>
+                                                                <AlertDialogDescription className="text-zinc-700 dark:text-zinc-300 mt-2">
+                                                                    Are you sure you want to remove this goal? This action <span className="font-semibold text-red-600 dark:text-red-400">cannot be undone</span>.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+
+                                                            <AlertDialogFooter className="flex justify-end gap-3 mt-4">
+                                                                <AlertDialogCancel className="bg-zinc-200 dark:bg-zinc-700 text-black dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded px-4 py-1.5">
+                                                                    Cancel
+                                                                </AlertDialogCancel>
+                                                                <AlertDialogAction
+                                                                    className="bg-red-600 hover:bg-red-700 text-white rounded px-4 py-1.5 shadow"
+                                                                    onClick={() => removeFitnessGoal(goal)}
+                                                                >
+                                                                    Delete
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
                                                 </div>
                                             ))}
                                         </div>
