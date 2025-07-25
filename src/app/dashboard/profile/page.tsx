@@ -14,7 +14,6 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useUser } from "@/components/Providers/LoggedInUser/LoggedInUserProvider";
 import Link from "next/link";
@@ -41,8 +40,8 @@ type Certification = {
 };
 
 const ProfilePage = () => {
-    const { user, loading } = useUser();
-
+    const { user, loading, refetch, setRefetch } = useUser();
+    console.log(refetch)
     // State for editing
     const [editingField, setEditingField] = useState<string | null>(null);
     const [tempValue, setTempValue] = useState<any>(null);
@@ -85,6 +84,7 @@ const ProfilePage = () => {
             }
         }
     }, [user, setValue, reset]);
+
     // Handle image selection
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -219,11 +219,14 @@ const ProfilePage = () => {
             const resBody = await response.json();
 
             if (response.ok) {
+                setRefetch(!refetch)
                 toast.success("Image uploaded successfully");
             } else {
+                setRefetch(!refetch)
                 toast.error(resBody.message || "Upload failed");
             }
         } catch (error: any) {
+            setRefetch(!refetch)
             console.error("Error: ", error);
             toast.error(error.message);
         }
@@ -242,11 +245,12 @@ const ProfilePage = () => {
             const resBody = await response.json();
             if (response.ok) {
                 toast.success(resBody.message);
-                window.location.reload();
+                setRefetch(!refetch)
             }
         } catch (error: any) {
             console.log("Error: ", error);
             toast.error(error.message);
+            setRefetch(!refetch)
         };
     };
 
@@ -263,10 +267,13 @@ const ProfilePage = () => {
             const resBody = await response.json();
             if (response.ok) {
                 toast.success(resBody.message);
+                setRefetch(!refetch)
             } else {
+                setRefetch(!refetch)
                 toast.error(resBody.message);
             }
         } catch (error: any) {
+            setRefetch(!refetch)
             console.log("Error: ", error)
             toast.error(error.message)
         }
@@ -277,10 +284,45 @@ const ProfilePage = () => {
     };
 
     // Certification submittion
-    const onSubmit = (data: CertificationsFormValues) => {
-        // Handle form submission - save certifications
-        console.log(data.certifications);
-        closeEditDialog();
+    const onSubmit = async (data: CertificationsFormValues) => {
+        try {
+            // Transform data to match backend schema
+            const transformedCertifications = data.certifications.map(cert => ({
+                name: cert.name,
+                issuingOrganization: cert.issuer,
+                yearObtained: cert.year ? parseInt(cert.year) : undefined,
+                certificationId: cert.id || '',
+                isVerified: false,
+                url: '-'
+            }));
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/update-user-certifications`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    certifications: transformedCertifications
+                })
+            });
+
+            const resBody = await response.json();
+
+            if (response.ok) {
+                toast.success(resBody.message);
+                closeEditDialog();
+                setRefetch(!refetch)
+            } else {
+                toast.error(resBody.message);
+                setRefetch(!refetch)
+                throw new Error(resBody.message || 'Failed to update certifications');
+            }
+        } catch (error: any) {
+            setRefetch(!refetch);
+            console.error("Error updating certifications:", error);
+            toast.error(error.message || 'Failed to update certifications');
+        }
     };
 
     return (
@@ -484,7 +526,7 @@ const ProfilePage = () => {
                                 <Card>
                                     <CardHeader>
                                         <div className="flex justify-between items-center">
-                                            <CardTitle>
+                                            <CardTitle className='text-lg font-bold'>
                                                 {user.role === "Trainer" ? "About Me" : "My Fitness Journey"}
                                             </CardTitle>
                                             <button
@@ -515,7 +557,7 @@ const ProfilePage = () => {
                                     <Card>
                                         <CardHeader>
                                             <div className="flex justify-between items-center">
-                                                <CardTitle>Certifications</CardTitle>
+                                                <CardTitle className='text-lg font-bold'>Certifications</CardTitle>
                                                 <button
                                                     onClick={() => openEditDialog(
                                                         'certifications',
@@ -875,6 +917,7 @@ const ProfilePage = () => {
                                                     <Label htmlFor={`cert-name-${index}`}>Certification Name*</Label>
                                                     <Input
                                                         id={`cert-name-${index}`}
+                                                        defaultValue={field.name} // Pre-fill existing data
                                                         {...register(`certifications.${index}.name`, { required: true })}
                                                     />
                                                     {errors.certifications?.[index]?.name && (
@@ -886,6 +929,7 @@ const ProfilePage = () => {
                                                     <Label htmlFor={`cert-issuer-${index}`}>Issuing Organization*</Label>
                                                     <Input
                                                         id={`cert-issuer-${index}`}
+                                                        defaultValue={field.issuingOrganization} // Pre-fill existing data
                                                         {...register(`certifications.${index}.issuer`, { required: true })}
                                                     />
                                                     {errors.certifications?.[index]?.issuer && (
@@ -898,6 +942,7 @@ const ProfilePage = () => {
                                                     <Input
                                                         id={`cert-year-${index}`}
                                                         type="number"
+                                                        defaultValue={field.yearObtained} // Pre-fill existing data
                                                         {...register(`certifications.${index}.year`, {
                                                             required: true,
                                                             validate: (value) => {
@@ -919,6 +964,7 @@ const ProfilePage = () => {
                                                     <Label htmlFor={`cert-id-${index}`}>Certification ID (optional)</Label>
                                                     <Input
                                                         id={`cert-id-${index}`}
+                                                        defaultValue={field.certificationId} // Pre-fill existing data
                                                         {...register(`certifications.${index}.id`)}
                                                     />
                                                 </div>
@@ -935,7 +981,17 @@ const ProfilePage = () => {
                                         type="button"
                                         variant="outline"
                                         className="w-full"
-                                        onClick={() => append({ name: '', issuer: '', year: '', id: '' })}
+                                        onClick={() => append({
+                                            name: '',
+                                            issuer: '',
+                                            year: '',
+                                            id: '',
+                                            issuingOrganization: '', // For backend schema
+                                            yearObtained: undefined,
+                                            certificationId: '',
+                                            isVerified: false,
+                                            url: '-'
+                                        })}
                                     >
                                         <Plus className="h-4 w-4 mr-2" />
                                         Add Certification

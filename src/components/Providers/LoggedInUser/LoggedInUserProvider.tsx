@@ -12,6 +12,7 @@ const LoggedInUserProvider = ({ children }: UserProps) => {
 
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [refetch, setRefetch] = useState(false);
 
     const getLoggedInRootUserDetails = async () => {
         try {
@@ -35,10 +36,10 @@ const LoggedInUserProvider = ({ children }: UserProps) => {
 
     useEffect(() => {
         getLoggedInRootUserDetails();
-    }, []);
+    }, [refetch]);
 
     return (
-        <UserContext.Provider value={{ user, loading }}>
+        <UserContext.Provider value={{ user, loading, refetch, setRefetch }}>
             {children}
         </UserContext.Provider>
     );
