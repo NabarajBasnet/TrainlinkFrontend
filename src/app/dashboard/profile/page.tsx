@@ -211,9 +211,9 @@ const ProfilePage = () => {
             const formData = new FormData();
             formData.append("image", selectedImage); // must match `upload.single("image")`
 
-            const response = await fetch("http://localhost:3000/api/upload-image", {
-                method: "POST",
-                body: formData, // do NOT set content-type manually
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/update-avatar`, {
+                method: "PATCH",
+                body: formData,
             });
 
             const resBody = await response.json();
@@ -517,7 +517,7 @@ const ProfilePage = () => {
                                 </TabsTrigger>
                                 <TabsTrigger value="reviews" className='cursor-pointer'>Reviews</TabsTrigger>
                                 {user.role === "Trainer" && (
-                                    <TabsTrigger value="certifications">Certifications</TabsTrigger>
+                                    <TabsTrigger value="certifications" className='cursor-pointer'>Certifications</TabsTrigger>
                                 )}
                             </TabsList>
 
