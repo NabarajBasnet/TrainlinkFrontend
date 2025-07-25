@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useUser } from "../Providers/LoggedInUser/LoggedInUserProvider";
+import { toast } from "sonner";
 
 export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -109,6 +110,23 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
         router.push(path);
         handleMobileMenuClose();
     };
+
+    const logOutUser = async () => {
+        try {
+            const response = await fetch(`http://localhost:3000/api/auth/logout`, {
+                method: "POST",
+                credentials: 'include'
+            });
+            const resBody = await response.json();
+            if (response.ok) {
+                toast.success(resBody.message)
+                window.location.href = resBody.redirect
+            }
+        } catch (error) {
+            console.log("Error: ", error);
+            toast.error(error.message);
+        }
+    }
 
     const handleSearch = (e) => {
         e.preventDefault();
@@ -501,7 +519,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                                     <div className="border-t border-gray-100 mt-2 pt-2">
                                                         <button
                                                             onClick={() => {
-                                                                handleNavigation('/logout');
+                                                                logOutUser();
                                                                 setShowProfile(false);
                                                             }}
                                                             className="w-full flex cursor-pointer items-center space-x-3 px-4 py-2.5 text-sm text-gray-700 hover:text-red-600 hover:bg-red-50 transition-colors duration-200"
