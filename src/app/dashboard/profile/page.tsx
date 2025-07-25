@@ -45,7 +45,7 @@ type CertificationsFormValues = {
 
 const ProfilePage = () => {
     const { user, loading, refetch, setRefetch } = useUser();
-    console.log(refetch)
+
     // State for editing
     const [editingField, setEditingField] = useState<string | null>(null);
     const [tempValue, setTempValue] = useState<any>(null);
@@ -279,6 +279,7 @@ const ProfilePage = () => {
             const resBody = await response.json();
             if (response.ok) {
                 setProcessing(false);
+                setEditingField(null);
                 toast.success(resBody.message);
                 setRefetch(!refetch)
                 setValue('userBio', user?.trainerProfile?.bio || '');
@@ -334,6 +335,37 @@ const ProfilePage = () => {
             setRefetch(!refetch);
             console.error("Error updating certifications:", error);
             toast.error(error.message || 'Failed to update certifications');
+        }
+    };
+
+    // Edit fitness goals
+    const editFitnessGoal = async () => {
+        try {
+            setProcessing(true);
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/edit-fitness-goal`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(tempValue)
+            });
+
+            const resBody = await response.json();
+
+            if (response.ok) {
+                setProcessing(false);
+                toast.success(resBody.message);
+                closeEditDialog();
+                setRefetch(!refetch)
+            } else {
+                toast.error(resBody.message);
+                setRefetch(!refetch)
+                throw new Error(resBody.message);
+            }
+        } catch (error: any) {
+            setRefetch(!refetch);
+            toast.error(error.message);
         }
     };
 
@@ -485,8 +517,8 @@ const ProfilePage = () => {
                                 </div>
                             </CardHeader>
                             <CardContent>
-                                {user.role === "Trainer" ? (
-                                    user.trainerProfile?.experties?.length > 0 ? (
+                                {user?.role === "Trainer" ? (
+                                    user?.trainerProfile?.experties?.length > 0 ? (
                                         <div className="flex flex-wrap gap-2">
                                             {user.trainerProfile.experties.map((skill, i) => (
                                                 <Badge key={i} variant="secondary">
@@ -522,7 +554,7 @@ const ProfilePage = () => {
                     {/* Main Content Area */}
                     <div className="lg:col-span-3 space-y-6">
                         <Tabs defaultValue="overview" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3 lg:grid-cols-4">
+                            <TabsList className="grid w-full grid-cols-3 mb-2 lg:grid-cols-4">
                                 <TabsTrigger value="overview" className='cursor-pointer'>Overview</TabsTrigger>
                                 <TabsTrigger value="programs" className='cursor-pointer'>
                                     {user.role === "Trainer" ? "My Programs" : "My Plan"}
@@ -696,7 +728,7 @@ const ProfilePage = () => {
                             </TabsContent>
 
                             {/* Certifications Tab (Trainer only) */}
-                            {user.role === "Trainer" && (
+                            {user?.role === "Trainer" && (
                                 <TabsContent value="certifications">
                                     <Card>
                                         <CardHeader>
@@ -891,9 +923,12 @@ const ProfilePage = () => {
                                 variant="outline" onClick={closeEditDialog}>
                                 Cancel
                             </Button>
-                            <Button onClick={() => addTrainerExperties()} className='cursor-pointer'>
-                                {processing ? 'Saving...' : 'Save Changes'}
-                            </Button>
+                            {user?.role === 'Trainer'
+                                ? <Button onClick={() => addTrainerExperties()} className='cursor-pointer'>
+                                    {processing ? 'Saving...' : 'Save Changes'}
+                                </Button> : <Button onClick={() => editFitnessGoal()} className='cursor-pointer'>
+                                    {processing ? 'Saving...' : 'Save Goals'}
+                                </Button>}
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
