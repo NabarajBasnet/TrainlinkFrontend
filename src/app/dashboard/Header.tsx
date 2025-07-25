@@ -154,7 +154,7 @@ const Header = () => {
     }
 
     return (
-        <div className="w-full sticky top-0 flex items-center justify-between p-4 dark:bg-gray-900 bg-white shadow">
+        <div className="w-full sticky top-0 flex items-center justify-between p-3 dark:bg-gray-900 bg-white shadow z-50">
             <div>
                 <button
                     onClick={() => dispatch(toggleAdminSidebar())}
