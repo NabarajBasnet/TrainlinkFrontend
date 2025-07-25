@@ -1,7 +1,15 @@
 'use client';
 
-import { User, Star, Award, Calendar, Clock, Bookmark, Settings, Briefcase, Heart, Trophy, Shield, BookOpen, CheckCircle } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { useState } from 'react';
+import {
+    User, Star, Award, Calendar, Clock, Bookmark, Settings,
+    Briefcase, Heart, Trophy, Shield, BookOpen, CheckCircle,
+    Edit, X, Plus, Upload, Image as ImageIcon
+} from 'lucide-react';
+import {
+    Card, CardHeader, CardTitle, CardDescription, CardContent,
+    CardFooter
+} from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -10,14 +18,112 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useUser } from "@/components/Providers/LoggedInUser/LoggedInUserProvider";
 import Link from "next/link";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from 'sonner';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const ProfileCSR = () => {
+interface Certification {
+    name: string;
+    issuer: string;
+    year: string;
+    id?: string;
+}
+
+const ProfilePage = () => {
     const { user, loading } = useUser();
 
+    // State for editing
+    const [editingField, setEditingField] = useState<string | null>(null);
+    const [tempValue, setTempValue] = useState<any>(null);
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    // Handle image selection
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setSelectedImage(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
+    // Open edit dialog for a field
+    const openEditDialog = (field: string, currentValue: any) => {
+        setEditingField(field);
+        setTempValue(currentValue);
+        if (field === 'avatar') {
+            setImagePreview(user?.avatar || null);
+        }
+    };
+
+    // Close edit dialog
+    const closeEditDialog = () => {
+        setEditingField(null);
+        setTempValue(null);
+        setSelectedImage(null);
+        setImagePreview(null);
+    };
+
+    // Save changes to user profile
+    const saveChanges = async () => {
+        if (!editingField || !user) return;
+
+        try {
+            let updatedValue = tempValue;
+
+            // Handle image upload
+            if (editingField === 'avatar' && selectedImage) {
+                // In a real app, you would upload the image here
+                // For demo, we'll use the local preview
+                updatedValue = imagePreview;
+            }
+
+            // Prepare updated user data
+            const updatedUser = {
+                ...user,
+                bio: editingField === 'bio' ? updatedValue : user.bio,
+                avatar: editingField === 'avatar' ? updatedValue : user.avatar,
+                trainerProfile: {
+                    ...user.trainerProfile,
+                    experties: editingField === 'experties' ? updatedValue : user.trainerProfile?.experties,
+                    certifications: editingField === 'certifications' ? updatedValue : user.trainerProfile?.certifications,
+                },
+                memberProfile: {
+                    ...user.memberProfile,
+                    goals: editingField === 'goals' ? updatedValue : user.memberProfile?.goals,
+                }
+            };
+
+            // Call update function
+            // await updateUser(updatedUser);
+
+            toast.success('Your changes have been saved successfully.');
+            closeEditDialog();
+        } catch (error) {
+            toast.error('Failed to update profile. Please try again.');
+        }
+    };
+
+    // Calculate profile completion percentage
+    const profileCompletion = user?.role === "Trainer"
+        ? Math.round(((user.trainerProfile?.setupStage || 0) / 6) * 100)
+        : Math.round(((user?.memberProfile?.goals?.length || 0) > 0 ? 1 : 0) * 100);
+
+    // Loading state
     if (loading) {
         return (
             <div className="w-full flex items-center justify-center p-4">
-                <Card className="w-full">
+                <Card className="w-full w-full">
                     <CardHeader>
                         <div className="flex items-center space-x-4">
                             <div className="h-20 w-20 rounded-full bg-gray-200 animate-pulse" />
@@ -39,10 +145,11 @@ const ProfileCSR = () => {
         );
     }
 
+    // No user state
     if (!user) {
         return (
             <div className="w-full flex items-center justify-center p-4">
-                <Card className="w-full max-w-4xl text-center p-8">
+                <Card className="w-full max-w-md text-center p-8">
                     <User className="mx-auto h-12 w-12 text-gray-400" />
                     <h3 className="mt-4 text-lg font-medium">No user found</h3>
                     <p className="mt-2 text-sm text-gray-500">
@@ -56,23 +163,28 @@ const ProfileCSR = () => {
         );
     }
 
-    const profileCompletion = user.role === "Trainer"
-        ? Math.round((user.trainerProfile?.setupStage / 6) * 100)
-        : Math.round((user.memberProfile?.goals?.length > 0 ? 1 : 0) * 100);
-
     return (
-        <div className="w-full flex items-center justify-center p-4">
-            <div className="w-full space-y-6">
+        <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-950">
+            <div className="mx-auto p-4">
                 {/* Profile Header */}
-                <Card>
+                <Card className="mb-4">
                     <CardHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div className="flex items-center space-x-4">
-                            <Avatar className="h-20 w-20">
-                                <AvatarImage src={user.avatar} />
-                                <AvatarFallback>
-                                    {user.fullName?.split(' ').map(n => n[0]).join('')}
-                                </AvatarFallback>
-                            </Avatar>
+                        <div className="flex items-center space-x-4 relative">
+                            <div className="relative group">
+                                <Avatar className="h-20 w-20">
+                                    <AvatarImage src={imagePreview || user.avatar} />
+                                    <AvatarFallback>
+                                        {user.fullName?.split(' ').map(n => n[0]).join('')}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <button
+                                    onClick={() => openEditDialog('avatar', user.avatar)}
+                                    className="absolute -bottom-2 -right-2 bg-primary rounded-full p-2 hover:bg-primary/90 transition-colors shadow-md"
+                                    aria-label="Edit profile picture"
+                                >
+                                    <Edit className="h-4 w-4 cursor-pointer text-white" />
+                                </button>
+                            </div>
                             <div>
                                 <CardTitle className="text-2xl">{user.fullName}</CardTitle>
                                 <CardDescription className="flex items-center mt-1">
@@ -87,11 +199,15 @@ const ProfileCSR = () => {
                             </div>
                         </div>
                         <div className="flex space-x-3">
-                            <Button variant="outline" className="flex items-center">
+                            <Button variant="outline" className="cursor-pointer flex items-center">
                                 <Bookmark className="h-4 w-4 mr-2" />
                                 Save
                             </Button>
-                            <Button variant="outline" className="flex items-center">
+                            <Button
+                                variant="outline"
+                                className="flex items-center cursor-pointer"
+                                onClick={() => window.location.href = '/dashboard/profile'}
+                            >
                                 <Settings className="h-4 w-4 mr-2" />
                                 Edit Profile
                             </Button>
@@ -100,9 +216,9 @@ const ProfileCSR = () => {
                 </Card>
 
                 {/* Main Content */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
                     {/* Left Sidebar */}
-                    <div className="lg:col-span-1 space-y-6">
+                    <div className="lg:col-span-1 space-y-4">
                         {/* Profile Completion */}
                         <Card>
                             <CardHeader>
@@ -114,7 +230,12 @@ const ProfileCSR = () => {
                                     {profileCompletion}% complete
                                 </p>
                                 {profileCompletion < 100 && (
-                                    <Button variant="link" onClick={() => window.location.href = window.location.pathname} size="sm" className="cursor-pointer mt-2 p-0 h-auto">
+                                    <Button
+                                        variant="link"
+                                        onClick={() => window.location.href = '/dashboard/profile'}
+                                        size="sm"
+                                        className="cursor-pointer mt-2 p-0 h-auto"
+                                    >
                                         Complete your profile
                                     </Button>
                                 )}
@@ -171,9 +292,23 @@ const ProfileCSR = () => {
                         {/* Skills/Goals Card */}
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-lg">
-                                    {user.role === "Trainer" ? "Expertise" : "Fitness Goals"}
-                                </CardTitle>
+                                <div className="flex justify-between items-center">
+                                    <CardTitle className="text-lg">
+                                        {user.role === "Trainer" ? "Expertise" : "Fitness Goals"}
+                                    </CardTitle>
+                                    <button
+                                        onClick={() => openEditDialog(
+                                            user.role === "Trainer" ? "experties" : "goals",
+                                            user.role === "Trainer"
+                                                ? user.trainerProfile?.experties || []
+                                                : user.memberProfile?.goals || []
+                                        )}
+                                        className="text-primary hover:text-primary/80"
+                                        aria-label={`Edit ${user.role === "Trainer" ? "expertise" : "goals"}`}
+                                    >
+                                        <Edit className="h-4 w-4 cursor-pointer" />
+                                    </button>
+                                </div>
                             </CardHeader>
                             <CardContent>
                                 {user.role === "Trainer" ? (
@@ -220,42 +355,38 @@ const ProfileCSR = () => {
                                 </TabsTrigger>
                                 <TabsTrigger value="reviews" className='cursor-pointer'>Reviews</TabsTrigger>
                                 {user.role === "Trainer" && (
-                                    <TabsTrigger value="certifications" className='cursor-pointer'>Certifications</TabsTrigger>
+                                    <TabsTrigger value="certifications">Certifications</TabsTrigger>
                                 )}
                             </TabsList>
 
                             {/* Overview Tab */}
-                            <TabsContent value="overview" className="space-y-6">
+                            <TabsContent value="overview" className="space-y-4">
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>
-                                            {user.role === "Trainer" ? "About Me" : "My Fitness Journey"}
-                                        </CardTitle>
+                                        <div className="flex justify-between items-center">
+                                            <CardTitle>
+                                                {user.role === "Trainer" ? "About Me" : "My Fitness Journey"}
+                                            </CardTitle>
+                                            <button
+                                                onClick={() => openEditDialog('bio', user.bio || '')}
+                                                className="text-primary hover:text-primary/80"
+                                                aria-label="Edit bio"
+                                            >
+                                                <Edit className="h-4 w-4 cursor-pointer" />
+                                            </button>
+                                        </div>
                                     </CardHeader>
                                     <CardContent>
-                                        {user.role === "Trainer" ? (
+                                        {user.bio ? (
                                             <div className="prose max-w-none">
-                                                <p>
-                                                    Certified personal trainer with 5+ years of experience helping clients
-                                                    achieve their fitness goals. Specialized in strength training,
-                                                    weight loss, and functional fitness.
-                                                </p>
-                                                <p className="mt-4">
-                                                    My approach focuses on sustainable habits and personalized programs
-                                                    tailored to each client's needs and lifestyle.
-                                                </p>
+                                                <p>{user.bio}</p>
                                             </div>
                                         ) : (
-                                            <div className="prose max-w-none">
-                                                <p>
-                                                    On a journey to improve my overall health and fitness.
-                                                    Currently focusing on building strength and endurance.
-                                                </p>
-                                                <p className="mt-4">
-                                                    My favorite activities include weight training and hiking.
-                                                    Looking for a trainer who can help me stay consistent and motivated.
-                                                </p>
-                                            </div>
+                                            <p className="text-sm text-muted-foreground">
+                                                {user.role === "Trainer"
+                                                    ? "No bio added yet. Tell clients about your training approach."
+                                                    : "No bio added yet. Share your fitness journey."}
+                                            </p>
                                         )}
                                     </CardContent>
                                 </Card>
@@ -263,7 +394,19 @@ const ProfileCSR = () => {
                                 {user.role === "Trainer" && (
                                     <Card>
                                         <CardHeader>
-                                            <CardTitle>Certifications</CardTitle>
+                                            <div className="flex justify-between items-center">
+                                                <CardTitle>Certifications</CardTitle>
+                                                <button
+                                                    onClick={() => openEditDialog(
+                                                        'certifications',
+                                                        user.trainerProfile?.certifications || []
+                                                    )}
+                                                    className="text-primary cursor-pointer hover:text-primary/80"
+                                                    aria-label="Edit certifications"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </button>
+                                            </div>
                                         </CardHeader>
                                         <CardContent>
                                             {user.trainerProfile?.certifications?.length > 0 ? (
@@ -415,7 +558,11 @@ const ProfileCSR = () => {
                                                     <p className="mt-2 text-sm text-muted-foreground">
                                                         Add your certifications to build trust with potential clients
                                                     </p>
-                                                    <Button variant="outline" className="mt-6">
+                                                    <Button
+                                                        variant="outline"
+                                                        className="mt-6"
+                                                        onClick={() => openEditDialog('certifications', [])}
+                                                    >
                                                         Add Certification
                                                     </Button>
                                                 </div>
@@ -427,9 +574,260 @@ const ProfileCSR = () => {
                         </Tabs>
                     </div>
                 </div>
+
+                {/* Edit Dialogs */}
+                {/* Avatar Dialog */}
+                <Dialog open={editingField === 'avatar'} onOpenChange={closeEditDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Update Profile Picture</DialogTitle>
+                            <DialogDescription>
+                                Upload a new profile picture to make your profile stand out.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="relative">
+                                    <Avatar className="h-32 w-32">
+                                        <AvatarImage src={imagePreview || user.avatar} />
+                                        <AvatarFallback>
+                                            {user.fullName?.split(' ').map(n => n[0]).join('')}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    {imagePreview && (
+                                        <button
+                                            onClick={() => {
+                                                setSelectedImage(null);
+                                                setImagePreview(null);
+                                            }}
+                                            className="absolute -top-2 -right-2 bg-destructive rounded-full p-1 hover:bg-destructive/90 transition-colors"
+                                            aria-label="Remove image"
+                                        >
+                                            <X className="h-4 w-4 text-white" />
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Label
+                                        htmlFor="avatar-upload"
+                                        className="cursor-pointer flex items-center gap-2 px-4 py-2 border rounded-md hover:bg-accent"
+                                    >
+                                        <Upload className="h-4 w-4" />
+                                        {selectedImage ? 'Change Image' : 'Upload Image'}
+                                    </Label>
+                                    <Input
+                                        id="avatar-upload"
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={handleImageChange}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={closeEditDialog}>
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={saveChanges}
+                                disabled={!selectedImage && !imagePreview}
+                            >
+                                Save Changes
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Bio Dialog */}
+                <Dialog open={editingField === 'bio'} onOpenChange={closeEditDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>
+                                {user.role === "Trainer" ? "Edit About Me" : "Edit Fitness Journey"}
+                            </DialogTitle>
+                            <DialogDescription>
+                                {user.role === "Trainer"
+                                    ? "Tell clients about your training approach and experience."
+                                    : "Share your fitness goals and journey."}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="bio">
+                                    {user.role === "Trainer" ? "About Me" : "My Fitness Journey"}
+                                </Label>
+                                <Textarea
+                                    id="bio"
+                                    value={tempValue || ''}
+                                    onChange={(e) => setTempValue(e.target.value)}
+                                    rows={6}
+                                    placeholder={
+                                        user.role === "Trainer"
+                                            ? "Certified personal trainer with 5+ years of experience..."
+                                            : "On a journey to improve my overall health and fitness..."
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={closeEditDialog}>
+                                Cancel
+                            </Button>
+                            <Button onClick={saveChanges}>Save Changes</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Expertise/Goals Dialog */}
+                <Dialog open={editingField === 'experties' || editingField === 'goals'} onOpenChange={closeEditDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>
+                                Edit {user.role === "Trainer" ? "Expertise" : "Fitness Goals"}
+                            </DialogTitle>
+                            <DialogDescription>
+                                {user.role === "Trainer"
+                                    ? "Add your areas of expertise to attract the right clients."
+                                    : "Set your fitness goals to help trainers understand your needs."}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="space-y-2">
+                                <Label>
+                                    {user.role === "Trainer" ? "Expertise" : "Goals"} (one per line)
+                                </Label>
+                                <Textarea
+                                    value={Array.isArray(tempValue) ? tempValue.join('\n') : ''}
+                                    onChange={(e) => setTempValue(
+                                        e.target.value.split('\n').filter(item => item.trim())
+                                    )}
+                                    rows={6}
+                                    placeholder={
+                                        user.role === "Trainer"
+                                            ? "Weight Loss\nStrength Training\nYoga"
+                                            : "Lose 10kg\nBuild muscle\nImprove flexibility"
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={closeEditDialog}>
+                                Cancel
+                            </Button>
+                            <Button onClick={saveChanges}>Save Changes</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Certifications Dialog */}
+                <Dialog open={editingField === 'certifications'} onOpenChange={closeEditDialog}>
+                    <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle>Edit Certifications</DialogTitle>
+                            <DialogDescription>
+                                Add your professional certifications to build trust with potential clients.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="space-y-4">
+                                {Array.isArray(tempValue) && tempValue.map((cert: Certification, index: number) => (
+                                    <div key={index} className="border rounded-lg p-4 space-y-3">
+                                        <div className="flex justify-between items-center">
+                                            <h4 className="font-medium">Certification #{index + 1}</h4>
+                                            <button
+                                                onClick={() => {
+                                                    const updated = [...tempValue];
+                                                    updated.splice(index, 1);
+                                                    setTempValue(updated);
+                                                }}
+                                                className="text-destructive hover:text-destructive/80"
+                                                aria-label="Remove certification"
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <Label htmlFor={`cert-name-${index}`}>Certification Name</Label>
+                                                <Input
+                                                    id={`cert-name-${index}`}
+                                                    value={cert.name || ''}
+                                                    onChange={(e) => {
+                                                        const updated = [...tempValue];
+                                                        updated[index] = { ...updated[index], name: e.target.value };
+                                                        setTempValue(updated);
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label htmlFor={`cert-issuer-${index}`}>Issuing Organization</Label>
+                                                <Input
+                                                    id={`cert-issuer-${index}`}
+                                                    value={cert.issuer || ''}
+                                                    onChange={(e) => {
+                                                        const updated = [...tempValue];
+                                                        updated[index] = { ...updated[index], issuer: e.target.value };
+                                                        setTempValue(updated);
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label htmlFor={`cert-year-${index}`}>Year Obtained</Label>
+                                                <Input
+                                                    id={`cert-year-${index}`}
+                                                    type="number"
+                                                    value={cert.year || ''}
+                                                    onChange={(e) => {
+                                                        const updated = [...tempValue];
+                                                        updated[index] = { ...updated[index], year: e.target.value };
+                                                        setTempValue(updated);
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label htmlFor={`cert-id-${index}`}>Certification ID (optional)</Label>
+                                                <Input
+                                                    id={`cert-id-${index}`}
+                                                    value={cert.id || ''}
+                                                    onChange={(e) => {
+                                                        const updated = [...tempValue];
+                                                        updated[index] = { ...updated[index], id: e.target.value };
+                                                        setTempValue(updated);
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                <Button
+                                    variant="outline"
+                                    className="w-full"
+                                    onClick={() => {
+                                        setTempValue([...(Array.isArray(tempValue) ? tempValue : []), {
+                                            name: '',
+                                            issuer: '',
+                                            year: '',
+                                            id: ''
+                                        }]);
+                                    }}
+                                >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Add Certification
+                                </Button>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={closeEditDialog}>
+                                Cancel
+                            </Button>
+                            <Button onClick={saveChanges}>Save Changes</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     );
 };
 
-export default ProfileCSR;
+export default ProfilePage;
