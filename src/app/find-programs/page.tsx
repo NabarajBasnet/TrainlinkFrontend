@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Star, Clock, DollarSign, Heart, Filter, Search, RotateCcw, Zap, Target } from "lucide-react";
+import { Star, Clock, DollarSign, Heart, Filter, Search, RotateCcw, Zap, Target, User, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
+import { useUser } from "@/components/Providers/LoggedInUser/LoggedInUserProvider";
+import Link from "next/link";
+import { Progress } from "@/components/ui/progress";
 
 interface Program {
     id: string;
@@ -109,13 +112,14 @@ const dummyPrograms: Program[] = [
 export default function FindPrograms() {
     const [programs, setPrograms] = useState<Program[]>([]);
     const [search, setSearch] = useState("");
-    const [loading, setLoading] = useState(true);
+    const { user, loading: userLoading } = useUser();
     const [priceRange, setPriceRange] = useState([500]);
     const [filters, setFilters] = useState({
         duration: "All",
         goal: "All",
         level: "All"
     });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         // Simulate API fetch
@@ -173,9 +177,16 @@ export default function FindPrograms() {
         }
     };
 
+    const calculateProfileCompletion = () => {
+        if (!user?.trainerProfile) return 0;
+        const totalSteps = 6;
+        const completedSteps = user.trainerProfile.setupStage;
+        return Math.round((completedSteps / totalSteps) * 100);
+    };
+
     return (
-        <div className="min-h-screen bg-orange-500">
-            <div className="container mx-auto px-4 py-8">
+        <div className="w-full min-h-screen bg-orange-500">
+            <div className="w-full px-4 py-8">
                 {/* Header */}
                 <header className="mb-8 text-center">
                     <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-white/20 rounded-full text-white text-sm font-medium">
@@ -190,9 +201,9 @@ export default function FindPrograms() {
                     </p>
                 </header>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    {/* Sidebar Filters */}
-                    <aside className="lg:col-span-1 space-y-6">
+                <div className="w-full grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    {/* Sidebar Filters - First column */}
+                    <div className="lg:col-span-1 space-y-6">
                         <Card className="p-6 sticky top-18 rounded-sm">
                             <CardHeader className="px-0 pt-0">
                                 <div className="flex items-center justify-between">
@@ -302,10 +313,10 @@ export default function FindPrograms() {
                                 </div>
                             </CardContent>
                         </Card>
-                    </aside>
+                    </div>
 
-                    {/* Main Content */}
-                    <main className="lg:col-span-3 space-y-6">
+                    {/* Main Content - Middle two columns */}
+                    <div className="lg:col-span-2 space-y-6">
                         {/* Results Count */}
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -460,7 +471,92 @@ export default function FindPrograms() {
                                 )}
                             </div>
                         )}
-                    </main>
+                    </div>
+
+                    {/* Profile Sidebar - Last column */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <Card className="p-6 sticky top-18 rounded-sm">
+                            {userLoading ? (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <Skeleton className="h-12 w-12 rounded-full" />
+                                        <div className="space-y-2">
+                                            <Skeleton className="h-4 w-[120px]" />
+                                            <Skeleton className="h-3 w-[80px]" />
+                                        </div>
+                                    </div>
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-3/4" />
+                                </div>
+                            ) : user ? (
+                                <div className="space-y-4">
+                                    <div className="flex items-center gap-4">
+                                        <Avatar className="h-12 w-12">
+                                            <AvatarImage src={user.avatar} />
+                                            <AvatarFallback>
+                                                {user.fullName?.split(' ').map(n => n[0]).join('')}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                            <h3 className="font-semibold">{user.fullName}</h3>
+                                            <p className="text-sm text-muted-foreground">{user.email}</p>
+                                        </div>
+                                    </div>
+
+                                    {user.experties && user.experties.length > 0 && (
+                                        <div className="space-y-2">
+                                            <h4 className="text-sm font-medium">Expertise</h4>
+                                            <div className="flex flex-wrap gap-2">
+                                                {user.experties.map((experty, index) => (
+                                                    <Badge key={index} variant="outline">
+                                                        {experty}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {user.trainerProfile && (
+                                        <div className="space-y-3">
+                                            <div className="flex items-center justify-between">
+                                                <h4 className="text-sm font-medium">Profile Completion</h4>
+                                                <span className="text-sm font-medium text-primary">
+                                                    {calculateProfileCompletion()}%
+                                                </span>
+                                            </div>
+                                            <Progress value={calculateProfileCompletion()} />
+
+                                            {user.trainerProfile.setupStage <= 6 && (
+                                                <div className="mt-4">
+                                                    <Link href="/dashboard/profile">
+                                                        <Button variant="default" className="cursor-pointer w-full">
+                                                            Complete Your Profile
+                                                        </Button>
+                                                    </Link>
+                                                    {calculateProfileCompletion() < 50 && (
+                                                        <div className="mt-3 flex items-center gap-2 text-sm text-yellow-600">
+                                                            <AlertCircle size={16} />
+                                                            <span>Complete your profile to get more clients</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="text-center space-y-4">
+                                    <User size={48} className="mx-auto text-muted-foreground" />
+                                    <p className="text-muted-foreground">Please sign in to view your profile</p>
+                                    <Link href="/login">
+                                        <Button variant="default" className="w-full">
+                                            Sign In
+                                        </Button>
+                                    </Link>
+                                </div>
+                            )}
+                        </Card>
+                    </div>
                 </div>
             </div>
         </div>
