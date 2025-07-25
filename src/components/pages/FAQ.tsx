@@ -72,7 +72,7 @@ const FAQSection = () => {
                     {faqs.map((faq, index) => (
                         <div
                             key={faq.id}
-                            className={`border rounded-2xl transition-all duration-300 overflow-hidden ${openIndex === index
+                            className={`border rounded-2xl cursor-pointer transition-all duration-300 overflow-hidden ${openIndex === index
                                     ? 'border-white bg-gradient-to-br from-white to-white/90'
                                     : 'border-white/30 bg-gradient-to-br from-white to-white/90 hover:border-white'
                                 }`}
@@ -80,7 +80,7 @@ const FAQSection = () => {
                             {/* Question Header */}
                             <button
                                 onClick={() => toggleFAQ(index)}
-                                className="w-full px-6 py-6 text-left flex items-center justify-between hover:bg-white/5 transition-colors duration-200"
+                                className="w-full px-6 py-6 text-left cursor-pointer flex items-center justify-between hover:bg-white/5 transition-colors duration-200"
                             >
                                 <div className="flex items-center gap-4">
                                     <div className={`p-2 rounded-lg transition-colors duration-300`}>

@@ -122,8 +122,8 @@ const PricingPage = () => {
                             <div
                                 key={index}
                                 className={`relative bg-white/10 backdrop-blur-sm rounded-2xl p-8 border-2 shadow-xl hover:shadow-2xl hover:bg-white/15 transition-all duration-300 transform hover:-translate-y-2 ${plan.popular
-                                        ? 'border-white scale-105 md:scale-110'
-                                        : 'border-white/30'
+                                    ? 'border-white scale-105 md:scale-110'
+                                    : 'border-white/30'
                                     }`}
                             >
                                 {plan.popular && (
@@ -227,7 +227,7 @@ const PricingPage = () => {
                             >
                                 <button
                                     onClick={() => toggleFaq(index)}
-                                    className="w-full p-6 text-left flex items-center justify-between hover:bg-white/5 transition-colors duration-200"
+                                    className="w-full p-6 text-left cursor-pointer flex items-center justify-between hover:bg-white/5 transition-colors duration-200"
                                 >
                                     <h3 className="text-lg font-semibold text-white pr-4">
                                         {faq.question}

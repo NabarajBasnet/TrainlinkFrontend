@@ -126,12 +126,12 @@ const TestimonialsPage = () => {
       </div>
 
       {/* Tabs Navigation */}
-      <div className="container mx-auto px-4 mb-12">
+      <div className="mx-auto px-4 mb-12">
         <div className="flex justify-center">
-          <div className="bg-white/10 rounded-full p-1 backdrop-blur-sm">
+          <div className="bg-transparent md:flex items-center md:space-x-4 rounded-full p-1 space-y-2 backdrop-blur-sm">
             <button
               onClick={() => setActiveTab('members')}
-              className={`flex items-center gap-2 px-6 py-3 rounded-full transition-all duration-300 ${activeTab === 'members'
+              className={`flex items-center gap-2 px-6 py-3 cursor-pointer rounded-full transition-all duration-300 ${activeTab === 'members'
                 ? 'bg-white text-orange-500 shadow-lg'
                 : 'text-white hover:bg-white/10'
                 }`}
@@ -141,7 +141,7 @@ const TestimonialsPage = () => {
             </button>
             <button
               onClick={() => setActiveTab('trainers')}
-              className={`flex items-center gap-2 px-6 py-3 rounded-full transition-all duration-300 ${activeTab === 'trainers'
+              className={`flex items-center gap-2 px-6 py-3 cursor-pointer rounded-full transition-all duration-300 ${activeTab === 'trainers'
                 ? 'bg-white text-orange-500 shadow-lg'
                 : 'text-white hover:bg-white/10'
                 }`}
