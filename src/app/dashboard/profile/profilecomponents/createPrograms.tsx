@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MdAdd } from 'react-icons/md';
+import { MdAdd, MdDelete, MdEdit, MdShare, MdWorkspacePremium } from 'react-icons/md';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -15,7 +15,8 @@ import {
     User,
     Award,
     Tag,
-    X
+    X,
+    ChevronRight
 } from 'lucide-react';
 import {
     Card,
@@ -42,6 +43,8 @@ import {
     DialogClose,
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const formSchema = z.object({
     title: z.string().min(1, 'Title is required'),
@@ -59,6 +62,7 @@ export default function CreateProgramForm() {
     const { user } = useUser();
     const router = useRouter();
     const [open, setOpen] = useState(false);
+    const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
 
     const {
         register,
@@ -78,10 +82,11 @@ export default function CreateProgramForm() {
             category: '',
         },
     });
+    const queryClient = useQueryClient()
 
+    // Submit program data
     const onSubmit = async (data: ProgramFormData) => {
         try {
-            console.log(data)
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/create-new-program`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -92,15 +97,62 @@ export default function CreateProgramForm() {
             toast.success(resBody.message);
             reset();
             setOpen(false);
-            router.refresh();
+            queryClient.invalidateQueries(['programs']);
         } catch (err) {
             console.error(err);
             toast.error('Failed to create program');
         }
     };
 
+    // Get all my programs
+    const getMyPrograms = async () => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/get-my-programs`);
+            const resBody = await res.json();
+            return resBody;
+        } catch (err) {
+            console.error(err);
+            toast.error('Failed to fetch programs');
+        }
+    }
+
+    const { data, isLoading, refetch } = useQuery({
+        queryFn: getMyPrograms,
+        queryKey: ['programs'],
+    });
+
+    const { programs } = data || {};
+
+    // Toggle program selection
+    const toggleProgramSelection = (programId: string) => {
+        setSelectedPrograms(prev =>
+            prev.includes(programId)
+                ? prev.filter(id => id !== programId)
+                : [...prev, programId]
+        );
+    };
+
+    // Delete selected programs
+    const deletePrograms = async () => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/delete-programs`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ programIds: selectedPrograms }),
+            });
+            const resBody = await res.json();
+            if (!res.ok) throw new Error(resBody.message || 'Failed to delete programs');
+            toast.success(resBody.message || 'Programs deleted successfully');
+            setSelectedPrograms([]);
+            refetch();
+        } catch (err) {
+            console.error(err);
+            toast.error(err instanceof Error ? err.message : 'Failed to delete programs');
+        }
+    };
+
     return (
-        <div className="w-full">
+        <div className="w-full space-y-6">
             <Card className="p-6 rounded-lg">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <h1 className="text-xl font-semibold">
@@ -303,6 +355,101 @@ export default function CreateProgramForm() {
                         </DialogContent>
                     </Dialog>
                 </div>
+            </Card>
+
+            {/* Programs List */}
+            <Card className="p-6 rounded-lg">
+                <CardHeader className="p-0 pb-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle>Your Programs</CardTitle>
+                            <CardDescription>
+                                {programs?.length || 0} program{programs?.length !== 1 ? 's' : ''} available
+                            </CardDescription>
+                        </div>
+                        {selectedPrograms.length > 0 && (
+                            <Button
+                                variant="destructive"
+                                onClick={deletePrograms}
+                                className="gap-2 py-5 rounded-sm"
+                            >
+                                <MdDelete className="h-4 w-4" />
+                                Delete Selected
+                            </Button>
+                        )}
+                    </div>
+                </CardHeader>
+
+                <CardContent className="p-0 space-y-4">
+                    {isLoading ? (
+                        <div className="flex justify-center py-8">
+                            <Loader2 className="h-8 w-8 animate-spin" />
+                        </div>
+                    ) : programs?.length === 0 ? (
+                        <div className="text-center py-8 text-gray-500">
+                            No programs found. Create your first program to get started.
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {programs?.map((program: any) => (
+                                <Card key={program._id} className="relative overflow-hidden">
+                                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500"></div>
+                                    <div className="p-4 flex items-start gap-4">
+                                        <Checkbox
+                                            checked={selectedPrograms.includes(program._id)}
+                                            onCheckedChange={() => toggleProgramSelection(program._id)}
+                                            className="mt-1"
+                                        />
+
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="font-medium text-lg">{program.title}</h3>
+                                                <span className="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800">
+                                                    {program.level}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-600 mt-1">{program.description}</p>
+
+                                            <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                                <div className="flex items-center gap-2">
+                                                    <Tag className="h-4 w-4 text-gray-500" />
+                                                    <span>{program.category}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <Calendar className="h-4 w-4 text-gray-500" />
+                                                    <span>{program.durationInWeeks} weeks</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <DollarSign className="h-4 w-4 text-gray-500" />
+                                                    <span>${program.price}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <User className="h-4 w-4 text-gray-500" />
+                                                    <span>{program.maxSlot} slots</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col sm:flex-row gap-2">
+                                            <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-sm cursor-pointer">
+                                                <MdEdit className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-sm cursor-pointer">
+                                                <MdShare className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-sm cursor-pointer">
+                                                <MdWorkspacePremium className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-sm cursor-pointer">
+                                                <ChevronRight className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
             </Card>
         </div>
     );
