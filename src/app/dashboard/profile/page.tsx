@@ -1,5 +1,6 @@
 'use client';
 
+import { MdAdd } from "react-icons/md";
 import { Mail, Phone, MapPin, Share2, LinkIcon } from "lucide-react";
 import { User2 } from "lucide-react";
 import { AiFillInstagram } from "react-icons/ai";
@@ -49,6 +50,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from 'sonner';
 import { useFieldArray, useForm } from 'react-hook-form';
+import CreateProgramForm from "./profilecomponents/createPrograms";
 
 // Types
 type Certification = {
@@ -71,6 +73,8 @@ const ProfilePage = () => {
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [processing, setProcessing] = useState<boolean | null>(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    const [createPlan, setCreateProgram] = useState<boolean>(false);
 
     // Personal details states
     const [fullName, setFullName] = useState('');
@@ -572,20 +576,6 @@ const ProfilePage = () => {
                                 </CardDescription>
                             </div>
                         </div>
-                        <div className="flex space-x-3">
-                            <Button variant="outline" className="cursor-pointer flex items-center">
-                                <Bookmark className="h-4 w-4 mr-2" />
-                                Save
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="flex items-center cursor-pointer"
-                                onClick={() => window.location.href = '/dashboard/profile'}
-                            >
-                                <Settings className="h-4 w-4 mr-2" />
-                                Edit Profile
-                            </Button>
-                        </div>
                     </CardHeader>
                 </Card>
 
@@ -638,7 +628,7 @@ const ProfilePage = () => {
                                             <Briefcase className="h-5 w-5 text-muted-foreground" />
                                             <div>
                                                 <p className="text-sm text-muted-foreground">Completed programs</p>
-                                                <p className="text-sm font-medium">12</p>
+                                                <p className="text-sm font-medium">{`${user?.trainerProfile?.completedPrograms || 0}`}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center space-x-3">
@@ -655,8 +645,8 @@ const ProfilePage = () => {
                                     <div className="flex items-center space-x-3">
                                         <Trophy className="h-5 w-5 text-muted-foreground" />
                                         <div>
-                                            <p className="text-sm text-muted-foreground">Programs completed</p>
-                                            <p className="text-sm font-medium">5</p>
+                                            <p className="text-sm text-muted-foreground">Plans completed</p>
+                                            <p className="text-sm font-medium">{`${user?.memberProfile?.completedPlans || 0}`}</p>
                                         </div>
                                     </div>
                                 )}
@@ -763,7 +753,6 @@ const ProfilePage = () => {
                                 )}
                             </TabsList>
 
-                            {/* Profile Tab */}
                             <TabsContent value="personal" className="space-y-4">
                                 {!loading && (
                                     <Card className="border border-gray-200 shadow-sm">
@@ -1017,45 +1006,19 @@ const ProfilePage = () => {
                             <TabsContent value="programs">
                                 <Card>
                                     <CardHeader>
-                                        <CardTitle>
-                                            {user.role === "Trainer" ? "My Training Programs" : "My Current Plan"}
+                                        <CardTitle className="md:flex space-y-4 md:space-y-0 items-center justify-between">
+                                            <h1>
+                                                {user.role === "Trainer" ? "My Training Programs" : "My Current Plan"}
+                                            </h1>
+                                            <Button onClick={() => setCreateProgram(!createPlan)} className="cursor-pointer">
+                                                <MdAdd />
+                                                <span>{createPlan?'Cancel':"Create"} Program</span>
+                                            </Button>
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent>
-                                        {user.role === "Trainer" ? (
-                                            <div className="space-y-4">
-                                                <div className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
-                                                    <div className="flex items-center justify-between">
-                                                        <h3 className="font-medium">Fat Burn Bootcamp</h3>
-                                                        <Badge variant="outline">Active</Badge>
-                                                    </div>
-                                                    <p className="text-sm text-muted-foreground mt-1">
-                                                        6-week intensive program for weight loss
-                                                    </p>
-                                                    <div className="flex items-center mt-3 space-x-4 text-sm">
-                                                        <span className="flex items-center">
-                                                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                                                            4.8 (24 reviews)
-                                                        </span>
-                                                        <span>12 clients enrolled</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-4">
-                                                <div className="border rounded-lg p-4 hover:bg-accent/50 transition-colors">
-                                                    <div className="flex items-center justify-between">
-                                                        <h3 className="font-medium">Strength Training Fundamentals</h3>
-                                                        <Badge variant="outline">Week 3 of 8</Badge>
-                                                    </div>
-                                                    <p className="text-sm text-muted-foreground mt-1">
-                                                        With trainer Alex Johnson
-                                                    </p>
-                                                    <div className="flex items-center mt-3 space-x-4 text-sm">
-                                                        <span>Next session: Tomorrow at 6 PM</span>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        {createPlan && (
+                                            <CreateProgramForm />
                                         )}
                                     </CardContent>
                                 </Card>
@@ -1616,6 +1579,7 @@ const ProfilePage = () => {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+
             </div>
         </div>
     );
