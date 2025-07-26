@@ -1,5 +1,18 @@
 'use client';
 
+import { RxCross2 } from "react-icons/rx";
+import { FaExclamation } from "react-icons/fa";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useState } from 'react';
 import { MdAdd, MdDelete, MdEdit, MdShare, MdWorkspacePremium } from 'react-icons/md';
 import { Button } from '@/components/ui/button';
@@ -145,7 +158,7 @@ export default function CreateProgramForm() {
             if (!res.ok) throw new Error(resBody.message || 'Failed to delete programs');
             toast.success(resBody.message || 'Programs deleted successfully');
             setSelectedPrograms([]);
-            refetch();
+            queryClient.invalidateQueries(['programs']);
         } catch (err) {
             console.error(err);
             toast.error(err instanceof Error ? err.message : 'Failed to delete programs');
@@ -369,14 +382,41 @@ export default function CreateProgramForm() {
                             </CardDescription>
                         </div>
                         {selectedPrograms.length > 0 && (
-                            <Button
-                                variant="destructive"
-                                onClick={deletePrograms}
-                                className="gap-2 py-5 rounded-sm"
-                            >
-                                <MdDelete className="h-4 w-4" />
-                                Delete Selected
-                            </Button>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button
+                                        variant="destructive"
+                                        className="cursor-pointer gap-2 py-5 rounded-sm"
+                                    >
+                                        <MdDelete className="h-4 w-4" />
+                                        Delete Selected
+                                    </Button>
+                                </AlertDialogTrigger>
+
+                                <AlertDialogContent className="bg-white dark:bg-zinc-900 border border-red-500 shadow-xl rounded-xl">
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle className="text-red-600 dark:text-red-400 text-lg font-semibold flex items-center">
+                                            <FaExclamation className="h-5 w-5 mr-2 text-red-500 dark:text-red-400" />
+                                            Confirm Deletion
+                                        </AlertDialogTitle>
+                                        <AlertDialogDescription className="text-zinc-700 dark:text-zinc-300 mt-2">
+                                            {selectedPrograms.length} are selected. Are you sure you want to delete those programs? This action <span className="font-semibold text-red-600 dark:text-red-400">cannot be undone and this action will remove data from our server completely.</span>.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+
+                                    <AlertDialogFooter className="flex justify-end gap-3 mt-4">
+                                        <AlertDialogCancel className="cursor-pointer bg-zinc-200 dark:bg-zinc-700 text-black dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded px-4 py-1.5">
+                                            Cancel
+                                        </AlertDialogCancel>
+                                        <AlertDialogAction
+                                            className="cursor-pointer bg-red-600 hover:bg-red-700 text-white rounded px-4 py-1.5 shadow"
+                                            onClick={deletePrograms}
+                                        >
+                                            Delete
+                                        </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         )}
                     </div>
                 </CardHeader>
