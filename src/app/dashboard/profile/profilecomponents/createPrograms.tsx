@@ -221,6 +221,20 @@ export default function CreateProgramForm() {
         }
     };
 
+    // Clear states before opening new form
+    const clearStates = () => {
+        reset({
+            title: '',
+            description: '',
+            durationInWeeks: 0,
+            price: 0,
+            maxSlot: 0,
+            category: ''
+        });
+        setLevel('Beginner')
+        setStatus('Active')
+    }
+
     return (
         <div className="w-full space-y-4">
             <Card className="p-6 rounded-lg">
@@ -236,7 +250,7 @@ export default function CreateProgramForm() {
                         setOpen(isOpen);
                     }}>
                         <DialogTrigger asChild>
-                            <Button className="gap-2 py-5 rounded-sm cursor-pointer">
+                            <Button onClick={clearStates} className="gap-2 py-5 rounded-sm cursor-pointer">
                                 <MdAdd className="h-4 w-4" />
                                 <span>Create Program</span>
                             </Button>
