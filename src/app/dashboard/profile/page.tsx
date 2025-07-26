@@ -1,5 +1,7 @@
 'use client';
 
+import { FaDumbbell } from "react-icons/fa";
+import { GiBiceps } from "react-icons/gi";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -444,6 +446,39 @@ const ProfilePage = () => {
             toast.error(error.message);
         }
     };
+
+
+    // Share Fitness Level
+    const shareHealthCondition = async () => {
+        try {
+            setProcessing(true);
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/share-health-condition`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(tempValue)
+            });
+
+            const resBody = await response.json();
+
+            if (response.ok) {
+                setProcessing(false);
+                toast.success(resBody.message);
+                closeEditDialog();
+                setRefetch(!refetch)
+            } else {
+                toast.error(resBody.message);
+                setRefetch(!refetch)
+                throw new Error(resBody.message);
+            }
+        } catch (error: any) {
+            setRefetch(!refetch);
+            toast.error(error.message);
+        }
+    };
+
     return (
         <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-950">
             <div className="mx-auto p-4">
@@ -777,25 +812,41 @@ const ProfilePage = () => {
                                             </div>
                                         </CardHeader>
                                         <CardContent>
-                                            {user.trainerProfile?.certifications?.length > 0 ? (
-                                                <div className="space-y-4">
-                                                    {user.trainerProfile.certifications.map((cert, i) => (
-                                                        <div key={i} className="flex items-start space-x-4">
-                                                            <Shield className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
-                                                            <div>
-                                                                <h4 className="font-medium">{cert.name}</h4>
-                                                                <p className="text-sm text-muted-foreground">
-                                                                    {cert.issuer} • {cert.year}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    ))}
+                                            <div className="flex items-start space-x-4">
+                                                <FaDumbbell className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
+                                                <div>
+                                                    <h4 className="font-medium">{user?.memberProfile?.fitnessLevel}</h4>
                                                 </div>
-                                            ) : (
-                                                <p className="text-sm text-muted-foreground">
-                                                    No fitness level added yet
-                                                </p>
-                                            )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Health Condition (Member only) */}
+                                {user.role === "Member" && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="flex justify-between items-center">
+                                                <CardTitle className='text-lg font-bold text-orange-500'>Health Condition</CardTitle>
+                                                <button
+                                                    onClick={() => openEditDialog(
+                                                        'healthCondition',
+                                                        user?.memberProfile?.healthCondition || []
+                                                    )}
+                                                    className="text-primary cursor-pointer hover:text-primary/80"
+                                                    aria-label="Edit fitness level"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="flex items-start space-x-4">
+                                                <GiBiceps className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
+                                                <div>
+                                                    <h4 className="font-medium">{user?.memberProfile?.healthCondition}</h4>
+                                                </div>
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 )}
@@ -1103,7 +1154,7 @@ const ProfilePage = () => {
                                 Edit {user.role === "Trainer" ? "Expertise" : "Fitness Goals"}
                             </DialogTitle>
                             <DialogDescription>
-                                Set your fitness level to help trainers understand your needs.
+                                Set your fitness level to help trainers understand your needs. (Experience in brackets)
                             </DialogDescription>
                         </DialogHeader>
                         <div className="grid gap-4 py-4">
@@ -1126,6 +1177,43 @@ const ProfilePage = () => {
                                 Cancel
                             </Button>
                             <Button onClick={() => shareFitnessLevel()} className='cursor-pointer'>
+                                {processing ? 'Saving...' : 'Save Changes'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+                {/* Health Condition Dialog */}
+                <Dialog open={editingField === 'healthCondition' || editingField === 'healthCondition'} onOpenChange={closeEditDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>
+                                Edit {user.role === "Trainer" ? "Expertise" : "Your Health Condition"}
+                            </DialogTitle>
+                            <DialogDescription>
+                                Share your health condition to help trainers understand your needs.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="space-y-2">
+                                <Label>
+                                    Health Condition (one per line)
+                                </Label>
+                                <Input
+                                    onChange={(e) => setTempValue(
+                                        e.target.value.split('\n').filter(item => item.trim())
+                                    )}
+                                    placeholder={"Minor Joint Injury"}
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                className='cursor-pointer'
+                                variant="outline" onClick={closeEditDialog}>
+                                Cancel
+                            </Button>
+                            <Button onClick={() => shareHealthCondition()} className='cursor-pointer'>
                                 {processing ? 'Saving...' : 'Save Changes'}
                             </Button>
                         </DialogFooter>
