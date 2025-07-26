@@ -170,9 +170,10 @@ const ProfilePage = () => {
     };
 
     // Calculate profile completion percentage
-    const profileCompletion = user?.role === "Trainer"
-        ? Math.round(((user.trainerProfile?.setupStage || 0) / 6) * 100)
-        : Math.round(((user?.memberProfile?.goals?.length || 0) > 0 ? 1 : 0) * 100);
+    const profileCompletion =
+        user?.role === "Trainer"
+            ? Math.round(((user?.trainerProfile?.setupStage || 0) / 6) * 100)
+            : Math.round(((user?.memberProfile?.setupStage || 0) / 6) * 100);
 
     // Loading state
     if (loading) {
@@ -413,6 +414,36 @@ const ProfilePage = () => {
         }
     };
 
+    // Share Fitness Level
+    const shareFitnessLevel = async () => {
+        try {
+            setProcessing(true);
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/share-fitness-level`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(tempValue)
+            });
+
+            const resBody = await response.json();
+
+            if (response.ok) {
+                setProcessing(false);
+                toast.success(resBody.message);
+                closeEditDialog();
+                setRefetch(!refetch)
+            } else {
+                toast.error(resBody.message);
+                setRefetch(!refetch)
+                throw new Error(resBody.message);
+            }
+        } catch (error: any) {
+            setRefetch(!refetch);
+            toast.error(error.message);
+        }
+    };
     return (
         <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-950">
             <div className="mx-auto p-4">
@@ -643,11 +674,18 @@ const ProfilePage = () => {
                                 <Card>
                                     <CardHeader>
                                         <div className="flex justify-between items-center">
-                                            <CardTitle className='text-lg font-bold text-orange-500'>
+                                            <CardTitle className="text-lg font-bold text-orange-500">
                                                 {user.role === "Trainer" ? "About Me" : "My Fitness Journey"}
                                             </CardTitle>
                                             <button
-                                                onClick={() => openEditDialog('bio', user.bio || '')}
+                                                onClick={() =>
+                                                    openEditDialog(
+                                                        'bio',
+                                                        user.role === 'Trainer'
+                                                            ? user.trainerProfile?.bio || ''
+                                                            : user.memberProfile?.fitnessJourney || ''
+                                                    )
+                                                }
                                                 className="text-primary hover:text-primary/80"
                                                 aria-label="Edit bio"
                                             >
@@ -655,16 +693,25 @@ const ProfilePage = () => {
                                             </button>
                                         </div>
                                     </CardHeader>
+
                                     <CardContent>
-                                        {user?.trainerProfile?.bio ? (
+                                        {user.role === 'Trainer' ? (
+                                            user?.trainerProfile?.bio ? (
+                                                <div className="prose max-w-none">
+                                                    <p className="text-sm font-medium">{user.trainerProfile.bio}</p>
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground">
+                                                    No bio added yet. Tell clients about your training approach.
+                                                </p>
+                                            )
+                                        ) : user?.memberProfile?.fitnessJourney ? (
                                             <div className="prose max-w-none">
-                                                <p className='text-sm font-medium'>{user?.trainerProfile?.bio}</p>
+                                                <p className="text-sm font-medium">{user.memberProfile.fitnessJourney}</p>
                                             </div>
                                         ) : (
                                             <p className="text-sm text-muted-foreground">
-                                                {user.role === "Trainer"
-                                                    ? "No bio added yet. Tell clients about your training approach."
-                                                    : "No bio added yet. Share your fitness journey."}
+                                                No bio added yet. Share your fitness journey.
                                             </p>
                                         )}
                                     </CardContent>
@@ -705,6 +752,48 @@ const ProfilePage = () => {
                                             ) : (
                                                 <p className="text-sm text-muted-foreground">
                                                     No certifications added yet
+                                                </p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                )}
+
+                                {/* Fitness level (Member only) */}
+                                {user.role === "Member" && (
+                                    <Card>
+                                        <CardHeader>
+                                            <div className="flex justify-between items-center">
+                                                <CardTitle className='text-lg font-bold text-orange-500'>Fitness Level</CardTitle>
+                                                <button
+                                                    onClick={() => openEditDialog(
+                                                        'fitnessLevel',
+                                                        user?.memberProfile?.fitnessLevel || []
+                                                    )}
+                                                    className="text-primary cursor-pointer hover:text-primary/80"
+                                                    aria-label="Edit fitness level"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        </CardHeader>
+                                        <CardContent>
+                                            {user.trainerProfile?.certifications?.length > 0 ? (
+                                                <div className="space-y-4">
+                                                    {user.trainerProfile.certifications.map((cert, i) => (
+                                                        <div key={i} className="flex items-start space-x-4">
+                                                            <Shield className="h-6 w-6 text-primary mt-0.5 flex-shrink-0" />
+                                                            <div>
+                                                                <h4 className="font-medium">{cert.name}</h4>
+                                                                <p className="text-sm text-muted-foreground">
+                                                                    {cert.issuer} • {cert.year}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground">
+                                                    No fitness level added yet
                                                 </p>
                                             )}
                                         </CardContent>
@@ -1006,6 +1095,43 @@ const ProfilePage = () => {
                     </DialogContent>
                 </Dialog>
 
+                {/* Fitness Level Dialog */}
+                <Dialog open={editingField === 'fitnessLevel' || editingField === 'fitnessLevel'} onOpenChange={closeEditDialog}>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>
+                                Edit {user.role === "Trainer" ? "Expertise" : "Fitness Goals"}
+                            </DialogTitle>
+                            <DialogDescription>
+                                Set your fitness level to help trainers understand your needs.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="space-y-2">
+                                <Label>
+                                    Fitness level (one per line)
+                                </Label>
+                                <Input
+                                    onChange={(e) => setTempValue(
+                                        e.target.value.split('\n').filter(item => item.trim())
+                                    )}
+                                    placeholder={"Expert"}
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                className='cursor-pointer'
+                                variant="outline" onClick={closeEditDialog}>
+                                Cancel
+                            </Button>
+                            <Button onClick={() => shareFitnessLevel()} className='cursor-pointer'>
+                                {processing ? 'Saving...' : 'Save Changes'}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
                 {/* Certifications Dialog */}
                 <Dialog open={editingField === 'certifications'} onOpenChange={closeEditDialog}>
                     <DialogContent className="max-w-2xl flex flex-col max-h-[90vh]">
@@ -1131,6 +1257,7 @@ const ProfilePage = () => {
                         </form>
                     </DialogContent>
                 </Dialog>
+
             </div>
         </div>
     );
