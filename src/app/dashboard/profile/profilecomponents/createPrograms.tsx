@@ -82,6 +82,7 @@ export default function CreateProgramForm() {
             category: '',
         },
     });
+    console.log(selectedPrograms)
     const queryClient = useQueryClient()
 
     // Submit program data
@@ -152,7 +153,7 @@ export default function CreateProgramForm() {
     };
 
     return (
-        <div className="w-full space-y-6">
+        <div className="w-full space-y-4">
             <Card className="p-6 rounded-lg">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <h1 className="text-xl font-semibold">

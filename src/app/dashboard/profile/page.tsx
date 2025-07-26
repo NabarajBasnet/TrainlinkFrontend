@@ -1,10 +1,9 @@
 'use client';
 
-import { MdAdd } from "react-icons/md";
-import { Mail, Phone, MapPin, Share2, LinkIcon } from "lucide-react";
+import { Mail, Phone, MapPin, } from "lucide-react";
 import { User2 } from "lucide-react";
 import { AiFillInstagram } from "react-icons/ai";
-import { Facebook, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { FaDumbbell, FaFacebook, FaInstagram } from "react-icons/fa";
 import { GiBiceps } from "react-icons/gi";
 import {
@@ -564,10 +563,15 @@ const ProfilePage = () => {
                                 </button>
                             </div>
                             <div>
-                                <CardTitle className="text-2xl">{user.fullName}</CardTitle>
+                                <CardTitle className="space-y-1">
+                                    <h1 className="text-2xl">{user?.fullName}</h1>
+                                    <h1 className="text-xs text-orange-500">User ID: <span>
+                                        {user?.user_id}
+                                    </span></h1>
+                                </CardTitle>
                                 <CardDescription className="flex items-center mt-1">
-                                    <span className="capitalize">{user.role.toLowerCase()}</span>
-                                    {user.role === "Trainer" && user.trainerProfile?.ratings && (
+                                    <span className="capitalize">{user?.role?.toLowerCase()}</span>
+                                    {user?.role === "Trainer" && user?.trainerProfile?.ratings && (
                                         <span className="flex items-center ml-4">
                                             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
                                             {user.trainerProfile.ratings.toFixed(1)}
