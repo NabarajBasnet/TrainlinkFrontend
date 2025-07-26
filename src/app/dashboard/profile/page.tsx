@@ -1,10 +1,10 @@
 'use client';
 
-import { Mail, Phone, MapPin, Share2 } from "lucide-react";
+import { Mail, Phone, MapPin, Share2, LinkIcon } from "lucide-react";
 import { User2 } from "lucide-react";
 import { AiFillInstagram } from "react-icons/ai";
 import { Facebook, Loader2 } from "lucide-react";
-import { FaDumbbell, FaFacebook } from "react-icons/fa";
+import { FaDumbbell, FaFacebook, FaInstagram } from "react-icons/fa";
 import { GiBiceps } from "react-icons/gi";
 import {
     AlertDialog,
@@ -114,13 +114,12 @@ const ProfilePage = () => {
     useEffect(() => {
         if (user) {
             setValue('userBio', user?.trainerProfile?.bio || '');
-            setFullName(user?.fullName)
-            setContactNo(user?.contactNo)
-            setEmail(user?.email)
-            setLocation(user?.location)
-            setInstagram(user?.socialMedia[0].url)
-            setFacebook(user?.socialMedia[1].url)
-            // If user is a trainer and has certifications, set them in the form
+            setFullName(user?.fullName || '')
+            setContactNo(user?.contactNo || '')
+            setEmail(user?.email || '')
+            setLocation(user?.location || '')
+            setInstagram(user?.socialMedia[0]?.url || '')
+            setFacebook(user?.socialMedia[1]?.url || '')
             if (user.role === "Trainer" && user.trainerProfile?.certifications?.length > 0) {
                 reset({
                     certifications: user.trainerProfile.certifications
@@ -842,27 +841,25 @@ const ProfilePage = () => {
                                             </div>
 
                                             {/* Social Media Links */}
-                                            {user.socialMedia?.length > 0 && (
-                                                <div className="flex items-start gap-3">
-                                                    <Share2 className="h-5 w-5 text-gray-400 mt-0.5" />
-                                                    <div>
-                                                        <p className="text-sm font-medium text-gray-500">Social Media</p>
-                                                        <div className="flex flex-wrap gap-2 mt-1">
-                                                            {user.socialMedia.map((item: any) => (
-                                                                <a
-                                                                    key={item.platform}
-                                                                    href={item.url}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="text-sm text-primary hover:underline flex items-center gap-1"
-                                                                >
-                                                                    {item.platform.charAt(0).toUpperCase() + item.platform.slice(1)}
-                                                                </a>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
+                                            <a
+                                                href={facebook}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-sm text-primary hover:underline flex items-center gap-1"
+                                            >
+                                                <FaFacebook />
+                                                Facebook
+                                            </a>
+
+                                            <a
+                                                href={instagram}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-sm text-primary hover:underline flex items-center gap-1"
+                                            >
+                                                <FaInstagram />
+                                                Instagram
+                                            </a>
                                         </CardContent>
                                     </Card>
                                 )}
