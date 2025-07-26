@@ -755,7 +755,7 @@ const ProfilePage = () => {
 
                             <TabsContent value="personal" className="space-y-4">
                                 {!loading && (
-                                    <Card className="border border-gray-200 shadow-sm">
+                                    <Card className="shadow-sm">
                                         <CardHeader className="pb-3">
                                             <div className="flex justify-between items-center">
                                                 <CardTitle className="text-lg font-bold text-orange-500 flex items-center gap-2">
@@ -777,8 +777,8 @@ const ProfilePage = () => {
                                             <div className="flex items-start gap-3">
                                                 <Mail className="h-5 w-5 text-gray-400 mt-0.5" />
                                                 <div>
-                                                    <p className="text-sm font-medium text-gray-500">Email</p>
-                                                    <p className="text-sm text-gray-800">{user.email}</p>
+                                                    <p className="text-sm font-medium text-orange-500">Email</p>
+                                                    <p className="text-sm text-gray-400">{user.email}</p>
                                                 </div>
                                             </div>
 
@@ -787,8 +787,8 @@ const ProfilePage = () => {
                                                 <div className="flex items-start gap-3">
                                                     <Phone className="h-5 w-5 text-gray-400 mt-0.5" />
                                                     <div>
-                                                        <p className="text-sm font-medium text-gray-500">Contact Number</p>
-                                                        <p className="text-sm text-gray-800">{user.contactNo}</p>
+                                                        <p className="text-sm font-medium text-orange-500">Contact Number</p>
+                                                        <p className="text-sm text-gray-400">{user.contactNo}</p>
                                                     </div>
                                                 </div>
                                             )}
@@ -798,8 +798,8 @@ const ProfilePage = () => {
                                                 <div className="flex items-start gap-3">
                                                     <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
                                                     <div>
-                                                        <p className="text-sm font-medium text-gray-500">Location</p>
-                                                        <p className="text-sm text-gray-800">{user.location}</p>
+                                                        <p className="text-sm font-medium text-orange-500">Location</p>
+                                                        <p className="text-sm text-gray-400">{user.location}</p>
                                                     </div>
                                                 </div>
                                             )}
@@ -808,19 +808,19 @@ const ProfilePage = () => {
                                             <div className="flex items-start gap-3">
                                                 <User2 className="h-5 w-5 text-gray-400 mt-0.5" />
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-medium text-gray-500">
+                                                    <p className="text-sm font-medium text-orange-500">
                                                         {user.role === 'Trainer' ? 'Bio' : 'Fitness Journey'}
                                                     </p>
                                                     {user.role === 'Trainer' ? (
                                                         user?.trainerProfile?.bio ? (
-                                                            <p className="text-sm text-gray-800">{user.trainerProfile.bio}</p>
+                                                            <p className="text-sm text-gray-400">{user.trainerProfile.bio}</p>
                                                         ) : (
                                                             <p className="text-sm text-gray-400">
                                                                 No bio added yet. Tell clients about your training approach.
                                                             </p>
                                                         )
                                                     ) : user?.memberProfile?.fitnessJourney ? (
-                                                        <p className="text-sm text-gray-800">{user.memberProfile.fitnessJourney}</p>
+                                                        <p className="text-sm text-gray-400">{user.memberProfile.fitnessJourney}</p>
                                                     ) : (
                                                         <p className="text-sm text-gray-400">
                                                             No fitness journey added yet. Share your goals and progress.
@@ -1004,7 +1004,7 @@ const ProfilePage = () => {
 
                             {/* Programs/Plan Tab */}
                             <TabsContent value="programs">
-                                            <CreateProgramForm />
+                                <CreateProgramForm />
                             </TabsContent>
 
                             {/* Reviews Tab */}
@@ -1455,7 +1455,7 @@ const ProfilePage = () => {
 
                 {/* Personal Details Dialog */}
                 <Dialog open={editingField === 'personalDetails'} onOpenChange={closeEditDialog}>
-                    <DialogContent className="max-w-2xl">
+                    <DialogContent className="max-w-2xl dark:bg-gray-800">
                         <DialogHeader>
                             <DialogTitle>Edit Personal Details</DialogTitle>
                             <DialogDescription>
