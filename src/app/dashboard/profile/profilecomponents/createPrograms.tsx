@@ -1,5 +1,6 @@
 'use client';
 
+import { Badge } from "@/components/ui/badge"
 import {
     Tooltip,
     TooltipContent,
@@ -20,7 +21,6 @@ import {
 import { useState } from 'react';
 import { MdAdd, MdDelete, MdEdit, MdShare, MdWorkspacePremium } from 'react-icons/md';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
     ArrowRight,
@@ -32,8 +32,6 @@ import {
     User,
     Award,
     Tag,
-    X,
-    ChevronRight
 } from 'lucide-react';
 import {
     Card,
@@ -71,6 +69,7 @@ const formSchema = z.object({
     level: z.enum(['Beginner', 'Intermediate', 'Advanced']),
     maxSlot: z.number().min(1, 'Must have at least 1 slot'),
     category: z.string().min(1, 'Category is required'),
+    status: z.string().min(1, 'Status is required'),
 });
 
 type ProgramFormData = z.infer<typeof formSchema>;
@@ -82,6 +81,7 @@ export default function CreateProgramForm() {
     const [open, setOpen] = useState(false);
     const [toEditProgram, setToEditProgram] = useState(null);
     const [level, setLevel] = useState('')
+    const [status, setStatus] = useState<string>('Disabled');
 
     const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
 
@@ -186,7 +186,6 @@ export default function CreateProgramForm() {
     };
 
     // Edit Program
-    // Replace the existing editProgram function with this:
     const editProgram = (program: any) => {
         setToEditProgram(program);
         reset({
@@ -199,7 +198,27 @@ export default function CreateProgramForm() {
             category: program.category
         });
         setLevel(program?.level)
+        setStatus(program?.status || 'Active')
         setOpen(true);
+    };
+
+    const getBadge = (status: string) => {
+        switch (status) {
+            case "Active":
+                return <Badge className="bg-green-500 text-white">Active</Badge>;
+
+            case "Inactive":
+                return <Badge className="bg-red-400 text-white">Inactive</Badge>;
+
+            case "Pending":
+                return <Badge className="bg-yellow-500 text-white">Pending</Badge>;
+
+            case "Disabled":
+                return <Badge className="bg-red-500 text-white">Disabled</Badge>;
+
+            default:
+                return <Badge className="bg-slate-500 text-white">Unknown</Badge>;
+        }
     };
 
     return (
@@ -229,17 +248,17 @@ export default function CreateProgramForm() {
                                         <BookOpen className="h-6 w-6 text-orange-500" />
                                         <div>
                                             <DialogTitle className="text-2xl">
-                                                Create New Program
+                                                Program Details
                                             </DialogTitle>
                                             <DialogDescription>
-                                                Fill in the details to create a new training program
+                                                Fill in the details to create or edit a training program
                                             </DialogDescription>
                                         </div>
                                     </div>
                                 </DialogHeader>
 
-                                <ScrollArea className="h-[calc(80vh-180px)] p-6">
-                                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                                <ScrollArea className="h-[calc(90vh-180px)] p-4">
+                                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                                         {/* Title */}
                                         <div className="space-y-2">
                                             <Label htmlFor="title" className="flex items-center gap-2">
@@ -379,6 +398,39 @@ export default function CreateProgramForm() {
                                                 <p className="text-sm text-red-500">{errors.category.message}</p>
                                             )}
                                         </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="level" className="flex items-center gap-2">
+                                                <Award className="h-4 w-4 text-orange-500" />
+                                                Status
+                                            </Label>
+                                            <Select
+                                                onValueChange={(value) => setValue('status', value)}
+                                                {...register('status')}
+                                                defaultValue={status}
+                                            >
+                                                <SelectTrigger className="w-full focus:ring-1 focus:ring-orange-500 py-6 rounded-sm cursor-pointer">
+                                                    <SelectValue placeholder="Select level" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="Active" className="cursor-pointer">
+                                                        Active
+                                                    </SelectItem>
+                                                    <SelectItem value="Inactive" className="cursor-pointer">
+                                                        Inactive
+                                                    </SelectItem>
+                                                    <SelectItem value="Disabled" className="cursor-pointer">
+                                                        Disable
+                                                    </SelectItem>
+                                                    <SelectItem value="Pending" className="cursor-pointer">
+                                                        Pending
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            {errors.status && (
+                                                <p className="text-sm text-red-500">{errors.status.message}</p>
+                                            )}
+                                        </div>
                                     </form>
                                 </ScrollArea>
 
@@ -493,9 +545,12 @@ export default function CreateProgramForm() {
                                                     {program.level}
                                                 </span>
                                             </div>
+                                            {
+                                                getBadge(program?.status)
+                                            }
                                             <p className="text-sm text-gray-600 mt-1">{program.description}</p>
 
-                                            <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                            <div className="w-full mt-3 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                                                 <div className="flex items-center gap-2">
                                                     <Tag className="h-4 w-4 text-gray-500" />
                                                     <span>{program.category}</span>
