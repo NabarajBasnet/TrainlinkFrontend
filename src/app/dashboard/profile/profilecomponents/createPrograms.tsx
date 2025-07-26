@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { MdAdd } from 'react-icons/md';
+import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import {
@@ -12,7 +14,8 @@ import {
     Loader2,
     User,
     Award,
-    Tag
+    Tag,
+    X
 } from 'lucide-react';
 import {
     Card,
@@ -24,241 +27,283 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { useUser } from '@/components/Providers/LoggedInUser/LoggedInUserProvider';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogTrigger,
+    DialogClose,
+} from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
-type ProgramFormData = {
-    title: string;
-    description: string;
-    durationInWeeks: number;
-    price: number;
-    level: 'Beginner' | 'Intermediate' | 'Advanced';
-    maxSlot: number;
-    category: string;
-};
+const formSchema = z.object({
+    title: z.string().min(1, 'Title is required'),
+    description: z.string().min(1, 'Description is required'),
+    durationInWeeks: z.number().min(1, 'Must be at least 1 week'),
+    price: z.number().min(0, 'Price cannot be negative'),
+    level: z.enum(['Beginner', 'Intermediate', 'Advanced']),
+    maxSlot: z.number().min(1, 'Must have at least 1 slot'),
+    category: z.string().min(1, 'Category is required'),
+});
 
-const defaultForm: ProgramFormData = {
-    title: '',
-    description: '',
-    durationInWeeks: 0,
-    price: 0,
-    level: 'Beginner',
-    maxSlot: 0,
-    category: '',
-};
+type ProgramFormData = z.infer<typeof formSchema>;
 
 export default function CreateProgramForm() {
-    const [form, setForm] = useState<ProgramFormData>(defaultForm);
-    const [loading, setLoading] = useState(false);
+    const { user } = useUser();
     const router = useRouter();
+    const [open, setOpen] = useState(false);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setForm(prev => ({
-            ...prev,
-            [name]: name === 'price' || name === 'durationInWeeks' || name === 'maxSlot' ? Number(value) : value,
-        }));
-    };
+    const {
+        register,
+        handleSubmit,
+        control,
+        reset,
+        formState: { errors, isSubmitting },
+    } = useForm<ProgramFormData>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            title: '',
+            description: '',
+            durationInWeeks: 0,
+            price: 0,
+            level: 'Beginner',
+            maxSlot: 0,
+            category: '',
+        },
+    });
 
-    const handleSelectChange = (name: string, value: string) => {
-        setForm(prev => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-
+    const onSubmit = async (data: ProgramFormData) => {
         try {
-            const res = await fetch('/api/programs', {
+            console.log(data)
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/create-new-program`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(form),
+                body: JSON.stringify(data),
             });
 
             if (!res.ok) throw new Error('Failed to create program');
 
             toast.success('Program created successfully');
-            setForm(defaultForm);
+            reset();
+            setOpen(false);
             router.refresh();
         } catch (err) {
             console.error(err);
             toast.error('Failed to create program');
-        } finally {
-            setLoading(false);
         }
     };
 
     return (
         <div className="w-full">
-            <Card className="w-full">
-                <CardHeader className="bg-orange-50 dark:bg-orange-900/20">
-                    <div className="flex items-center gap-3">
-                        <BookOpen className="h-6 w-6 text-orange-500" />
-                        <div>
-                            <CardTitle className="text-2xl text-gray-800 dark:text-white">
-                                Create New Program
-                            </CardTitle>
-                            <CardDescription className="text-gray-600 dark:text-gray-300">
-                                Fill in the details to create a new training program
-                            </CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
+            <Card className="p-6 rounded-lg">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <h1 className="text-xl font-semibold">
+                        {user.role === "Trainer" ? "My Training Programs" : "My Current Plan"}
+                    </h1>
+                    <Dialog open={open} onOpenChange={setOpen}>
+                        <DialogTrigger asChild>
+                            <Button className="gap-2 py-5 rounded-sm cursor-pointer">
+                                <MdAdd className="h-4 w-4" />
+                                <span>Create Program</span>
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[625px] dark:bg-gray-900 p-0 rounded-lg">
+                            <div className="relative">
+                                <DialogHeader className="border-b p-6">
+                                    <div className="flex items-center gap-3">
+                                        <BookOpen className="h-6 w-6 text-orange-500" />
+                                        <div>
+                                            <DialogTitle className="text-2xl">
+                                                Create New Program
+                                            </DialogTitle>
+                                            <DialogDescription>
+                                                Fill in the details to create a new training program
+                                            </DialogDescription>
+                                        </div>
+                                    </div>
+                                </DialogHeader>
 
-                <CardContent className="pt-6">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Title */}
-                        <div className="space-y-2">
-                            <Label htmlFor="title" className="flex items-center gap-2">
-                                <Layers className="h-4 w-4 text-orange-500" />
-                                Program Title
-                            </Label>
-                            <Input
-                                id="title"
-                                name="title"
-                                type="text"
-                                value={form.title}
-                                onChange={handleChange}
-                                required
-                                placeholder="e.g., 12-Week Fat Loss Program"
-                                className="focus-visible:ring-orange-500"
-                            />
-                        </div>
+                                <ScrollArea className="h-[calc(80vh-180px)] p-6">
+                                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                                        {/* Title */}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="title" className="flex items-center gap-2">
+                                                <Layers className="h-4 w-4 text-orange-500" />
+                                                Program Title
+                                            </Label>
+                                            <Input
+                                                id="title"
+                                                {...register('title')}
+                                                placeholder="e.g., 12-Week Fat Loss Program"
+                                                className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                                            />
+                                            {errors.title && (
+                                                <p className="text-sm text-red-500">{errors.title.message}</p>
+                                            )}
+                                        </div>
 
-                        {/* Description */}
-                        <div className="space-y-2">
-                            <Label htmlFor="description" className="flex items-center gap-2">
-                                <BookOpen className="h-4 w-4 text-orange-500" />
-                                Description
-                            </Label>
-                            <Textarea
-                                id="description"
-                                name="description"
-                                value={form.description}
-                                onChange={handleChange}
-                                placeholder="Detailed description of the program..."
-                                rows={4}
-                                className="focus-visible:ring-orange-500"
-                            />
-                        </div>
+                                        {/* Description */}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="description" className="flex items-center gap-2">
+                                                <BookOpen className="h-4 w-4 text-orange-500" />
+                                                Description
+                                            </Label>
+                                            <Textarea
+                                                id="description"
+                                                {...register('description')}
+                                                placeholder="Detailed description of the program..."
+                                                rows={4}
+                                                className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[120px] rounded-sm"
+                                            />
+                                            {errors.description && (
+                                                <p className="text-sm text-red-500">{errors.description.message}</p>
+                                            )}
+                                        </div>
 
-                        {/* Duration & Price */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="durationInWeeks" className="flex items-center gap-2">
-                                    <Calendar className="h-4 w-4 text-orange-500" />
-                                    Duration (weeks)
-                                </Label>
-                                <Input
-                                    id="durationInWeeks"
-                                    name="durationInWeeks"
-                                    type="number"
-                                    min="1"
-                                    value={form.durationInWeeks}
-                                    onChange={handleChange}
-                                    placeholder="e.g., 12"
-                                    className="focus-visible:ring-orange-500"
-                                />
+                                        {/* Duration & Price */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="durationInWeeks" className="flex items-center gap-2">
+                                                    <Calendar className="h-4 w-4 text-orange-500" />
+                                                    Duration (weeks)
+                                                </Label>
+                                                <Input
+                                                    id="durationInWeeks"
+                                                    type="number"
+                                                    {...register('durationInWeeks', { valueAsNumber: true })}
+                                                    placeholder="e.g., 12"
+                                                    className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                                                />
+                                                {errors.durationInWeeks && (
+                                                    <p className="text-sm text-red-500">{errors.durationInWeeks.message}</p>
+                                                )}
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="price" className="flex items-center gap-2">
+                                                    <DollarSign className="h-4 w-4 text-orange-500" />
+                                                    Price ($)
+                                                </Label>
+                                                <Input
+                                                    id="price"
+                                                    type="number"
+                                                    step="0.01"
+                                                    {...register('price', { valueAsNumber: true })}
+                                                    placeholder="e.g., 199.99"
+                                                    className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                                                />
+                                                {errors.price && (
+                                                    <p className="text-sm text-red-500">{errors.price.message}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Level & Max Slots */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="level" className="flex items-center gap-2">
+                                                    <Award className="h-4 w-4 text-orange-500" />
+                                                    Difficulty Level
+                                                </Label>
+                                                <Select
+                                                    {...register('level')}
+                                                    defaultValue="Beginner"
+                                                >
+                                                    <SelectTrigger className="w-full focus:ring-1 focus:ring-orange-500 py-6 rounded-sm cursor-pointer">
+                                                        <SelectValue placeholder="Select level" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="Beginner" className="cursor-pointer">
+                                                            Beginner
+                                                        </SelectItem>
+                                                        <SelectItem value="Intermediate" className="cursor-pointer">
+                                                            Intermediate
+                                                        </SelectItem>
+                                                        <SelectItem value="Advanced" className="cursor-pointer">
+                                                            Advanced
+                                                        </SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                {errors.level && (
+                                                    <p className="text-sm text-red-500">{errors.level.message}</p>
+                                                )}
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="maxSlot" className="flex items-center gap-2">
+                                                    <User className="h-4 w-4 text-orange-500" />
+                                                    Max Participants
+                                                </Label>
+                                                <Input
+                                                    id="maxSlot"
+                                                    type="number"
+                                                    {...register('maxSlot', { valueAsNumber: true })}
+                                                    placeholder="e.g., 20"
+                                                    className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                                                />
+                                                {errors.maxSlot && (
+                                                    <p className="text-sm text-red-500">{errors.maxSlot.message}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Category */}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="category" className="flex items-center gap-2">
+                                                <Tag className="h-4 w-4 text-orange-500" />
+                                                Category
+                                            </Label>
+                                            <Input
+                                                id="category"
+                                                {...register('category')}
+                                                placeholder="e.g., Fat Loss, Muscle Building"
+                                                className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                                            />
+                                            {errors.category && (
+                                                <p className="text-sm text-red-500">{errors.category.message}</p>
+                                            )}
+                                        </div>
+                                    </form>
+                                </ScrollArea>
+
+                                <div className="border-t p-4 flex justify-end">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setOpen(false)}
+                                        className="py-5 rounded-sm cursor-pointer mr-2"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        onClick={handleSubmit(onSubmit)}
+                                        disabled={isSubmitting}
+                                        className="py-5 rounded-sm cursor-pointer bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700"
+                                    >
+                                        {isSubmitting ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                                Creating...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Create Program
+                                                <ArrowRight className="h-4 w-4 ml-2" />
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
                             </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="price" className="flex items-center gap-2">
-                                    <DollarSign className="h-4 w-4 text-orange-500" />
-                                    Price ($)
-                                </Label>
-                                <Input
-                                    id="price"
-                                    name="price"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={form.price}
-                                    onChange={handleChange}
-                                    placeholder="e.g., 199.99"
-                                    className="focus-visible:ring-orange-500"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Level & Max Slots */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="level" className="flex items-center gap-2">
-                                    <Award className="h-4 w-4 text-orange-500" />
-                                    Difficulty Level
-                                </Label>
-                                <Select
-                                    value={form.level}
-                                    onValueChange={(value) => handleSelectChange('level', value)}
-                                >
-                                    <SelectTrigger className="w-full focus:ring-orange-500">
-                                        <SelectValue placeholder="Select level" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Beginner">Beginner</SelectItem>
-                                        <SelectItem value="Intermediate">Intermediate</SelectItem>
-                                        <SelectItem value="Advanced">Advanced</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="maxSlot" className="flex items-center gap-2">
-                                    <User className="h-4 w-4 text-orange-500" />
-                                    Max Participants
-                                </Label>
-                                <Input
-                                    id="maxSlot"
-                                    name="maxSlot"
-                                    type="number"
-                                    min="1"
-                                    value={form.maxSlot}
-                                    onChange={handleChange}
-                                    placeholder="e.g., 20"
-                                    className="focus-visible:ring-orange-500"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Category */}
-                        <div className="space-y-2">
-                            <Label htmlFor="category" className="flex items-center gap-2">
-                                <Tag className="h-4 w-4 text-orange-500" />
-                                Category
-                            </Label>
-                            <Input
-                                id="category"
-                                name="category"
-                                type="text"
-                                value={form.category}
-                                onChange={handleChange}
-                                placeholder="e.g., Fat Loss, Muscle Building"
-                                className="focus-visible:ring-orange-500"
-                            />
-                        </div>
-
-                        <Button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full cursor-pointer bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700"
-                        >
-                            {loading ? (
-                                <>
-                                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                    Creating Program...
-                                </>
-                            ) : (
-                                <>
-                                    Create Program
-                                    <ArrowRight className="h-4 w-4 ml-2" />
-                                </>
-                            )}
-                        </Button>
-                    </form>
-                </CardContent>
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </Card>
         </div>
     );

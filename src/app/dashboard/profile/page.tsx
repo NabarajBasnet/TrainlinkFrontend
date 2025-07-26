@@ -1004,24 +1004,7 @@ const ProfilePage = () => {
 
                             {/* Programs/Plan Tab */}
                             <TabsContent value="programs">
-                                <Card>
-                                    <CardHeader>
-                                        <CardTitle className="md:flex space-y-4 md:space-y-0 items-center justify-between">
-                                            <h1>
-                                                {user.role === "Trainer" ? "My Training Programs" : "My Current Plan"}
-                                            </h1>
-                                            <Button onClick={() => setCreateProgram(!createPlan)} className="cursor-pointer">
-                                                <MdAdd />
-                                                <span>{createPlan?'Cancel':"Create"} Program</span>
-                                            </Button>
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        {createPlan && (
                                             <CreateProgramForm />
-                                        )}
-                                    </CardContent>
-                                </Card>
                             </TabsContent>
 
                             {/* Reviews Tab */}
