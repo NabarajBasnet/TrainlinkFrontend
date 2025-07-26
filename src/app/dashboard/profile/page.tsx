@@ -414,11 +414,11 @@ const ProfilePage = () => {
     };
 
     // Remove Single fitness goal
-    const removeFitnessGoal = async (goal: string) => {
+    const removeFitnessGoalOrExperties = async (goal: string) => {
         try {
             setProcessing(true);
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/remove-fitness-goal`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/remove-fitness-goal-or-experties`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
@@ -683,9 +683,39 @@ const ProfilePage = () => {
                                     user?.trainerProfile?.experties?.length > 0 ? (
                                         <div className="flex flex-wrap gap-2">
                                             {user.trainerProfile.experties.map((skill, i) => (
-                                                <Badge key={i} variant="secondary">
-                                                    {skill}
-                                                </Badge>
+                                                <div key={i} className="flex space-x-4 items-center">
+                                                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                                                    <span className="text-sm">{skill}</span>
+                                                    <AlertDialog>
+                                                        <AlertDialogTrigger asChild>
+                                                            <RxCross2 className="text-red-600 cursor-pointer hover:bg-red-100 dark:hover:bg-red-900 hover:rounded-full h-5 w-5 p-0.5 transition" />
+                                                        </AlertDialogTrigger>
+
+                                                        <AlertDialogContent className="bg-white dark:bg-zinc-900 border border-red-500 shadow-xl rounded-xl">
+                                                            <AlertDialogHeader>
+                                                                <AlertDialogTitle className="text-red-600 dark:text-red-400 text-lg font-semibold flex items-center">
+                                                                    <FaExclamation className="h-5 w-5 mr-2 text-red-500 dark:text-red-400" />
+                                                                    Confirm Deletion
+                                                                </AlertDialogTitle>
+                                                                <AlertDialogDescription className="text-zinc-700 dark:text-zinc-300 mt-2">
+                                                                    Are you sure you want to remove this skill? This action <span className="font-semibold text-red-600 dark:text-red-400">cannot be undone</span>.
+                                                                </AlertDialogDescription>
+                                                            </AlertDialogHeader>
+
+                                                            <AlertDialogFooter className="flex justify-end gap-3 mt-4">
+                                                                <AlertDialogCancel className="bg-zinc-200 dark:bg-zinc-700 text-black dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded px-4 py-1.5">
+                                                                    Cancel
+                                                                </AlertDialogCancel>
+                                                                <AlertDialogAction
+                                                                    className="cursor-pointer bg-red-600 hover:bg-red-700 text-white rounded px-4 py-1.5 shadow"
+                                                                    onClick={() => removeFitnessGoalOrExperties(skill)}
+                                                                >
+                                                                    Delete
+                                                                </AlertDialogAction>
+                                                            </AlertDialogFooter>
+                                                        </AlertDialogContent>
+                                                    </AlertDialog>
+                                                </div>
                                             ))}
                                         </div>
                                     ) : (
@@ -721,8 +751,8 @@ const ProfilePage = () => {
                                                                     Cancel
                                                                 </AlertDialogCancel>
                                                                 <AlertDialogAction
-                                                                    className="bg-red-600 hover:bg-red-700 text-white rounded px-4 py-1.5 shadow"
-                                                                    onClick={() => removeFitnessGoal(goal)}
+                                                                    className="cursor-pointer bg-red-600 hover:bg-red-700 text-white rounded px-4 py-1.5 shadow"
+                                                                    onClick={() => removeFitnessGoalOrExperties(goal)}
                                                                 >
                                                                     Delete
                                                                 </AlertDialogAction>
