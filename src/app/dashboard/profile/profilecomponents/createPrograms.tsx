@@ -1,5 +1,10 @@
 'use client';
 
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { FaExclamation } from "react-icons/fa";
 import {
     AlertDialog,
@@ -511,22 +516,42 @@ export default function CreateProgramForm() {
                                         </div>
 
                                         <div className="flex flex-col sm:flex-row gap-2">
-                                            <Button
-                                                onClick={() => {
-                                                    editProgram(program)
-                                                }}
-                                                variant="ghost" size="icon" className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer">
-                                                <MdEdit className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer">
-                                                <MdShare className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer">
-                                                <MdWorkspacePremium className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer">
-                                                <ChevronRight className="h-4 w-4" />
-                                            </Button>
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <Button
+                                                        onClick={() => {
+                                                            editProgram(program)
+                                                        }}
+                                                        variant="ghost" size="icon" className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer">
+                                                        <MdEdit className="h-4 w-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Delete Program</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <Button variant="ghost" size="icon" className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer">
+                                                        <MdShare className="h-4 w-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Share Program</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+
+                                            <Tooltip>
+                                                <TooltipTrigger>
+                                                    <Button variant="ghost" size="icon" className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer">
+                                                        <MdWorkspacePremium className="h-4 w-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Promote Program</p>
+                                                </TooltipContent>
+                                            </Tooltip>
                                         </div>
                                     </div>
                                 </Card>
