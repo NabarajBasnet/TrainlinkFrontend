@@ -1,6 +1,8 @@
 'use client';
 
-import { FaDumbbell } from "react-icons/fa";
+import { AiFillInstagram } from "react-icons/ai";
+import { Facebook, Loader2 } from "lucide-react";
+import { FaDumbbell, FaFacebook } from "react-icons/fa";
 import { GiBiceps } from "react-icons/gi";
 import {
     AlertDialog,
@@ -68,19 +70,34 @@ const ProfilePage = () => {
     const [processing, setProcessing] = useState<boolean | null>(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+    // Personal details states
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('')
+    const [contactNo, setContactNo] = useState('')
+    const [location, setLocation] = useState('')
+    const [instagram, setInstagram] = useState('')
+    const [facebook, setFacebook] = useState('')
+
     // Initialize react-hook-form for certifications
     const {
-        control,
         register,
+        control,
         handleSubmit,
         formState: { errors },
-        setValue,
+        reset,
         watch,
-        reset
-    } = useForm<CertificationsFormValues>({
+        setValue,
+    } = useForm({
         defaultValues: {
-            certifications: [{ name: '', issuer: '', year: '', id: '' }]
-        }
+            certifications: [
+                {
+                    name: "",
+                    issuer: "",
+                    year: "",
+                    id: "",
+                },
+            ],
+        },
     });
 
     const { fields, append, remove } = useFieldArray({
@@ -95,7 +112,12 @@ const ProfilePage = () => {
     useEffect(() => {
         if (user) {
             setValue('userBio', user?.trainerProfile?.bio || '');
-
+            setFullName(user?.fullName)
+            setContactNo(user?.contactNo)
+            setEmail(user?.email)
+            setLocation(user?.location)
+            setInstagram(user?.instagram)
+            setFacebook(user?.facebook)
             // If user is a trainer and has certifications, set them in the form
             if (user.role === "Trainer" && user.trainerProfile?.certifications?.length > 0) {
                 reset({
@@ -248,8 +270,10 @@ const ProfilePage = () => {
             } else {
                 setRefetch(!refetch)
                 toast.error(resBody.message || "Upload failed");
+                setProcessing(false);
             }
         } catch (error: any) {
+            setProcessing(false);
             setRefetch(!refetch)
             console.error("Error: ", error);
             toast.error(error.message);
@@ -447,7 +471,6 @@ const ProfilePage = () => {
         }
     };
 
-
     // Share Fitness Level
     const shareHealthCondition = async () => {
         try {
@@ -476,6 +499,40 @@ const ProfilePage = () => {
         } catch (error: any) {
             setRefetch(!refetch);
             toast.error(error.message);
+        }
+    };
+
+    // Submit personal details
+    const submitPersonalDetails = async () => {
+        try {
+            setProcessing(true);
+            const payload = {
+                fullName, email, contactNo, location, facebook, instagram
+            }
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/update-personal-details`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                toast.success('Personal details updated successfully');
+                closeEditDialog();
+                setRefetch(!refetch);
+            } else {
+                throw new Error(result.message || 'Failed to update details');
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            toast.error(error.message || 'Something went wrong');
+        } finally {
+            setProcessing(false);
         }
     };
 
@@ -692,8 +749,9 @@ const ProfilePage = () => {
 
                     {/* Main Content Area */}
                     <div className="lg:col-span-3 space-y-6">
-                        <Tabs defaultValue="overview" className="w-full">
-                            <TabsList className="grid w-full grid-cols-3 mb-2 lg:grid-cols-4">
+                        <Tabs defaultValue="personal" className="w-full">
+                            <TabsList className={`grid w-full grid-cols-3 mb-2 ${user?.role === 'Trainer' ? 'grid-cols-5' : 'grid-cols-4'}`}>
+                                <TabsTrigger value="personal" className='cursor-pointer'>Personal Details</TabsTrigger>
                                 <TabsTrigger value="overview" className='cursor-pointer'>Overview</TabsTrigger>
                                 <TabsTrigger value="programs" className='cursor-pointer'>
                                     {user.role === "Trainer" ? "My Programs" : "My Plan"}
@@ -703,6 +761,50 @@ const ProfilePage = () => {
                                     <TabsTrigger value="certifications" className='cursor-pointer'>Certifications</TabsTrigger>
                                 )}
                             </TabsList>
+
+                            {/* Profile Tab */}
+                            <TabsContent value="personal" className="space-y-4">
+                                <Card>
+                                    <CardHeader>
+                                        <div className="flex justify-between items-center">
+                                            <CardTitle className="text-lg font-bold text-orange-500">
+                                                Personal Details Card
+                                            </CardTitle>
+                                            <button
+                                                onClick={() =>
+                                                    openEditDialog('personalDetails', 'personalDetails')
+                                                }
+                                                className="text-primary hover:text-primary/80"
+                                                aria-label="Edit bio"
+                                            >
+                                                <Edit className="h-4 w-4 cursor-pointer" />
+                                            </button>
+                                        </div>
+                                    </CardHeader>
+
+                                    <CardContent>
+                                        {user.role === 'Trainer' ? (
+                                            user?.trainerProfile?.bio ? (
+                                                <div className="prose max-w-none">
+                                                    <p className="text-sm font-medium">{user.trainerProfile.bio}</p>
+                                                </div>
+                                            ) : (
+                                                <p className="text-sm text-muted-foreground">
+                                                    No bio added yet. Tell clients about your training approach.
+                                                </p>
+                                            )
+                                        ) : user?.memberProfile?.fitnessJourney ? (
+                                            <div className="prose max-w-none">
+                                                <p className="text-sm font-medium">{user.memberProfile.fitnessJourney}</p>
+                                            </div>
+                                        ) : (
+                                            <p className="text-sm text-muted-foreground">
+                                                No bio added yet. Share your fitness journey.
+                                            </p>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
 
                             {/* Overview Tab */}
                             <TabsContent value="overview" className="space-y-4">
@@ -1346,6 +1448,115 @@ const ProfilePage = () => {
                     </DialogContent>
                 </Dialog>
 
+                {/* Personal Details Dialog */}
+                <Dialog open={editingField === 'personalDetails'} onOpenChange={closeEditDialog}>
+                    <DialogContent className="max-w-2xl">
+                        <DialogHeader>
+                            <DialogTitle>Edit Personal Details</DialogTitle>
+                            <DialogDescription>
+                                Update your personal information to help others connect with you.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="grid gap-6 py-4">
+                            {/* Basic Information Section */}
+                            <div className="space-y-4">
+                                <h3 className="font-medium">Basic Information</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="fullName">Full Name*</Label>
+                                        <Input
+                                            id="fullName"
+                                            value={fullName}
+                                            onChange={(e) => setFullName(e.target.value)}
+                                            placeholder="John Doe"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="email">Email*</Label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="john@example.com"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="phone">Phone Number</Label>
+                                        <Input
+                                            id="phone"
+                                            type="tel"
+                                            value={contactNo}
+                                            onChange={(e) => setContactNo(e.target.value)}
+                                            placeholder="+1 (555) 123-4567"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="location">Location</Label>
+                                        <Input
+                                            id="location"
+                                            value={location}
+                                            onChange={(e) => setLocation(e.target.value)}
+                                            placeholder="New York, USA"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Social Media Section */}
+                            <div className="space-y-4">
+                                <h3 className="font-medium">Social Links</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="instagram">
+                                            <span className="flex items-center gap-2">
+                                                <AiFillInstagram className="w-4 h-4" />
+                                                Instagram
+                                            </span>
+                                        </Label>
+                                        <Input
+                                            id="instagram"
+                                            value={instagram}
+                                            onChange={(e) => setInstagram(e.target.value)}
+                                            placeholder="https://instagram.com/username"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="facebook">
+                                            <span className="flex items-center gap-2">
+                                                <FaFacebook className="w-4 h-4" />
+                                                Facebook
+                                            </span>
+                                        </Label>
+                                        <Input
+                                            id="facebook"
+                                            value={facebook}
+                                            onChange={(e) => setFacebook(e.target.value)}
+                                            placeholder="https://facebook.com/username"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <DialogFooter>
+                            <Button type="button" variant="outline" onClick={closeEditDialog}>
+                                Cancel
+                            </Button>
+                            <Button onClick={submitPersonalDetails} className="cursor-pointer" disabled={processing}>
+                                {processing ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    "Save Changes"
+                                )}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     );
