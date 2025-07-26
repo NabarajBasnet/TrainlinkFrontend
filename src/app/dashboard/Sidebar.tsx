@@ -15,13 +15,18 @@ import {
 } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { useState, useEffect } from 'react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const Sidebar = () => {
     const router = useRouter();
     const clientSidebar = useSelector((state: boolean) => state.rtkreducer.sidebarMinimized);
     const [mounted, setMounted] = useState(false);
 
-    // Handle hydration
     useEffect(() => {
         setMounted(true);
     }, []);
@@ -113,56 +118,76 @@ const Sidebar = () => {
 
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
-                {menuItems.map((item, index) => (
-                    <Link
-                        href={item.path}
-                        key={index}
-                        className={`
-                            group flex items-center 
-                            ${clientSidebar ? 'justify-center p-3' : 'p-3 gap-3'} 
-                            rounded-lg transition-all duration-200
-                            text-gray-700 dark:text-gray-300
-                            hover:bg-orange-50 dark:hover:bg-orange-900/20
-                            hover:text-orange-600 dark:hover:text-orange-400
-                        `}
-                        title={clientSidebar ? item.label : ''}
-                    >
-                        <span className="text-orange-500 dark:text-orange-400 group-hover:text-orange-600 dark:group-hover:text-orange-300 transition-colors">
-                            {item.icon}
-                        </span>
-                        {!clientSidebar && (
-                            <div className="flex-1 min-w-0">
-                                <div className="font-medium text-sm text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-300 transition-colors">
-                                    {item.label}
-                                </div>
-                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
-                                    {item.description}
-                                </div>
-                            </div>
-                        )}
-                    </Link>
-                ))}
+                <TooltipProvider delayDuration={100}>
+                    {menuItems.map((item, index) => (
+                        <Tooltip key={index}>
+                            <TooltipTrigger asChild>
+                                <Link
+                                    href={item.path}
+                                    className={`
+                                        group flex items-center 
+                                        ${clientSidebar ? 'justify-center p-3' : 'p-3 gap-3'} 
+                                        rounded-lg transition-all duration-200
+                                        text-gray-700 dark:text-gray-300
+                                        hover:bg-orange-50 dark:hover:bg-orange-900/20
+                                        hover:text-orange-600 dark:hover:text-orange-400
+                                    `}
+                                >
+                                    <span className="text-orange-500 dark:text-orange-400 group-hover:text-orange-600 dark:group-hover:text-orange-300 transition-colors">
+                                        {item.icon}
+                                    </span>
+                                    {!clientSidebar && (
+                                        <div className="flex-1 min-w-0">
+                                            <div className="font-medium text-sm text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-300 transition-colors">
+                                                {item.label}
+                                            </div>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-1">
+                                                {item.description}
+                                            </div>
+                                        </div>
+                                    )}
+                                </Link>
+                            </TooltipTrigger>
+                            {clientSidebar && (
+                                <TooltipContent side="right" sideOffset={10} className="bg-gray-800 text-white">
+                                    <div>
+                                        <p className="font-medium">{item.label}</p>
+                                        <p className="text-xs text-gray-300">{item.description}</p>
+                                    </div>
+                                </TooltipContent>
+                            )}
+                        </Tooltip>
+                    ))}
+                </TooltipProvider>
             </nav>
 
             {/* Footer */}
             <footer className="p-4 border-t border-gray-200 dark:border-gray-700">
-                <button
-                    onClick={logout}
-                    className={`
-                        group flex items-center 
-                        ${clientSidebar ? 'justify-center p-3' : 'p-3 gap-3 w-full'} 
-                        rounded-lg transition-all duration-200
-                        text-gray-600 dark:text-gray-300
-                        hover:text-red-600 dark:hover:text-red-400
-                        hover:bg-red-50 dark:hover:bg-red-900/20
-                    `}
-                    title={clientSidebar ? 'Logout' : ''}
-                >
-                    <FaSignOutAlt className="text-lg" />
-                    {!clientSidebar && (
-                        <span className="text-sm font-medium">Logout</span>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <button
+                            onClick={logout}
+                            className={`
+                                group flex items-center 
+                                ${clientSidebar ? 'justify-center p-3' : 'p-3 gap-3 w-full'} 
+                                rounded-lg transition-all duration-200
+                                text-gray-600 dark:text-gray-300
+                                hover:text-red-600 dark:hover:text-red-400
+                                hover:bg-red-50 dark:hover:bg-red-900/20
+                            `}
+                        >
+                            <FaSignOutAlt className="text-lg" />
+                            {!clientSidebar && (
+                                <span className="text-sm font-medium">Logout</span>
+                            )}
+                        </button>
+                    </TooltipTrigger>
+                    {clientSidebar && (
+                        <TooltipContent side="right" sideOffset={10} className="bg-gray-800 text-white">
+                            <p>Logout</p>
+                        </TooltipContent>
                     )}
-                </button>
+                </Tooltip>
             </footer>
 
             {/* Custom scrollbar styles */}
