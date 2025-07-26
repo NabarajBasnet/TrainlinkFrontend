@@ -1,5 +1,7 @@
 'use client';
 
+import { Mail, Phone, MapPin, Share2 } from "lucide-react";
+import { User2 } from "lucide-react";
 import { AiFillInstagram } from "react-icons/ai";
 import { Facebook, Loader2 } from "lucide-react";
 import { FaDumbbell, FaFacebook } from "react-icons/fa";
@@ -116,8 +118,8 @@ const ProfilePage = () => {
             setContactNo(user?.contactNo)
             setEmail(user?.email)
             setLocation(user?.location)
-            setInstagram(user?.instagram)
-            setFacebook(user?.facebook)
+            setInstagram(user?.socialMedia[0].url)
+            setFacebook(user?.socialMedia[1].url)
             // If user is a trainer and has certifications, set them in the form
             if (user.role === "Trainer" && user.trainerProfile?.certifications?.length > 0) {
                 reset({
@@ -764,46 +766,106 @@ const ProfilePage = () => {
 
                             {/* Profile Tab */}
                             <TabsContent value="personal" className="space-y-4">
-                                <Card>
-                                    <CardHeader>
-                                        <div className="flex justify-between items-center">
-                                            <CardTitle className="text-lg font-bold text-orange-500">
-                                                Personal Details Card
-                                            </CardTitle>
-                                            <button
-                                                onClick={() =>
-                                                    openEditDialog('personalDetails', 'personalDetails')
-                                                }
-                                                className="text-primary hover:text-primary/80"
-                                                aria-label="Edit bio"
-                                            >
-                                                <Edit className="h-4 w-4 cursor-pointer" />
-                                            </button>
-                                        </div>
-                                    </CardHeader>
-
-                                    <CardContent>
-                                        {user.role === 'Trainer' ? (
-                                            user?.trainerProfile?.bio ? (
-                                                <div className="prose max-w-none">
-                                                    <p className="text-sm font-medium">{user.trainerProfile.bio}</p>
-                                                </div>
-                                            ) : (
-                                                <p className="text-sm text-muted-foreground">
-                                                    No bio added yet. Tell clients about your training approach.
-                                                </p>
-                                            )
-                                        ) : user?.memberProfile?.fitnessJourney ? (
-                                            <div className="prose max-w-none">
-                                                <p className="text-sm font-medium">{user.memberProfile.fitnessJourney}</p>
+                                {!loading && (
+                                    <Card className="border border-gray-200 shadow-sm">
+                                        <CardHeader className="pb-3">
+                                            <div className="flex justify-between items-center">
+                                                <CardTitle className="text-lg font-bold text-orange-500 flex items-center gap-2">
+                                                    <User2 className="h-5 w-5 text-orange-500" />
+                                                    Personal Details
+                                                </CardTitle>
+                                                <button
+                                                    onClick={() => openEditDialog('personalDetails', 'personalDetails')}
+                                                    className="text-primary cursor-pointer hover:text-primary/80 flex items-center gap-1 text-sm"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                    Edit
+                                                </button>
                                             </div>
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground">
-                                                No bio added yet. Share your fitness journey.
-                                            </p>
-                                        )}
-                                    </CardContent>
-                                </Card>
+                                        </CardHeader>
+
+                                        <CardContent className="space-y-4">
+                                            {/* Email (always exists) */}
+                                            <div className="flex items-start gap-3">
+                                                <Mail className="h-5 w-5 text-gray-400 mt-0.5" />
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500">Email</p>
+                                                    <p className="text-sm text-gray-800">{user.email}</p>
+                                                </div>
+                                            </div>
+
+                                            {/* Contact Number */}
+                                            {user.contactNo && (
+                                                <div className="flex items-start gap-3">
+                                                    <Phone className="h-5 w-5 text-gray-400 mt-0.5" />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-500">Contact Number</p>
+                                                        <p className="text-sm text-gray-800">{user.contactNo}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Location */}
+                                            {user.location && (
+                                                <div className="flex items-start gap-3">
+                                                    <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-500">Location</p>
+                                                        <p className="text-sm text-gray-800">{user.location}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Fitness Journey / Bio */}
+                                            <div className="flex items-start gap-3">
+                                                <User2 className="h-5 w-5 text-gray-400 mt-0.5" />
+                                                <div className="flex-1">
+                                                    <p className="text-sm font-medium text-gray-500">
+                                                        {user.role === 'Trainer' ? 'Bio' : 'Fitness Journey'}
+                                                    </p>
+                                                    {user.role === 'Trainer' ? (
+                                                        user?.trainerProfile?.bio ? (
+                                                            <p className="text-sm text-gray-800">{user.trainerProfile.bio}</p>
+                                                        ) : (
+                                                            <p className="text-sm text-gray-400">
+                                                                No bio added yet. Tell clients about your training approach.
+                                                            </p>
+                                                        )
+                                                    ) : user?.memberProfile?.fitnessJourney ? (
+                                                        <p className="text-sm text-gray-800">{user.memberProfile.fitnessJourney}</p>
+                                                    ) : (
+                                                        <p className="text-sm text-gray-400">
+                                                            No fitness journey added yet. Share your goals and progress.
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Social Media Links */}
+                                            {user.socialMedia?.length > 0 && (
+                                                <div className="flex items-start gap-3">
+                                                    <Share2 className="h-5 w-5 text-gray-400 mt-0.5" />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-500">Social Media</p>
+                                                        <div className="flex flex-wrap gap-2 mt-1">
+                                                            {user.socialMedia.map((item: any) => (
+                                                                <a
+                                                                    key={item.platform}
+                                                                    href={item.url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-sm text-primary hover:underline flex items-center gap-1"
+                                                                >
+                                                                    {item.platform.charAt(0).toUpperCase() + item.platform.slice(1)}
+                                                                </a>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                )}
                             </TabsContent>
 
                             {/* Overview Tab */}
@@ -1541,7 +1603,7 @@ const ProfilePage = () => {
                         </div>
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={closeEditDialog}>
+                            <Button type="button" variant="outline" className="cursor-pointer" onClick={closeEditDialog}>
                                 Cancel
                             </Button>
                             <Button onClick={submitPersonalDetails} className="cursor-pointer" disabled={processing}>
