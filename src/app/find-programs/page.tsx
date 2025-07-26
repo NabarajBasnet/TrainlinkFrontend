@@ -474,88 +474,118 @@ export default function FindPrograms() {
                     </div>
 
                     {/* Profile Sidebar - Last column */}
-                    <div className="lg:col-span-1 space-y-6">
-                        <Card className="p-6 sticky top-18 rounded-sm">
-                            {userLoading ? (
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-4">
-                                        <Skeleton className="h-12 w-12 rounded-full" />
-                                        <div className="space-y-2">
-                                            <Skeleton className="h-4 w-[120px]" />
-                                            <Skeleton className="h-3 w-[80px]" />
-                                        </div>
-                                    </div>
-                                    <Skeleton className="h-4 w-full" />
-                                    <Skeleton className="h-4 w-3/4" />
-                                </div>
-                            ) : user ? (
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-4">
-                                        <Avatar className="h-12 w-12">
-                                            <AvatarImage src={user.avatar} />
-                                            <AvatarFallback>
-                                                {user.fullName?.split(' ').map(n => n[0]).join('')}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div>
-                                            <h3 className="font-semibold">{user.fullName}</h3>
-                                            <p className="text-sm text-muted-foreground">{user.email}</p>
-                                        </div>
-                                    </div>
-
-                                    {user.experties && user.experties.length > 0 && (
-                                        <div className="space-y-2">
-                                            <h4 className="text-sm font-medium">Expertise</h4>
-                                            <div className="flex flex-wrap gap-2">
-                                                {user.experties.map((experty, index) => (
-                                                    <Badge key={index} variant="outline">
-                                                        {experty}
-                                                    </Badge>
-                                                ))}
+                    <div>
+                        <div className="sticky top-18 lg:col-span-1 space-y-4">
+                            <Card className="p-6 rounded-sm">
+                                {userLoading ? (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-4">
+                                            <Skeleton className="h-12 w-12 rounded-full" />
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-[120px]" />
+                                                <Skeleton className="h-3 w-[80px]" />
                                             </div>
                                         </div>
-                                    )}
-
-                                    {user.trainerProfile && (
-                                        <div className="space-y-3">
-                                            <div className="flex items-center justify-between">
-                                                <h4 className="text-sm font-medium">Profile Completion</h4>
-                                                <span className="text-sm font-medium text-primary">
-                                                    {calculateProfileCompletion()}%
-                                                </span>
+                                        <Skeleton className="h-4 w-full" />
+                                        <Skeleton className="h-4 w-3/4" />
+                                    </div>
+                                ) : user ? (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-4">
+                                            <Avatar className="h-12 w-12">
+                                                <AvatarImage src={user.avatarUrl} />
+                                                <AvatarFallback>
+                                                    {user.fullName?.split(' ').map(n => n[0]).join('')}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                            <div>
+                                                <h3 className="font-semibold">{user.fullName}</h3>
+                                                <p className="text-sm text-muted-foreground">{user.email}</p>
                                             </div>
-                                            <Progress value={calculateProfileCompletion()} />
+                                        </div>
 
-                                            {user.trainerProfile.setupStage <= 6 && (
-                                                <div className="mt-4">
-                                                    <Link href="/dashboard/profile">
-                                                        <Button variant="default" className="cursor-pointer w-full">
-                                                            Complete Your Profile
-                                                        </Button>
-                                                    </Link>
-                                                    {calculateProfileCompletion() < 50 && (
-                                                        <div className="mt-3 flex items-center gap-2 text-sm text-yellow-600">
-                                                            <AlertCircle size={16} />
-                                                            <span>Complete your profile to get more clients</span>
-                                                        </div>
-                                                    )}
+                                        {user.trainerProfile && (
+                                            <div className="space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-sm font-medium">Profile Completion</h4>
+                                                    <span className="text-sm font-medium text-primary">
+                                                        {calculateProfileCompletion()}%
+                                                    </span>
                                                 </div>
-                                            )}
+                                                <Progress value={calculateProfileCompletion()} />
+
+                                                {user.trainerProfile.setupStage <= 6 && (
+                                                    <div className="mt-4">
+                                                        <Link href="/dashboard/profile">
+                                                            <Button variant="default" className="cursor-pointer w-full">
+                                                                Complete Your Profile
+                                                            </Button>
+                                                        </Link>
+                                                        {calculateProfileCompletion() < 50 && (
+                                                            <div className="mt-3 flex items-center gap-2 text-sm text-yellow-600">
+                                                                <AlertCircle size={16} />
+                                                                <span>Complete your profile to get more clients</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="text-center space-y-4">
+                                        <User size={48} className="mx-auto text-muted-foreground" />
+                                        <p className="text-muted-foreground">Please sign in to view your profile</p>
+                                        <Link href="/login">
+                                            <Button variant="default" className="w-full">
+                                                Sign In
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                )}
+                            </Card>
+
+                            <Card className="p-6 rounded-sm">
+                                {userLoading ? (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-4">
+                                            <Skeleton className="h-12 w-12 rounded-full" />
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-[120px]" />
+                                                <Skeleton className="h-3 w-[80px]" />
+                                            </div>
                                         </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="text-center space-y-4">
-                                    <User size={48} className="mx-auto text-muted-foreground" />
-                                    <p className="text-muted-foreground">Please sign in to view your profile</p>
-                                    <Link href="/login">
-                                        <Button variant="default" className="w-full">
-                                            Sign In
-                                        </Button>
-                                    </Link>
-                                </div>
-                            )}
-                        </Card>
+                                        <Skeleton className="h-4 w-full" />
+                                        <Skeleton className="h-4 w-3/4" />
+                                    </div>
+                                ) : user ? (
+                                    <div className="space-y-4">
+                                        {user?.trainerProfile?.experties?.length > 0 && (
+                                            <div className="space-y-2">
+                                                <h4 className="text-sm font-medium">Expertise</h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {user?.trainerProfile?.experties.map((experty, index) => (
+                                                        <Badge key={index} variant="default">
+                                                            {experty}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="text-center space-y-4">
+                                        <User size={48} className="mx-auto text-muted-foreground" />
+                                        <p className="text-muted-foreground">Please sign in to view your profile</p>
+                                        <Link href="/login">
+                                            <Button variant="default" className="w-full">
+                                                Sign In
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                )}
+                            </Card>
+                        </div>
                     </div>
                 </div>
             </div>
