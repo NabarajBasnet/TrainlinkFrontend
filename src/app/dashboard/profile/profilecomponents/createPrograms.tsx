@@ -1,6 +1,5 @@
 'use client';
 
-import { RxCross2 } from "react-icons/rx";
 import { FaExclamation } from "react-icons/fa";
 import {
     AlertDialog,
@@ -72,9 +71,13 @@ const formSchema = z.object({
 type ProgramFormData = z.infer<typeof formSchema>;
 
 export default function CreateProgramForm() {
+
+    const api = process.env.NEXT_PUBLIC_API_URL;
     const { user } = useUser();
-    const router = useRouter();
     const [open, setOpen] = useState(false);
+    const [toEditProgram, setToEditProgram] = useState(null);
+    const [level, setLevel] = useState('')
+
     const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
 
     const {
@@ -83,6 +86,7 @@ export default function CreateProgramForm() {
         control,
         reset,
         formState: { errors, isSubmitting },
+        setValue
     } = useForm<ProgramFormData>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -95,33 +99,44 @@ export default function CreateProgramForm() {
             category: '',
         },
     });
-    console.log(selectedPrograms)
     const queryClient = useQueryClient()
 
     // Submit program data
     const onSubmit = async (data: ProgramFormData) => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/create-new-program`, {
-                method: 'POST',
+            const url = toEditProgram
+                ? `${api}/edit-program`
+                : `${api}/create-new-program`;
+
+            const method = toEditProgram ? 'PUT' : 'POST';
+            const body = toEditProgram
+                ? JSON.stringify({ data: { ...data, _id: toEditProgram?._id } })
+                : JSON.stringify(data);
+
+            const res = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
+                body,
             });
+
             const resBody = await res.json();
-            if (!res.ok) throw new Error('Failed to create program');
+            if (!res.ok) throw new Error(resBody.message || 'Failed to process program');
+
             toast.success(resBody.message);
             reset();
             setOpen(false);
+            setToEditProgram(null);
             queryClient.invalidateQueries(['programs']);
         } catch (err) {
             console.error(err);
-            toast.error('Failed to create program');
+            toast.error(err.message || 'Failed to process program');
         }
     };
 
     // Get all my programs
     const getMyPrograms = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/get-my-programs`);
+            const res = await fetch(`${api}/get-my-programs`);
             const resBody = await res.json();
             return resBody;
         } catch (err) {
@@ -149,7 +164,7 @@ export default function CreateProgramForm() {
     // Delete selected programs
     const deletePrograms = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/delete-programs`, {
+            const res = await fetch(`${api}/delete-programs`, {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ programIds: selectedPrograms }),
@@ -165,6 +180,23 @@ export default function CreateProgramForm() {
         }
     };
 
+    // Edit Program
+    // Replace the existing editProgram function with this:
+    const editProgram = (program: any) => {
+        setToEditProgram(program);
+        reset({
+            title: program.title,
+            description: program.description,
+            durationInWeeks: program.durationInWeeks,
+            price: program.price,
+            level: program.level,
+            maxSlot: program.maxSlot,
+            category: program.category
+        });
+        setLevel(program?.level)
+        setOpen(true);
+    };
+
     return (
         <div className="w-full space-y-4">
             <Card className="p-6 rounded-lg">
@@ -172,7 +204,13 @@ export default function CreateProgramForm() {
                     <h1 className="text-xl font-semibold">
                         {user.role === "Trainer" ? "My Training Programs" : "My Current Plan"}
                     </h1>
-                    <Dialog open={open} onOpenChange={setOpen}>
+                    <Dialog open={open} onOpenChange={(isOpen) => {
+                        if (!isOpen) {
+                            setToEditProgram(null);
+                            reset();
+                        }
+                        setOpen(isOpen);
+                    }}>
                         <DialogTrigger asChild>
                             <Button className="gap-2 py-5 rounded-sm cursor-pointer">
                                 <MdAdd className="h-4 w-4" />
@@ -278,8 +316,9 @@ export default function CreateProgramForm() {
                                                     Difficulty Level
                                                 </Label>
                                                 <Select
+                                                    onValueChange={(value) => setValue('level', value)}
                                                     {...register('level')}
-                                                    defaultValue="Beginner"
+                                                    defaultValue={level}
                                                 >
                                                     <SelectTrigger className="w-full focus:ring-1 focus:ring-orange-500 py-6 rounded-sm cursor-pointer">
                                                         <SelectValue placeholder="Select level" />
@@ -355,11 +394,11 @@ export default function CreateProgramForm() {
                                         {isSubmitting ? (
                                             <>
                                                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                                Creating...
+                                                {toEditProgram ? 'Updating...' : 'Creating...'}
                                             </>
                                         ) : (
                                             <>
-                                                Create Program
+                                                {toEditProgram ? 'Update Program' : 'Create Program'}
                                                 <ArrowRight className="h-4 w-4 ml-2" />
                                             </>
                                         )}
@@ -472,16 +511,20 @@ export default function CreateProgramForm() {
                                         </div>
 
                                         <div className="flex flex-col sm:flex-row gap-2">
-                                            <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-sm cursor-pointer">
+                                            <Button
+                                                onClick={() => {
+                                                    editProgram(program)
+                                                }}
+                                                variant="ghost" size="icon" className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer">
                                                 <MdEdit className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-sm cursor-pointer">
+                                            <Button variant="ghost" size="icon" className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer">
                                                 <MdShare className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-sm cursor-pointer">
+                                            <Button variant="ghost" size="icon" className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer">
                                                 <MdWorkspacePremium className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="hover:bg-gray-100 rounded-sm cursor-pointer">
+                                            <Button variant="ghost" size="icon" className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer">
                                                 <ChevronRight className="h-4 w-4" />
                                             </Button>
                                         </div>
