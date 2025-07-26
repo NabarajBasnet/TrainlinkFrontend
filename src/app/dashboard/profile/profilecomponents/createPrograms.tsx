@@ -87,10 +87,9 @@ export default function CreateProgramForm() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             });
-
+            const resBody = await res.json();
             if (!res.ok) throw new Error('Failed to create program');
-
-            toast.success('Program created successfully');
+            toast.success(resBody.message);
             reset();
             setOpen(false);
             router.refresh();
