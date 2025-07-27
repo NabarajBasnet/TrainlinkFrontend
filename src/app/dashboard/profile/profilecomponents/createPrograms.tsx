@@ -1,7 +1,7 @@
 "use client";
 
 import { HiMiniMapPin } from "react-icons/hi2";
-import { ClipboardCheck, Target, Activity, Gift, Dumbbell, Video, Image, Hourglass, Clock, CalendarDays, Globe } from "lucide-react";
+import { Activity, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -74,6 +74,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Controller } from "react-hook-form";
 
 const formSchema = z.object({
   // Basic Information
@@ -110,7 +111,7 @@ export default function CreateProgramForm() {
   const [open, setOpen] = useState(false);
   const [toEditProgram, setToEditProgram] = useState<any>(null);
   const [level, setLevel] = useState("");
-  const [status, setStatus] = useState<string>("Disabled");
+  const [status, setStatus] = useState<string>("Inactive");
 
   const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
 
@@ -231,6 +232,7 @@ export default function CreateProgramForm() {
   // Edit Program
   const editProgram = (program: any) => {
     setToEditProgram(program);
+
     reset({
       title: program.title,
       description: program.description,
@@ -239,11 +241,17 @@ export default function CreateProgramForm() {
       level: program.level,
       maxSlot: program.maxSlot,
       category: program.category,
+      location: program.location,
+      tags: program.tags,
+      isOnline: program.isOnline,
+      isInPerson: program.isInPerson,
+      status: program.status || "Active",
     });
+
     setLevel(program?.level);
-    setStatus(program?.status || "Active");
     setOpen(true);
   };
+
 
   const getBadge = (status: string) => {
     switch (status) {
@@ -253,7 +261,7 @@ export default function CreateProgramForm() {
       case "Inactive":
         return <Badge className="bg-red-400 text-white">Inactive</Badge>;
 
-      case "Pending":
+      case "Draft":
         return <Badge className="bg-yellow-500 text-white">Pending</Badge>;
 
       case "Disabled":
@@ -274,6 +282,10 @@ export default function CreateProgramForm() {
       maxSlot: 0,
       category: "",
       status: "Active",
+      location: "0",
+      isOnline: false,
+      isInPerson: false,
+      tags: []
     });
     setLevel("Beginner");
     setStatus("Active");
@@ -486,33 +498,42 @@ export default function CreateProgramForm() {
                           <Activity className="h-4 w-4 text-orange-500" />
                           Status
                         </Label>
-                        <Select
-                          onValueChange={(value) => setValue("status", value)}
-                          {...register("status")}
-                          defaultValue={status}
-                        >
-                          <SelectTrigger className="w-full focus:ring-1 focus:ring-orange-500 py-6 rounded-sm cursor-pointer">
-                            <SelectValue placeholder="Select status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Active" className="cursor-pointer">
-                              Active
-                            </SelectItem>
-                            <SelectItem value="Inactive" className="cursor-pointer">
-                              Inactive
-                            </SelectItem>
-                            <SelectItem value="Draft" className="cursor-pointer">
-                              Draft
-                            </SelectItem>
-                            <SelectItem value="Completed" className="cursor-pointer">
-                              Completed
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+
+                        <Controller
+                          name="status"
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value}
+                              defaultValue={field.value}
+                            >
+                              <SelectTrigger className="w-full focus:ring-1 focus:ring-orange-500 py-6 rounded-sm cursor-pointer">
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Active" className="cursor-pointer">
+                                  Active
+                                </SelectItem>
+                                <SelectItem value="Inactive" className="cursor-pointer">
+                                  Inactive
+                                </SelectItem>
+                                <SelectItem value="Draft" className="cursor-pointer">
+                                  Draft
+                                </SelectItem>
+                                <SelectItem value="Completed" className="cursor-pointer">
+                                  Completed
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
+
                         {errors.status && (
                           <p className="text-sm text-red-500">{errors.status.message}</p>
                         )}
                       </div>
+
                     </div>
 
                     {/* Location & Availability Section */}
@@ -544,22 +565,35 @@ export default function CreateProgramForm() {
                             Delivery Type
                           </Label>
                           <div className="flex items-center space-x-4">
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id="isOnline"
-                                {...register("isOnline")}
-                                onCheckedChange={(checked) => setValue("isOnline", Boolean(checked))}
-                              />
-                              <Label htmlFor="isOnline">Online</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id="isInPerson"
-                                {...register("isInPerson")}
-                                onCheckedChange={(checked) => setValue("isInPerson", Boolean(checked))}
-                              />
-                              <Label htmlFor="isInPerson">In-Person</Label>
-                            </div>
+                            <Controller
+                              name="isOnline"
+                              control={control}
+                              render={({ field }) => (
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id="isOnline"
+                                    checked={field.value}
+                                    onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                                  />
+                                  <Label htmlFor="isOnline">Online</Label>
+                                </div>
+                              )}
+                            />
+
+                            <Controller
+                              name="isInPerson"
+                              control={control}
+                              render={({ field }) => (
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id="isInPerson"
+                                    checked={field.value}
+                                    onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                                  />
+                                  <Label htmlFor="isInPerson">In-Person</Label>
+                                </div>
+                              )}
+                            />
                           </div>
                         </div>
                       </div>
@@ -618,10 +652,10 @@ export default function CreateProgramForm() {
             </DialogContent>
           </Dialog>
         </div>
-      </Card>
+      </Card >
 
       {/* Programs List */}
-      <Card className="p-6 rounded-lg">
+      < Card className="p-6 rounded-lg" >
         <CardHeader className="p-0 pb-6">
           <div className="flex items-center justify-between">
             <div>
@@ -787,7 +821,7 @@ export default function CreateProgramForm() {
             </div>
           )}
         </CardContent>
-      </Card>
-    </div>
+      </Card >
+    </div >
   );
 }
