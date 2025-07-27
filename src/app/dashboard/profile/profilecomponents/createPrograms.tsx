@@ -1,7 +1,7 @@
 "use client";
 
 import { HiMiniMapPin } from "react-icons/hi2";
-import { Activity, Globe, CalendarDays } from "lucide-react";
+import { Activity, Globe, Eye, CalendarDays, ThumbsUp, ThumbsDown, Bookmark } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -721,7 +721,7 @@ export default function CreateProgramForm() {
           ) : (
             <div className="space-y-4">
               {programs?.map((program: any) => (
-                <Card key={program._id} className="relative overflow-hidden hover:shadow-md transition-shadow">
+                <Card key={program._id} className="relative overflow-hidden hover:shadow-md transition-shadow group">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500"></div>
                   <div className="p-4 flex items-start gap-4">
                     <Checkbox
@@ -733,7 +733,9 @@ export default function CreateProgramForm() {
                     <div className="flex-1 space-y-3">
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div>
-                          <h3 className="font-medium text-lg">{program.title}</h3>
+                          <h3 className="font-medium text-lg group-hover:text-orange-600 transition-colors">
+                            {program.title}
+                          </h3>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800">
                               {program.level}
@@ -750,6 +752,26 @@ export default function CreateProgramForm() {
                       </div>
 
                       <p className="text-sm text-gray-600">{program.description}</p>
+
+                      {/* Engagement Metrics */}
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-1 text-gray-500">
+                          <Eye className="h-4 w-4" />
+                          <span>{program.views || 0} views</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-green-500">
+                          <ThumbsUp className="h-4 w-4" />
+                          <span>{program.likes || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-red-500">
+                          <ThumbsDown className="h-4 w-4" />
+                          <span>{program.dislikes || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-blue-500">
+                          <Bookmark className="h-4 w-4" />
+                          <span>{program.saved || 0} saved</span>
+                        </div>
+                      </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
                         <div className="flex items-center gap-2 text-sm">
@@ -813,7 +835,7 @@ export default function CreateProgramForm() {
                             onClick={() => editProgram(program)}
                             variant="ghost"
                             size="icon"
-                            className="hover:bg-gray-100 cursor-pointer rounded-sm"
+                            className="hover:bg-gray-100 rounded-sm"
                           >
                             <MdEdit className="h-4 w-4" />
                           </Button>
@@ -828,7 +850,7 @@ export default function CreateProgramForm() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="hover:bg-gray-100 cursor-pointer rounded-sm"
+                            className="hover:bg-gray-100 rounded-sm"
                           >
                             <MdShare className="h-4 w-4" />
                           </Button>
@@ -843,7 +865,7 @@ export default function CreateProgramForm() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="hover:bg-gray-100 cursor-pointer rounded-sm"
+                            className="hover:bg-gray-100 rounded-sm"
                           >
                             <MdWorkspacePremium className="h-4 w-4" />
                           </Button>

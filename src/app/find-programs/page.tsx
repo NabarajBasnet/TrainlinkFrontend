@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { HiMiniMapPin } from "react-icons/hi2";
+import { Tag, Globe, ThumbsUp, ThumbsDown } from "lucide-react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -191,6 +193,7 @@ export default function FindPrograms() {
   });
 
   const programs = programsData?.programs || [];
+  console.log(programs)
   const trainingRequests = requestsData?.trainingRequests || [];
   const isLoading =
     userLoading ||
@@ -477,8 +480,8 @@ export default function FindPrograms() {
             {/* Items Feed */}
             {!isLoading && (
               <div className="space-y-4">
-                {items.length > 0 ? (
-                  items.map((item: any) => (
+                {items?.length > 0 ? (
+                  items?.map((item: any) => (
                     <Card
                       key={item._id}
                       className="group hover:shadow-lg transition-all duration-300 hover:border-orange-300 rounded-lg shadow-sm"
@@ -488,22 +491,11 @@ export default function FindPrograms() {
                           <div className="flex items-start gap-4">
                             <Avatar className="h-12 w-12 border-2 border-orange-200">
                               <AvatarImage
-                                src={
-                                  isTrainer
-                                    ? item.memberId?.avatarUrl
-                                    : item.trainerId?.avatarUrl
-                                }
-                                alt={
-                                  isTrainer
-                                    ? item.memberId?.fullName
-                                    : item.trainerId?.fullName
-                                }
+                                src={item.trainerId?.avatarUrl}
+                                alt={item.trainerId?.fullName}
                               />
                               <AvatarFallback className="bg-orange-100 text-orange-700">
-                                {(isTrainer
-                                  ? item.memberId?.fullName
-                                  : item.trainerId?.fullName
-                                )
+                                {item.trainerId?.fullName
                                   ?.split(" ")
                                   .map((n: string) => n[0])
                                   .join("")}
@@ -511,103 +503,128 @@ export default function FindPrograms() {
                             </Avatar>
                             <div>
                               <h3 className="text-xl font-bold text-gray-900 group-hover:text-orange-700 transition-colors">
-                                {isTrainer ? item.goal : item.title}
+                                {item.title}
                               </h3>
                               <div className="flex items-center gap-3 mt-1">
                                 <span className="text-sm text-gray-600 font-medium">
-                                  by{" "}
-                                  {isTrainer
-                                    ? item.memberId?.fullName
-                                    : item.trainerId?.fullName}
+                                  by {item.trainerId?.fullName}
                                 </span>
-                                {!isTrainer && item.rating > 0 && (
+                                {item.rating > 0 && (
                                   <div className="flex items-center gap-1 text-sm bg-yellow-50 text-yellow-800 px-2 py-0.5 rounded-full">
                                     <Star
                                       size={12}
                                       className="fill-yellow-400 text-yellow-400"
                                     />
-                                    <span className="font-medium">
-                                      {item.rating}
-                                    </span>
+                                    <span className="font-medium">{item.rating}</span>
                                     <span className="text-yellow-600">
-                                      ({item.totalReviews})
+                                      ({item.totalReviews || 0})
                                     </span>
                                   </div>
                                 )}
-                                <Badge
-                                  variant={
-                                    isTrainer
-                                      ? getStatusVariant(item.status)
-                                      : getLevelVariant(item.level)
-                                  }
-                                >
-                                  {isTrainer ? item.status : item.level}
+
+                                <Badge variant={getLevelVariant(item.level)}>
+                                  {item.level}
+                                </Badge>
+                                <Badge variant={getStatusVariant(item.status)}>
+                                  {item.status}
                                 </Badge>
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-500">
-                              {formatTimeAgo(item.createdAt)}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 hover:bg-orange-50 cursor-pointer"
-                            >
-                              <Heart
-                                size={16}
-                                className="text-gray-400 hover:text-red-500"
-                              />
-                            </Button>
+
+                          <div className="flex items-center gap-1">
+                            <div>
+                              <span className="text-sm text-gray-500">
+                                Likes
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 cursor-pointer hover:bg-orange-50"
+                              >
+                                <ThumbsUp size={16} className="text-gray-400 hover:text-red-500" />
+                              </Button>
+                            </div>
+
+                            <div className="flex items-center">
+                              <span className="text-sm text-gray-500">
+                                {formatTimeAgo(item.createdAt)}
+                              </span>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 cursor-pointer hover:bg-orange-50"
+                              >
+                                <Heart size={16} className="text-gray-400 hover:text-red-500" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
 
                         <p className="text-gray-600 mb-4 leading-relaxed">
-                          {isTrainer ? item.description : item.description}
+                          {item.description}
                         </p>
 
-                        {/* Tags */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {isTrainer ? (
-                            <>
-                              <Badge
-                                variant="secondary"
-                                className="px-3 py-1 bg-blue-50 text-blue-700"
-                              >
-                                {item.preferredDaysPerWeek} days/week
-                              </Badge>
-                              {item.availableTimeSlots?.map(
-                                (slot: string, i: number) => (
-                                  <Badge
-                                    key={i}
-                                    variant="outline"
-                                    className="px-3 py-1"
-                                  >
-                                    {slot}
-                                  </Badge>
-                                )
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              {item.tags?.map((tag: string, i: number) => (
-                                <Badge
-                                  key={i}
-                                  variant="secondary"
-                                  className="px-3 py-1"
-                                >
-                                  {tag}
-                                </Badge>
-                              ))}
-                              {item.category && (
-                                <Badge variant="outline" className="px-3 py-1">
-                                  {item.category}
-                                </Badge>
-                              )}
-                            </>
-                          )}
+                        {/* Program Details */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-sm">
+                              <Tag className="h-4 w-4 text-gray-500" />
+                              <span className="font-medium">Category:</span>
+                              <span>{item.category}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Calendar className="h-4 w-4 text-gray-500" />
+                              <span className="font-medium">Duration:</span>
+                              <span>{item.durationInWeeks} weeks</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Users className="h-4 w-4 text-gray-500" />
+                              <span className="font-medium">Slots:</span>
+                              <span>
+                                {item.availableSlots}/{item.maxSlot} available
+                              </span>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-sm">
+                              <Globe className="h-4 w-4 text-gray-500" />
+                              <span className="font-medium">Delivery:</span>
+                              <span>
+                                {item.isOnline && item.isInPerson
+                                  ? "Online & In-Person"
+                                  : item.isOnline
+                                    ? "Online"
+                                    : "In-Person"}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <HiMiniMapPin className="h-4 w-4 text-gray-500" />
+                              <span className="font-medium">Location:</span>
+                              <span>{item.location || "Online"}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Eye className="h-4 w-4 text-gray-500" />
+                              <span className="font-medium">Views:</span>
+                              <span>{item.views}</span>
+                            </div>
+                          </div>
                         </div>
+
+                        {/* Tags */}
+                        {item?.tags?.length > 0 && (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {item.tags.map((tag: string, i: number) => (
+                              <Badge
+                                key={i}
+                                variant="secondary"
+                                className="px-3 py-1 bg-orange-50 text-orange-700"
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
 
                         <Separator className="my-4" />
 
@@ -615,41 +632,30 @@ export default function FindPrograms() {
                           <div className="flex items-center gap-6 text-sm">
                             <div className="flex items-center gap-2 text-green-600 font-semibold">
                               <DollarSign size={16} />
-                              <span>
-                                ${isTrainer ? item.budgetPerWeek : item.price}
-                              </span>
-                              {isTrainer && (
-                                <span className="text-gray-500">/week</span>
-                              )}
+                              <span>${item.price}</span>
                             </div>
                             <div className="flex items-center gap-2 text-gray-500">
                               <Clock size={16} />
-                              <span>
-                                {isTrainer
-                                  ? `${item.preferredDaysPerWeek} days/week`
-                                  : `${item.durationInWeeks} weeks`}
-                              </span>
+                              <span>{item.durationInWeeks} weeks</span>
                             </div>
-                            {!isTrainer && (
-                              <div className="flex items-center gap-2 text-gray-500">
-                                <Users size={16} />
-                                <span>{item.availableSlots} slots left</span>
-                              </div>
-                            )}
+                            <div className="flex items-center gap-2 text-gray-500">
+                              <Users size={16} />
+                              <span>{item.availableSlots} slots left</span>
+                            </div>
                           </div>
                           <div className="flex gap-3">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="border-orange-200 cursor-pointer text-orange-700 hover:bg-orange-50"
+                              className="border-orange-200 text-orange-700 hover:bg-orange-50"
                             >
                               View Details
                             </Button>
                             <Button
                               size="sm"
-                              className="cursor-pointer bg-orange-500 hover:bg-orange-600"
+                              className="bg-orange-500 hover:bg-orange-600"
                             >
-                              {isTrainer ? "Send Proposal" : "Enroll Now"}
+                              Enroll Now
                             </Button>
                           </div>
                         </div>
@@ -663,13 +669,11 @@ export default function FindPrograms() {
                         <Search size={32} className="text-orange-600" />
                       </div>
                       <h3 className="text-xl font-semibold mb-2 text-gray-900">
-                        No {isTrainer ? "requests" : "programs"} found
+                        No programs found
                       </h3>
                       <p className="text-gray-600 mb-6">
-                        Try adjusting your search criteria or explore different
-                        filter options to discover the perfect{" "}
-                        {isTrainer ? "training opportunity" : "fitness program"}{" "}
-                        for you.
+                        Try adjusting your search criteria or explore different filter options
+                        to discover the perfect fitness program for you.
                       </p>
                       <Button
                         onClick={resetFilters}
