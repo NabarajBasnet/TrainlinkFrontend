@@ -1,5 +1,7 @@
 "use client";
 
+import { HiMiniMapPin } from "react-icons/hi2";
+import { ClipboardCheck, Target, Activity, Gift, Dumbbell, Video, Image, Hourglass, Clock, CalendarDays, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -74,15 +76,51 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
+  // Basic Information
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
+
+  // Pricing & Duration
   durationInWeeks: z.number().min(1, "Must be at least 1 week"),
   price: z.number().min(0, "Price cannot be negative"),
+
+  // Program Details
   level: z.enum(["Beginner", "Intermediate", "Advanced"]),
   maxSlot: z.number().min(1, "Must have at least 1 slot"),
   category: z.string().min(1, "Category is required"),
-  status: z.string().min(1, "Status is required"),
+  status: z.enum(["Active", "Inactive", "Draft", "Completed"]),
+
+  // Program Content (arrays)
+  goals: z.array(z.string().min(1, "Goal cannot be empty")).optional(),
+  requirements: z.array(z.string().min(1, "Requirement cannot be empty")).optional(),
+  whatYouWillGet: z.array(z.string().min(1, "Item cannot be empty")).optional(),
+  equipment: z.array(z.string().min(1, "Equipment cannot be empty")).optional(),
+
+  // Location & Availability
+  location: z.string().optional(),
+  isOnline: z.boolean().default(true),
+  isInPerson: z.boolean().default(false),
+
+  // Schedule
+  schedule: z.object({
+    daysPerWeek: z.number().min(1, "Must be at least 1 day").max(7, "Cannot exceed 7 days").optional(),
+    sessionsPerDay: z.number().min(1, "Must be at least 1 session").optional(),
+    sessionDuration: z.number().min(1, "Must be at least 1 minute").optional(),
+    timeSlots: z.array(z.string().min(1, "Time slot cannot be empty")).optional(),
+  }).optional(),
+
+  // Media
+  coverImage: z.string().url("Invalid URL format").optional(),
+  images: z.array(z.string().url("Invalid URL format")).optional(),
+  videoUrl: z.string().url("Invalid URL format").optional(),
+
+  // Tags
+  tags: z.array(z.string().min(1, "Tag cannot be empty")).optional(),
 });
+
+// Helper function to convert textarea strings to arrays
+const stringToArray = (str: string) =>
+  str.split('\n').filter(item => item.trim() !== '');
 
 type ProgramFormData = z.infer<typeof formSchema>;
 
@@ -106,6 +144,7 @@ export default function CreateProgramForm() {
     reset,
     formState: { errors, isSubmitting },
     setValue,
+    getValues,
   } = useForm<ProgramFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -116,9 +155,26 @@ export default function CreateProgramForm() {
       level: "Beginner",
       maxSlot: 0,
       category: "",
-      status: "Active", // Add default status
+      status: "Active",
+      goals: [],
+      requirements: [],
+      whatYouWillGet: [],
+      equipment: [],
+      isOnline: true,
+      isInPerson: false,
+      schedule: {
+        daysPerWeek: 0,
+        sessionsPerDay: 0,
+        sessionDuration: 0,
+        timeSlots: [],
+      },
+      coverImage: "",
+      images: [],
+      videoUrl: "",
+      tags: [],
     },
   });
+
   const queryClient = useQueryClient();
 
   // Submit program data
@@ -304,238 +360,470 @@ export default function CreateProgramForm() {
                 </DialogHeader>
 
                 <ScrollArea className="h-[calc(90vh-180px)] p-4">
-                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    {/* Title */}
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="title"
-                        className="flex items-center gap-2"
-                      >
-                        <Layers className="h-4 w-4 text-orange-500" />
-                        Program Title
-                      </Label>
-                      <Input
-                        id="title"
-                        {...register("title")}
-                        placeholder="e.g., 12-Week Fat Loss Program"
-                        className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
-                      />
-                      {errors.title && (
-                        <p className="text-sm text-red-500">
-                          {errors.title.message}
-                        </p>
-                      )}
-                    </div>
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                    {/* Basic Information Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Basic Information</h3>
 
-                    {/* Description */}
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="description"
-                        className="flex items-center gap-2"
-                      >
-                        <BookOpen className="h-4 w-4 text-orange-500" />
-                        Description
-                      </Label>
-                      <Textarea
-                        id="description"
-                        {...register("description")}
-                        placeholder="Detailed description of the program..."
-                        rows={4}
-                        className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[120px] rounded-sm"
-                      />
-                      {errors.description && (
-                        <p className="text-sm text-red-500">
-                          {errors.description.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Duration & Price */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Title */}
                       <div className="space-y-2">
-                        <Label
-                          htmlFor="durationInWeeks"
-                          className="flex items-center gap-2"
-                        >
-                          <Calendar className="h-4 w-4 text-orange-500" />
-                          Duration (weeks)
+                        <Label htmlFor="title" className="flex items-center gap-2">
+                          <Layers className="h-4 w-4 text-orange-500" />
+                          Program Title
                         </Label>
                         <Input
-                          id="durationInWeeks"
-                          type="number"
-                          {...register("durationInWeeks", {
-                            valueAsNumber: true,
-                          })}
-                          placeholder="e.g., 12"
+                          id="title"
+                          {...register("title")}
+                          placeholder="e.g., 12-Week Fat Loss Program"
                           className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
                         />
-                        {errors.durationInWeeks && (
-                          <p className="text-sm text-red-500">
-                            {errors.durationInWeeks.message}
-                          </p>
+                        {errors.title && (
+                          <p className="text-sm text-red-500">{errors.title.message}</p>
                         )}
                       </div>
 
+                      {/* Description */}
                       <div className="space-y-2">
-                        <Label
-                          htmlFor="price"
-                          className="flex items-center gap-2"
-                        >
-                          <DollarSign className="h-4 w-4 text-orange-500" />
-                          Price ($)
+                        <Label htmlFor="description" className="flex items-center gap-2">
+                          <BookOpen className="h-4 w-4 text-orange-500" />
+                          Description
                         </Label>
-                        <Input
-                          id="price"
-                          type="number"
-                          step="0.01"
-                          {...register("price", { valueAsNumber: true })}
-                          placeholder="e.g., 199.99"
-                          className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                        <Textarea
+                          id="description"
+                          {...register("description")}
+                          placeholder="Detailed description of the program..."
+                          rows={4}
+                          className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[120px] rounded-sm"
                         />
-                        {errors.price && (
-                          <p className="text-sm text-red-500">
-                            {errors.price.message}
-                          </p>
+                        {errors.description && (
+                          <p className="text-sm text-red-500">{errors.description.message}</p>
                         )}
                       </div>
                     </div>
 
-                    {/* Level & Max Slots */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Pricing & Duration Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Pricing & Duration</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Duration */}
+                        <div className="space-y-2">
+                          <Label htmlFor="durationInWeeks" className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-orange-500" />
+                            Duration (weeks)
+                          </Label>
+                          <Input
+                            id="durationInWeeks"
+                            type="number"
+                            {...register("durationInWeeks", { valueAsNumber: true })}
+                            placeholder="e.g., 12"
+                            className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                          />
+                          {errors.durationInWeeks && (
+                            <p className="text-sm text-red-500">{errors.durationInWeeks.message}</p>
+                          )}
+                        </div>
+
+                        {/* Price */}
+                        <div className="space-y-2">
+                          <Label htmlFor="price" className="flex items-center gap-2">
+                            <DollarSign className="h-4 w-4 text-orange-500" />
+                            Price ($)
+                          </Label>
+                          <Input
+                            id="price"
+                            type="number"
+                            step="0.01"
+                            {...register("price", { valueAsNumber: true })}
+                            placeholder="e.g., 199.99"
+                            className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                          />
+                          {errors.price && (
+                            <p className="text-sm text-red-500">{errors.price.message}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Program Details Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Program Details</h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Level */}
+                        <div className="space-y-2">
+                          <Label htmlFor="level" className="flex items-center gap-2">
+                            <Award className="h-4 w-4 text-orange-500" />
+                            Difficulty Level
+                          </Label>
+                          <Select
+                            onValueChange={(value) => setValue("level", value)}
+                            {...register("level")}
+                            defaultValue={level}
+                          >
+                            <SelectTrigger className="w-full focus:ring-1 focus:ring-orange-500 py-6 rounded-sm cursor-pointer">
+                              <SelectValue placeholder="Select level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Beginner" className="cursor-pointer">
+                                Beginner
+                              </SelectItem>
+                              <SelectItem value="Intermediate" className="cursor-pointer">
+                                Intermediate
+                              </SelectItem>
+                              <SelectItem value="Advanced" className="cursor-pointer">
+                                Advanced
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                          {errors.level && (
+                            <p className="text-sm text-red-500">{errors.level.message}</p>
+                          )}
+                        </div>
+
+                        {/* Max Participants */}
+                        <div className="space-y-2">
+                          <Label htmlFor="maxSlot" className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-orange-500" />
+                            Max Participants
+                          </Label>
+                          <Input
+                            id="maxSlot"
+                            type="number"
+                            {...register("maxSlot", { valueAsNumber: true })}
+                            placeholder="e.g., 20"
+                            className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                          />
+                          {errors.maxSlot && (
+                            <p className="text-sm text-red-500">{errors.maxSlot.message}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Category */}
                       <div className="space-y-2">
-                        <Label
-                          htmlFor="level"
-                          className="flex items-center gap-2"
-                        >
-                          <Award className="h-4 w-4 text-orange-500" />
-                          Difficulty Level
+                        <Label htmlFor="category" className="flex items-center gap-2">
+                          <Tag className="h-4 w-4 text-orange-500" />
+                          Category
+                        </Label>
+                        <Input
+                          id="category"
+                          {...register("category")}
+                          placeholder="e.g., Fat Loss, Muscle Building"
+                          className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                        />
+                        {errors.category && (
+                          <p className="text-sm text-red-500">{errors.category.message}</p>
+                        )}
+                      </div>
+
+                      {/* Status */}
+                      <div className="space-y-2">
+                        <Label htmlFor="status" className="flex items-center gap-2">
+                          <Activity className="h-4 w-4 text-orange-500" />
+                          Status
                         </Label>
                         <Select
-                          onValueChange={(value: any) => setValue("level", value)}
-                          {...register("level")}
-                          defaultValue={level}
+                          onValueChange={(value) => setValue("status", value)}
+                          {...register("status")}
+                          defaultValue={status}
                         >
                           <SelectTrigger className="w-full focus:ring-1 focus:ring-orange-500 py-6 rounded-sm cursor-pointer">
-                            <SelectValue placeholder="Select level" />
+                            <SelectValue placeholder="Select status" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem
-                              value="Beginner"
-                              className="cursor-pointer"
-                            >
-                              Beginner
+                            <SelectItem value="Active" className="cursor-pointer">
+                              Active
                             </SelectItem>
-                            <SelectItem
-                              value="Intermediate"
-                              className="cursor-pointer"
-                            >
-                              Intermediate
+                            <SelectItem value="Inactive" className="cursor-pointer">
+                              Inactive
                             </SelectItem>
-                            <SelectItem
-                              value="Advanced"
-                              className="cursor-pointer"
-                            >
-                              Advanced
+                            <SelectItem value="Draft" className="cursor-pointer">
+                              Draft
+                            </SelectItem>
+                            <SelectItem value="Completed" className="cursor-pointer">
+                              Completed
                             </SelectItem>
                           </SelectContent>
                         </Select>
-                        {errors.level && (
-                          <p className="text-sm text-red-500">
-                            {errors.level.message}
-                          </p>
+                        {errors.status && (
+                          <p className="text-sm text-red-500">{errors.status.message}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Program Content Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Program Content</h3>
+
+                      {/* Goals */}
+                      <div className="space-y-2">
+                        <Label htmlFor="goals" className="flex items-center gap-2">
+                          <Target className="h-4 w-4 text-orange-500" />
+                          Goals (Add one per line)
+                        </Label>
+                        <Textarea
+                          id="goals"
+                          {...register("goals")}
+                          placeholder="e.g., Lose 10 pounds\nBuild muscle endurance\nImprove flexibility"
+                          rows={3}
+                          className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[80px] rounded-sm"
+                        />
+                        {errors.goals && (
+                          <p className="text-sm text-red-500">{errors.goals.message}</p>
                         )}
                       </div>
 
+                      {/* Requirements */}
                       <div className="space-y-2">
-                        <Label
-                          htmlFor="maxSlot"
-                          className="flex items-center gap-2"
-                        >
-                          <User className="h-4 w-4 text-orange-500" />
-                          Max Participants
+                        <Label htmlFor="requirements" className="flex items-center gap-2">
+                          <ClipboardCheck className="h-4 w-4 text-orange-500" />
+                          Requirements (Add one per line)
+                        </Label>
+                        <Textarea
+                          id="requirements"
+                          {...register("requirements")}
+                          placeholder="e.g., Basic fitness level\nAccess to dumbbells\n30 minutes per day"
+                          rows={3}
+                          className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[80px] rounded-sm"
+                        />
+                        {errors.requirements && (
+                          <p className="text-sm text-red-500">{errors.requirements.message}</p>
+                        )}
+                      </div>
+
+                      {/* What You'll Get */}
+                      <div className="space-y-2">
+                        <Label htmlFor="whatYouWillGet" className="flex items-center gap-2">
+                          <Gift className="h-4 w-4 text-orange-500" />
+                          What Participants Will Get (Add one per line)
+                        </Label>
+                        <Textarea
+                          id="whatYouWillGet"
+                          {...register("whatYouWillGet")}
+                          placeholder="e.g., Customized workout plan\nNutrition guide\nWeekly check-ins"
+                          rows={3}
+                          className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[80px] rounded-sm"
+                        />
+                        {errors.whatYouWillGet && (
+                          <p className="text-sm text-red-500">{errors.whatYouWillGet.message}</p>
+                        )}
+                      </div>
+
+                      {/* Equipment */}
+                      <div className="space-y-2">
+                        <Label htmlFor="equipment" className="flex items-center gap-2">
+                          <Dumbbell className="h-4 w-4 text-orange-500" />
+                          Required Equipment (Add one per line)
+                        </Label>
+                        <Textarea
+                          id="equipment"
+                          {...register("equipment")}
+                          placeholder="e.g., Yoga mat\nResistance bands\nDumbbells"
+                          rows={3}
+                          className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[80px] rounded-sm"
+                        />
+                        {errors.equipment && (
+                          <p className="text-sm text-red-500">{errors.equipment.message}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Location & Availability Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Location & Availability</h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Location */}
+                        <div className="space-y-2">
+                          <Label htmlFor="location" className="flex items-center gap-2">
+                            <HiMiniMapPin className="h-4 w-4 text-orange-500" />
+                            Location (if in-person)
+                          </Label>
+                          <Input
+                            id="location"
+                            {...register("location")}
+                            placeholder="e.g., New York, NY or Online"
+                            className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                          />
+                          {errors.location && (
+                            <p className="text-sm text-red-500">{errors.location.message}</p>
+                          )}
+                        </div>
+
+                        {/* Delivery Type */}
+                        <div className="space-y-4">
+                          <Label className="flex items-center gap-2">
+                            <Globe className="h-4 w-4 text-orange-500" />
+                            Delivery Type
+                          </Label>
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="isOnline"
+                                {...register("isOnline")}
+                                onCheckedChange={(checked) => setValue("isOnline", Boolean(checked))}
+                              />
+                              <Label htmlFor="isOnline">Online</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="isInPerson"
+                                {...register("isInPerson")}
+                                onCheckedChange={(checked) => setValue("isInPerson", Boolean(checked))}
+                              />
+                              <Label htmlFor="isInPerson">In-Person</Label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Schedule Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Schedule</h3>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Days Per Week */}
+                        <div className="space-y-2">
+                          <Label htmlFor="schedule.daysPerWeek" className="flex items-center gap-2">
+                            <CalendarDays className="h-4 w-4 text-orange-500" />
+                            Days Per Week
+                          </Label>
+                          <Input
+                            id="schedule.daysPerWeek"
+                            type="number"
+                            {...register("schedule.daysPerWeek", { valueAsNumber: true })}
+                            placeholder="e.g., 3"
+                            className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                          />
+                        </div>
+
+                        {/* Sessions Per Day */}
+                        <div className="space-y-2">
+                          <Label htmlFor="schedule.sessionsPerDay" className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-orange-500" />
+                            Sessions Per Day
+                          </Label>
+                          <Input
+                            id="schedule.sessionsPerDay"
+                            type="number"
+                            {...register("schedule.sessionsPerDay", { valueAsNumber: true })}
+                            placeholder="e.g., 1"
+                            className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                          />
+                        </div>
+
+                        {/* Session Duration */}
+                        <div className="space-y-2">
+                          <Label htmlFor="schedule.sessionDuration" className="flex items-center gap-2">
+                            <Hourglass className="h-4 w-4 text-orange-500" />
+                            Session Duration (minutes)
+                          </Label>
+                          <Input
+                            id="schedule.sessionDuration"
+                            type="number"
+                            {...register("schedule.sessionDuration", { valueAsNumber: true })}
+                            placeholder="e.g., 45"
+                            className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Time Slots */}
+                      <div className="space-y-2">
+                        <Label htmlFor="schedule.timeSlots" className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-orange-500" />
+                          Available Time Slots (Add one per line)
+                        </Label>
+                        <Textarea
+                          id="schedule.timeSlots"
+                          {...register("schedule.timeSlots")}
+                          placeholder="e.g., 9:00 AM - 10:00 AM\n6:00 PM - 7:00 PM"
+                          rows={3}
+                          className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[80px] rounded-sm"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Media Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Media</h3>
+
+                      {/* Cover Image */}
+                      <div className="space-y-2">
+                        <Label htmlFor="coverImage" className="flex items-center gap-2">
+                          <Image className="h-4 w-4 text-orange-500" />
+                          Cover Image URL
                         </Label>
                         <Input
-                          id="maxSlot"
-                          type="number"
-                          {...register("maxSlot", { valueAsNumber: true })}
-                          placeholder="e.g., 20"
-                          className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                          id="coverImage"
+                          type="file"
+                          className="focus-visible:ring-1 focus-visible:ring-orange-500 rounded-sm"
                         />
-                        {errors.maxSlot && (
-                          <p className="text-sm text-red-500">
-                            {errors.maxSlot.message}
-                          </p>
+                        {errors.coverImage && (
+                          <p className="text-sm text-red-500">{errors.coverImage.message}</p>
                         )}
+                      </div>
+
+                      {/* Additional Images */}
+                      <div className="space-y-2">
+                        <Label htmlFor="images" className="flex items-center gap-2">
+                          <Image className="h-4 w-4 text-orange-500" />
+                          Additional Image URLs (Add one per line)
+                        </Label>
+                        <Input
+                          id="images"
+                          type="file"
+                          {...register("images")}
+                          placeholder="https://example.com/image1.jpg\nhttps://example.com/image2.jpg"
+                          className="focus-visible:ring-1 focus-visible:ring-orange-500 rounded-sm"
+                        />
+                      </div>
+
+                      {/* Video URL */}
+                      <div className="space-y-2">
+                        <Label htmlFor="videoUrl" className="flex items-center gap-2">
+                          <Video className="h-4 w-4 text-orange-500" />
+                          Video URL
+                        </Label>
+                        <Input
+                          id="videoUrl"
+                          {...register("videoUrl")}
+                          placeholder="https://youtube.com/embed/example"
+                          className="focus-visible:ring-1 focus-visible:ring-orange-500 rounded-sm"
+                          type="file"
+                        />
                       </div>
                     </div>
 
-                    {/* Category */}
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="category"
-                        className="flex items-center gap-2"
-                      >
-                        <Tag className="h-4 w-4 text-orange-500" />
-                        Category
-                      </Label>
-                      <Input
-                        id="category"
-                        {...register("category")}
-                        placeholder="e.g., Fat Loss, Muscle Building"
-                        className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
-                      />
-                      {errors.category && (
-                        <p className="text-sm text-red-500">
-                          {errors.category.message}
-                        </p>
-                      )}
+                    {/* Tags Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Tags</h3>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="tags" className="flex items-center gap-2">
+                          <Tag className="h-4 w-4 text-orange-500" />
+                          Tags (Comma separated)
+                        </Label>
+                        <Input
+                          id="tags"
+                          {...register("tags")}
+                          placeholder="e.g., fat-loss, hiit, beginner-friendly"
+                          className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
+                        />
+                        <p className="text-sm text-muted-foreground">Tags help users discover your program</p>
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="level"
-                        className="flex items-center gap-2"
-                      >
-                        <Award className="h-4 w-4 text-orange-500" />
-                        Status
-                      </Label>
-                      <Select
-                        onValueChange={(value) => setValue("status", value)}
-                        {...register("status")}
-                        defaultValue={status}
-                      >
-                        <SelectTrigger className="w-full focus:ring-1 focus:ring-orange-500 py-6 rounded-sm cursor-pointer">
-                          <SelectValue placeholder="Select level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Active" className="cursor-pointer">
-                            Active
-                          </SelectItem>
-                          <SelectItem
-                            value="Inactive"
-                            className="cursor-pointer"
-                          >
-                            Inactive
-                          </SelectItem>
-                          <SelectItem
-                            value="Disabled"
-                            className="cursor-pointer"
-                          >
-                            Disable
-                          </SelectItem>
-                          <SelectItem
-                            value="Pending"
-                            className="cursor-pointer"
-                          >
-                            Pending
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      {errors.status && (
-                        <p className="text-sm text-red-500">
-                          {errors.status.message}
-                        </p>
-                      )}
+                    {/* Submit Button */}
+                    <div className="pt-6">
+                      <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 py-6 rounded-sm">
+                        {isSubmitting ? (
+                          <Loader2 className="h-6 w-6 animate-spin" />
+                        ) : (
+                          "Save Program"
+                        )}
+                      </Button>
                     </div>
                   </form>
                 </ScrollArea>

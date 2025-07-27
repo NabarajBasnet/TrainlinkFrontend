@@ -553,7 +553,7 @@ export default function FindPrograms() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-8 w-8 hover:bg-orange-50"
+                              className="h-8 w-8 hover:bg-orange-50 cursor-pointer"
                             >
                               <Heart
                                 size={16}
@@ -641,13 +641,13 @@ export default function FindPrograms() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="border-orange-200 text-orange-700 hover:bg-orange-50"
+                              className="border-orange-200 cursor-pointer text-orange-700 hover:bg-orange-50"
                             >
                               View Details
                             </Button>
                             <Button
                               size="sm"
-                              className="bg-orange-500 hover:bg-orange-600"
+                              className="cursor-pointer bg-orange-500 hover:bg-orange-600"
                             >
                               {isTrainer ? "Send Proposal" : "Enroll Now"}
                             </Button>
