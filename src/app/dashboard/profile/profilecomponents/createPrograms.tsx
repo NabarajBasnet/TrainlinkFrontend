@@ -1,7 +1,7 @@
 "use client";
 
 import { HiMiniMapPin } from "react-icons/hi2";
-import { Activity, Globe } from "lucide-react";
+import { Activity, Globe, CalendarDays } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -655,7 +655,7 @@ export default function CreateProgramForm() {
       </Card >
 
       {/* Programs List */}
-      < Card className="p-6 rounded-lg" >
+      <Card className="p-6 rounded-lg">
         <CardHeader className="p-0 pb-6">
           <div className="flex items-center justify-between">
             <div>
@@ -676,7 +676,6 @@ export default function CreateProgramForm() {
                     Delete Selected
                   </Button>
                 </AlertDialogTrigger>
-
                 <AlertDialogContent className="bg-white dark:bg-zinc-900 border border-red-500 shadow-xl rounded-xl">
                   <AlertDialogHeader>
                     <AlertDialogTitle className="text-red-600 dark:text-red-400 text-lg font-semibold flex items-center">
@@ -693,7 +692,6 @@ export default function CreateProgramForm() {
                       .
                     </AlertDialogDescription>
                   </AlertDialogHeader>
-
                   <AlertDialogFooter className="flex justify-end gap-3 mt-4">
                     <AlertDialogCancel className="cursor-pointer bg-zinc-200 dark:bg-zinc-700 text-black dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded px-4 py-1.5">
                       Cancel
@@ -723,74 +721,114 @@ export default function CreateProgramForm() {
           ) : (
             <div className="space-y-4">
               {programs?.map((program: any) => (
-                <Card key={program._id} className="relative overflow-hidden">
+                <Card key={program._id} className="relative overflow-hidden hover:shadow-md transition-shadow">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500"></div>
                   <div className="p-4 flex items-start gap-4">
                     <Checkbox
                       checked={selectedPrograms.includes(program._id)}
-                      onCheckedChange={() =>
-                        toggleProgramSelection(program._id)
-                      }
+                      onCheckedChange={() => toggleProgramSelection(program._id)}
                       className="mt-1"
                     />
 
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-lg">{program.title}</h3>
-                        <span className="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800">
-                          {program.level}
-                        </span>
+                    <div className="flex-1 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div>
+                          <h3 className="font-medium text-lg">{program.title}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800">
+                              {program.level}
+                            </span>
+                            {getBadge(program?.status)}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <CalendarDays className="h-4 w-4" />
+                          <span>
+                            Created: {new Date(program.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
                       </div>
-                      {getBadge(program?.status)}
-                      <p className="text-sm text-gray-600 mt-1">
-                        {program.description}
-                      </p>
 
-                      <div className="w-full mt-3 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-                        <div className="flex items-center gap-2">
+                      <p className="text-sm text-gray-600">{program.description}</p>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div className="flex items-center gap-2 text-sm">
                           <Tag className="h-4 w-4 text-gray-500" />
+                          <span className="font-medium">Category:</span>
                           <span>{program.category}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 text-sm">
                           <Calendar className="h-4 w-4 text-gray-500" />
+                          <span className="font-medium">Duration:</span>
                           <span>{program.durationInWeeks} weeks</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 text-sm">
                           <DollarSign className="h-4 w-4 text-gray-500" />
+                          <span className="font-medium">Price:</span>
                           <span>${program.price}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 text-sm">
                           <User className="h-4 w-4 text-gray-500" />
-                          <span>{program.maxSlot} slots</span>
+                          <span className="font-medium">Slots:</span>
+                          <span>
+                            {program.availableSlots}/{program.maxSlot} available
+                          </span>
                         </div>
                       </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Globe className="h-4 w-4 text-gray-500" />
+                          <span className="font-medium">Delivery:</span>
+                          <span>
+                            {program.isOnline && program.isInPerson
+                              ? "Online & In-Person"
+                              : program.isOnline
+                                ? "Online"
+                                : "In-Person"}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <HiMiniMapPin className="h-4 w-4 text-gray-500" />
+                          <span className="font-medium">Location:</span>
+                          <span>{program.location || "Online"}</span>
+                        </div>
+                      </div>
+
+                      {program.tags?.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {program.tags.map((tag: string, index: number) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-2">
                       <Tooltip>
-                        <TooltipTrigger>
+                        <TooltipTrigger asChild>
                           <Button
-                            onClick={() => {
-                              editProgram(program);
-                            }}
+                            onClick={() => editProgram(program)}
                             variant="ghost"
                             size="icon"
-                            className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer"
+                            className="hover:bg-gray-100 cursor-pointer rounded-sm"
                           >
                             <MdEdit className="h-4 w-4" />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Delete Program</p>
+                          <p>Edit Program</p>
                         </TooltipContent>
                       </Tooltip>
 
                       <Tooltip>
-                        <TooltipTrigger>
+                        <TooltipTrigger asChild>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer"
+                            className="hover:bg-gray-100 cursor-pointer rounded-sm"
                           >
                             <MdShare className="h-4 w-4" />
                           </Button>
@@ -801,11 +839,11 @@ export default function CreateProgramForm() {
                       </Tooltip>
 
                       <Tooltip>
-                        <TooltipTrigger>
+                        <TooltipTrigger asChild>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="cursor-pointer hover:bg-gray-100 rounded-sm cursor-pointer"
+                            className="hover:bg-gray-100 cursor-pointer rounded-sm"
                           >
                             <MdWorkspacePremium className="h-4 w-4" />
                           </Button>
@@ -821,7 +859,7 @@ export default function CreateProgramForm() {
             </div>
           )}
         </CardContent>
-      </Card >
+      </Card>
     </div >
   );
 }
