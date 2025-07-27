@@ -90,37 +90,14 @@ const formSchema = z.object({
   category: z.string().min(1, "Category is required"),
   status: z.enum(["Active", "Inactive", "Draft", "Completed"]),
 
-  // Program Content (arrays)
-  goals: z.array(z.string().min(1, "Goal cannot be empty")).optional(),
-  requirements: z.array(z.string().min(1, "Requirement cannot be empty")).optional(),
-  whatYouWillGet: z.array(z.string().min(1, "Item cannot be empty")).optional(),
-  equipment: z.array(z.string().min(1, "Equipment cannot be empty")).optional(),
-
   // Location & Availability
   location: z.string().optional(),
   isOnline: z.boolean().default(true),
   isInPerson: z.boolean().default(false),
 
-  // Schedule
-  schedule: z.object({
-    daysPerWeek: z.number().min(1, "Must be at least 1 day").max(7, "Cannot exceed 7 days").optional(),
-    sessionsPerDay: z.number().min(1, "Must be at least 1 session").optional(),
-    sessionDuration: z.number().min(1, "Must be at least 1 minute").optional(),
-    timeSlots: z.array(z.string().min(1, "Time slot cannot be empty")).optional(),
-  }).optional(),
-
-  // Media
-  coverImage: z.string().url("Invalid URL format").optional(),
-  images: z.array(z.string().url("Invalid URL format")).optional(),
-  videoUrl: z.string().url("Invalid URL format").optional(),
-
   // Tags
   tags: z.array(z.string().min(1, "Tag cannot be empty")).optional(),
 });
-
-// Helper function to convert textarea strings to arrays
-const stringToArray = (str: string) =>
-  str.split('\n').filter(item => item.trim() !== '');
 
 type ProgramFormData = z.infer<typeof formSchema>;
 
@@ -156,21 +133,8 @@ export default function CreateProgramForm() {
       maxSlot: 0,
       category: "",
       status: "Active",
-      goals: [],
-      requirements: [],
-      whatYouWillGet: [],
-      equipment: [],
       isOnline: true,
       isInPerson: false,
-      schedule: {
-        daysPerWeek: 0,
-        sessionsPerDay: 0,
-        sessionDuration: 0,
-        timeSlots: [],
-      },
-      coverImage: "",
-      images: [],
-      videoUrl: "",
       tags: [],
     },
   });
@@ -309,7 +273,7 @@ export default function CreateProgramForm() {
       price: 0,
       maxSlot: 0,
       category: "",
-      status: "Active", // Add status reset
+      status: "Active",
     });
     setLevel("Beginner");
     setStatus("Active");
@@ -551,83 +515,6 @@ export default function CreateProgramForm() {
                       </div>
                     </div>
 
-                    {/* Program Content Section */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Program Content</h3>
-
-                      {/* Goals */}
-                      <div className="space-y-2">
-                        <Label htmlFor="goals" className="flex items-center gap-2">
-                          <Target className="h-4 w-4 text-orange-500" />
-                          Goals (Add one per line)
-                        </Label>
-                        <Textarea
-                          id="goals"
-                          {...register("goals")}
-                          placeholder="e.g., Lose 10 pounds\nBuild muscle endurance\nImprove flexibility"
-                          rows={3}
-                          className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[80px] rounded-sm"
-                        />
-                        {errors.goals && (
-                          <p className="text-sm text-red-500">{errors.goals.message}</p>
-                        )}
-                      </div>
-
-                      {/* Requirements */}
-                      <div className="space-y-2">
-                        <Label htmlFor="requirements" className="flex items-center gap-2">
-                          <ClipboardCheck className="h-4 w-4 text-orange-500" />
-                          Requirements (Add one per line)
-                        </Label>
-                        <Textarea
-                          id="requirements"
-                          {...register("requirements")}
-                          placeholder="e.g., Basic fitness level\nAccess to dumbbells\n30 minutes per day"
-                          rows={3}
-                          className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[80px] rounded-sm"
-                        />
-                        {errors.requirements && (
-                          <p className="text-sm text-red-500">{errors.requirements.message}</p>
-                        )}
-                      </div>
-
-                      {/* What You'll Get */}
-                      <div className="space-y-2">
-                        <Label htmlFor="whatYouWillGet" className="flex items-center gap-2">
-                          <Gift className="h-4 w-4 text-orange-500" />
-                          What Participants Will Get (Add one per line)
-                        </Label>
-                        <Textarea
-                          id="whatYouWillGet"
-                          {...register("whatYouWillGet")}
-                          placeholder="e.g., Customized workout plan\nNutrition guide\nWeekly check-ins"
-                          rows={3}
-                          className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[80px] rounded-sm"
-                        />
-                        {errors.whatYouWillGet && (
-                          <p className="text-sm text-red-500">{errors.whatYouWillGet.message}</p>
-                        )}
-                      </div>
-
-                      {/* Equipment */}
-                      <div className="space-y-2">
-                        <Label htmlFor="equipment" className="flex items-center gap-2">
-                          <Dumbbell className="h-4 w-4 text-orange-500" />
-                          Required Equipment (Add one per line)
-                        </Label>
-                        <Textarea
-                          id="equipment"
-                          {...register("equipment")}
-                          placeholder="e.g., Yoga mat\nResistance bands\nDumbbells"
-                          rows={3}
-                          className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[80px] rounded-sm"
-                        />
-                        {errors.equipment && (
-                          <p className="text-sm text-red-500">{errors.equipment.message}</p>
-                        )}
-                      </div>
-                    </div>
-
                     {/* Location & Availability Section */}
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Location & Availability</h3>
@@ -678,124 +565,6 @@ export default function CreateProgramForm() {
                       </div>
                     </div>
 
-                    {/* Schedule Section */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Schedule</h3>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Days Per Week */}
-                        <div className="space-y-2">
-                          <Label htmlFor="schedule.daysPerWeek" className="flex items-center gap-2">
-                            <CalendarDays className="h-4 w-4 text-orange-500" />
-                            Days Per Week
-                          </Label>
-                          <Input
-                            id="schedule.daysPerWeek"
-                            type="number"
-                            {...register("schedule.daysPerWeek", { valueAsNumber: true })}
-                            placeholder="e.g., 3"
-                            className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
-                          />
-                        </div>
-
-                        {/* Sessions Per Day */}
-                        <div className="space-y-2">
-                          <Label htmlFor="schedule.sessionsPerDay" className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-orange-500" />
-                            Sessions Per Day
-                          </Label>
-                          <Input
-                            id="schedule.sessionsPerDay"
-                            type="number"
-                            {...register("schedule.sessionsPerDay", { valueAsNumber: true })}
-                            placeholder="e.g., 1"
-                            className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
-                          />
-                        </div>
-
-                        {/* Session Duration */}
-                        <div className="space-y-2">
-                          <Label htmlFor="schedule.sessionDuration" className="flex items-center gap-2">
-                            <Hourglass className="h-4 w-4 text-orange-500" />
-                            Session Duration (minutes)
-                          </Label>
-                          <Input
-                            id="schedule.sessionDuration"
-                            type="number"
-                            {...register("schedule.sessionDuration", { valueAsNumber: true })}
-                            placeholder="e.g., 45"
-                            className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Time Slots */}
-                      <div className="space-y-2">
-                        <Label htmlFor="schedule.timeSlots" className="flex items-center gap-2">
-                          <Clock className="h-4 w-4 text-orange-500" />
-                          Available Time Slots (Add one per line)
-                        </Label>
-                        <Textarea
-                          id="schedule.timeSlots"
-                          {...register("schedule.timeSlots")}
-                          placeholder="e.g., 9:00 AM - 10:00 AM\n6:00 PM - 7:00 PM"
-                          rows={3}
-                          className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[80px] rounded-sm"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Media Section */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Media</h3>
-
-                      {/* Cover Image */}
-                      <div className="space-y-2">
-                        <Label htmlFor="coverImage" className="flex items-center gap-2">
-                          <Image className="h-4 w-4 text-orange-500" />
-                          Cover Image URL
-                        </Label>
-                        <Input
-                          id="coverImage"
-                          type="file"
-                          className="focus-visible:ring-1 focus-visible:ring-orange-500 rounded-sm"
-                        />
-                        {errors.coverImage && (
-                          <p className="text-sm text-red-500">{errors.coverImage.message}</p>
-                        )}
-                      </div>
-
-                      {/* Additional Images */}
-                      <div className="space-y-2">
-                        <Label htmlFor="images" className="flex items-center gap-2">
-                          <Image className="h-4 w-4 text-orange-500" />
-                          Additional Image URLs (Add one per line)
-                        </Label>
-                        <Input
-                          id="images"
-                          type="file"
-                          {...register("images")}
-                          placeholder="https://example.com/image1.jpg\nhttps://example.com/image2.jpg"
-                          className="focus-visible:ring-1 focus-visible:ring-orange-500 rounded-sm"
-                        />
-                      </div>
-
-                      {/* Video URL */}
-                      <div className="space-y-2">
-                        <Label htmlFor="videoUrl" className="flex items-center gap-2">
-                          <Video className="h-4 w-4 text-orange-500" />
-                          Video URL
-                        </Label>
-                        <Input
-                          id="videoUrl"
-                          {...register("videoUrl")}
-                          placeholder="https://youtube.com/embed/example"
-                          className="focus-visible:ring-1 focus-visible:ring-orange-500 rounded-sm"
-                          type="file"
-                        />
-                      </div>
-                    </div>
-
                     {/* Tags Section */}
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium text-orange-500 border-b pb-2">Tags</h3>
@@ -807,7 +576,8 @@ export default function CreateProgramForm() {
                         </Label>
                         <Input
                           id="tags"
-                          {...register("tags")}
+                          value={Array.isArray(getValues("tags") ?? []) ? (getValues("tags") ?? []).join(", ") : ""}
+                          onChange={e => setValue("tags", e.target.value.split(",").map(tag => tag.trim()).filter(Boolean))}
                           placeholder="e.g., fat-loss, hiit, beginner-friendly"
                           className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
                         />
@@ -815,46 +585,35 @@ export default function CreateProgramForm() {
                       </div>
                     </div>
 
-                    {/* Submit Button */}
-                    <div className="pt-6">
-                      <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600 py-6 rounded-sm">
+                    <div className="border-t p-4 z-50 sticky bottom-0 bg-gray-900 flex justify-end">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setOpen(false)}
+                        className="py-5 rounded-sm cursor-pointer mr-2"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="py-5 rounded-sm cursor-pointer bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700"
+                      >
                         {isSubmitting ? (
-                          <Loader2 className="h-6 w-6 animate-spin" />
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            {toEditProgram ? "Updating..." : "Creating..."}
+                          </>
                         ) : (
-                          "Save Program"
+                          <>
+                            {toEditProgram ? "Update Program" : "Create Program"}
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </>
                         )}
                       </Button>
                     </div>
                   </form>
                 </ScrollArea>
-
-                <div className="border-t p-4 flex justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setOpen(false)}
-                    className="py-5 rounded-sm cursor-pointer mr-2"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSubmit(onSubmit)}
-                    disabled={isSubmitting}
-                    className="py-5 rounded-sm cursor-pointer bg-orange-500 hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700"
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        {toEditProgram ? "Updating..." : "Creating..."}
-                      </>
-                    ) : (
-                      <>
-                        {toEditProgram ? "Update Program" : "Create Program"}
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
-                </div>
               </div>
             </DialogContent>
           </Dialog>
