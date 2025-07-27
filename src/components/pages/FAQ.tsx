@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, Users, Calendar, Shield, CreditCard, MessageCircle, Star } from 'lucide-react';
 
 const FAQSection = () => {
-    const [openIndex, setOpenIndex] = useState(null);
+    const [openIndex, setOpenIndex] = useState<any>(null);
 
     const faqs = [
         {
@@ -43,7 +43,7 @@ const FAQSection = () => {
         }
     ];
 
-    const toggleFAQ = (index) => {
+    const toggleFAQ = (index: any) => {
         setOpenIndex(openIndex === index ? null : index);
     };
 

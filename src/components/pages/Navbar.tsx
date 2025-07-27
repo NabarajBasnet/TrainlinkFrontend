@@ -43,7 +43,7 @@ import { toast } from "sonner";
 
 export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [activeDropdown, setActiveDropdown] = useState(null);
+    const [activeDropdown, setActiveDropdown] = useState<any>(null);
     const [isScrolledState, setIsScrolledState] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -51,7 +51,9 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
     const [showHelp, setShowHelp] = useState(false);
     const [showProfile, setShowProfile] = useState(false);
     const router = useRouter();
-    const { user, loading } = useUser();
+    const userContext = useUser();
+    const user = (userContext as any)?.user;
+    const loading = (userContext as any)?.loading;
 
     const searchRef = useRef(null);
     const notificationRef = useRef(null);
@@ -82,17 +84,17 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
 
     // Close dropdowns when clicking outside
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (searchRef.current && !searchRef.current.contains(event.target)) {
+        const handleClickOutside = (event: any) => {
+            if (searchRef.current && !(searchRef.current as any).contains(event.target)) {
                 setIsSearchFocused(false);
             }
-            if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+            if (notificationRef.current && !(notificationRef.current as any).contains(event.target)) {
                 setShowNotifications(false);
             }
-            if (helpRef.current && !helpRef.current.contains(event.target)) {
+            if (helpRef.current && !(helpRef.current as any).contains(event.target)) {
                 setShowHelp(false);
             }
-            if (profileRef.current && !profileRef.current.contains(event.target)) {
+            if (profileRef.current && !(profileRef.current as any).contains(event.target)) {
                 setShowProfile(false);
             }
         };
@@ -106,7 +108,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
         setActiveDropdown(null);
     };
 
-    const handleNavigation = (path) => {
+    const handleNavigation = (path: any) => {
         router.push(path);
         handleMobileMenuClose();
     };
@@ -122,13 +124,13 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                 toast.success(resBody.message)
                 window.location.href = resBody.redirect
             }
-        } catch (error) {
+        } catch (error: any) {
             console.log("Error: ", error);
             toast.error(error.message);
         }
     }
 
-    const handleSearch = (e) => {
+    const handleSearch = (e: any) => {
         e.preventDefault();
         if (searchQuery.trim()) {
             router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
@@ -273,7 +275,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                     <div key={index} className="relative group">
                                         <button
                                             className="flex items-center cursor-pointer space-x-1 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
-                                            onMouseEnter={() => setActiveDropdown(index)}
+                                            onMouseEnter={() => setActiveDropdown(index as any)}
                                             onMouseLeave={() => setActiveDropdown(null)}
                                         >
                                             <span>{item.name}</span>
@@ -287,7 +289,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                                 ? 'opacity-100 translate-y-0 visible'
                                                 : 'opacity-0 translate-y-2 invisible'
                                                 }`}
-                                            onMouseEnter={() => setActiveDropdown(index)}
+                                            onMouseEnter={() => setActiveDropdown(index as any)}
                                             onMouseLeave={() => setActiveDropdown(null)}
                                         >
                                             {item.dropdown.map((subItem, subIndex) => (
@@ -468,8 +470,16 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                     onClick={() => setShowProfile(!showProfile)}
                                     className="flex items-center cursor-pointer space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
                                 >
-                                    <div className="w-8 h-8 bg-orange-500 cursor-pointer rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                                        {user ? getInitials(user.fullName) : <User className="h-4 w-4" />}
+                                    <div className="w-8 h-8 bg-orange-500 cursor-pointer rounded-full flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+                                        {user?.avatarUrl ? (
+                                            <img 
+                                                src={user.avatarUrl} 
+                                                alt={user.fullName || 'User avatar'} 
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            user ? getInitials(user.fullName) : <User className="h-4 w-4" />
+                                        )}
                                     </div>
                                     <ChevronDown
                                         className={`h-4 w-4 transition-transform duration-200 ${showProfile ? 'rotate-180' : ''}`}
@@ -484,8 +494,16 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
                                                 {/* Authenticated User Dropdown */}
                                                 <div className="p-4 border-b border-gray-100">
                                                     <div className="flex items-center space-x-3 cursor-pointer">
-                                                        <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                                                            {getInitials(user?.fullName)}
+                                                        <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+                                                            {user?.avatarUrl ? (
+                                                                <img 
+                                                                    src={user.avatarUrl} 
+                                                                    alt={user.fullName || 'User avatar'} 
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                getInitials(user?.fullName)
+                                                            )}
                                                         </div>
                                                         <div>
                                                             <p className="text-sm font-medium text-gray-900">

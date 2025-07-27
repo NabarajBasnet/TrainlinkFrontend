@@ -12,7 +12,7 @@ const ContactPage = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleInputChange = (e) => {
+    const handleInputChange = (e: any) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -20,7 +20,7 @@ const ContactPage = () => {
         }));
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
         setIsSubmitting(true);
 
@@ -149,7 +149,7 @@ const ContactPage = () => {
                                         value={formData.message}
                                         onChange={handleInputChange}
                                         required
-                                        rows="5"
+                                        rows={5}
                                         className="w-full px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all duration-300 resize-none"
                                         placeholder="Tell us how we can help you..."
                                     />

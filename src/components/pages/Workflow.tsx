@@ -48,7 +48,7 @@ const HowItWorks = () => {
     }
   ];
 
-  const StepCard = ({ step, index }) => (
+  const StepCard = ({ step, index }: { step: any, index: number }) => (
     <div className="relative group">
       {/* Step connector line */}
       {index < 3 && (

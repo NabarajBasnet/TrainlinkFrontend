@@ -74,30 +74,30 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
-  title: z.string().min(1, "Title is required"),
+  goal: z.string().min(1, "Goal is required"),
   description: z.string().min(1, "Description is required"),
-  durationInWeeks: z.number().min(1, "Must be at least 1 week"),
-  price: z.number().min(0, "Price cannot be negative"),
-  level: z.enum(["Beginner", "Intermediate", "Advanced"]),
-  maxSlot: z.number().min(1, "Must have at least 1 slot"),
-  category: z.string().min(1, "Category is required"),
-  status: z.string().min(1, "Status is required"),
+  preferredDaysPerWeek: z.number().min(1, "Must be at least 1 day"),
+  budgetPerWeek: z.number().min(0, "Budget cannot be negative"),
+  availableTimeSlots: z
+    .array(z.string())
+    .min(1, "Select at least one time slot"),
+  status: z.enum(["Active", "Inactive", "Disabled", "Pending"]),
 });
 
-type ProgramFormData = z.infer<typeof formSchema>;
+type TrainingRequestFormData = z.infer<typeof formSchema>;
+const timeSlotOptions = ["Morning", "Afternoon", "Evening", "Night"];
 
-export default function CreateProgramForm() {
+export default function CreateTrainingRequestForm() {
   const api = process.env.NEXT_PUBLIC_API_URL;
   const userContext = useUser();
   const user = (userContext as any)?.user;
   const loading = (userContext as any)?.loading;
 
   const [open, setOpen] = useState(false);
-  const [toEditProgram, setToEditProgram] = useState<any>(null);
-  const [level, setLevel] = useState("");
-  const [status, setStatus] = useState<string>("Disabled");
+  const [toEditRequest, setToEditRequest] = useState<any>(null);
+  const [status, setStatus] = useState<string>("Active");
 
-  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
+  const [selectedRequests, setSelectedRequests] = useState<string[]>([]);
 
   const {
     register,
@@ -106,29 +106,40 @@ export default function CreateProgramForm() {
     reset,
     formState: { errors, isSubmitting },
     setValue,
-  } = useForm<ProgramFormData>({
+  } = useForm<TrainingRequestFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
+      goal: "",
       description: "",
-      durationInWeeks: 0,
-      price: 0,
-      level: "Beginner",
-      maxSlot: 0,
-      category: "",
-      status: "Active", // Add default status
+      preferredDaysPerWeek: 0,
+      budgetPerWeek: 0,
+      availableTimeSlots: [],
+      status: "Active",
     },
   });
   const queryClient = useQueryClient();
 
-  // Submit program data
-  const onSubmit = async (data: ProgramFormData) => {
-    try {
-      const url = toEditProgram
-        ? `${api}/update-program/${toEditProgram._id}`
-        : `${api}/create-program`;
+  const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
 
-      const method = toEditProgram ? "PUT" : "POST";
+  const toggleSlot = (slot: string) => {
+    let updated;
+    if (selectedSlots.includes(slot)) {
+      updated = selectedSlots.filter((s) => s !== slot);
+    } else {
+      updated = [...selectedSlots, slot];
+    }
+    setSelectedSlots(updated);
+    setValue("availableTimeSlots", updated);
+  };
+
+  // Submit training request data
+  const onSubmit = async (data: TrainingRequestFormData) => {
+    try {
+      const url = toEditRequest
+        ? `${api}/update-training-request/${toEditRequest._id}`
+        : `${api}/create-training-request`;
+
+      const method = toEditRequest ? "PUT" : "POST";
       const body = JSON.stringify(data);
 
       const res = await fetch(url, {
@@ -139,89 +150,90 @@ export default function CreateProgramForm() {
 
       const resBody = await res.json();
       if (!res.ok)
-        throw new Error(resBody.message || "Failed to process program");
+        throw new Error(
+          resBody.message || "Failed to process training request"
+        );
 
       toast.success(resBody.message);
       reset();
       setOpen(false);
-      setToEditProgram(null);
-      queryClient.invalidateQueries({ queryKey: ["programs"] });
+      setToEditRequest(null);
+      queryClient.invalidateQueries({ queryKey: ["trainingRequests"] });
     } catch (err: any) {
       console.error(err);
-      toast.error(err.message || "Failed to process program");
+      toast.error(err.message || "Failed to process training request");
     }
   };
 
-  // Get all my programs
-  const getMyPrograms = async () => {
+  // Get all my training requests
+  const getMyTrainingRequests = async () => {
     try {
-      const res = await fetch(`${api}/get-my-programs`);
+      const res = await fetch(`${api}/get-my-training-requests`);
       const resBody = await res.json();
       return resBody;
     } catch (err) {
       console.error(err);
-      toast.error("Failed to fetch programs");
+      toast.error("Failed to fetch training requests");
     }
   };
 
   const { data, isLoading, refetch } = useQuery({
-    queryFn: getMyPrograms,
-    queryKey: ["programs"],
+    queryFn: getMyTrainingRequests,
+    queryKey: ["trainingRequests"],
   });
 
-  const { programs } = data || {};
+  const { trainingRequests } = data || {};
 
-  // Toggle program selection
-  const toggleProgramSelection = (programId: string) => {
-    setSelectedPrograms((prev) =>
-      prev.includes(programId)
-        ? prev.filter((id) => id !== programId)
-        : [...prev, programId]
+  // Toggle request selection
+  const toggleRequestSelection = (requestId: string) => {
+    setSelectedRequests((prev) =>
+      prev.includes(requestId)
+        ? prev.filter((id) => id !== requestId)
+        : [...prev, requestId]
     );
   };
 
-  // Delete selected programs
-  const deletePrograms = async () => {
+  // Delete selected requests
+  const deleteRequests = async () => {
     try {
-      // Delete programs one by one since the backend expects individual IDs
-      const deletePromises = selectedPrograms.map(async (programId) => {
-        const res = await fetch(`${api}/delete-program/${programId}`, {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        });
-        if (!res.ok) {
-          const resBody = await res.json();
-          throw new Error(resBody.message || "Failed to delete program");
-        }
-        return res.json();
+      const res = await fetch(`${api}/delete-training-requests`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestIds: selectedRequests }),
       });
-
-      await Promise.all(deletePromises);
-      toast.success("Programs deleted successfully");
-      setSelectedPrograms([]);
-      queryClient.invalidateQueries({ queryKey: ["programs"] });
+      const resBody = await res.json();
+      if (!res.ok)
+        throw new Error(
+          resBody.message || "Failed to delete training requests"
+        );
+      toast.success(
+        resBody.message || "Training requests deleted successfully"
+      );
+      setSelectedRequests([]);
+      queryClient.invalidateQueries({ queryKey: ["trainingRequests"] });
     } catch (err) {
       console.error(err);
       toast.error(
-        err instanceof Error ? err.message : "Failed to delete programs"
+        err instanceof Error
+          ? err.message
+          : "Failed to delete training requests"
       );
     }
   };
 
-  // Edit Program
-  const editProgram = (program: any) => {
-    setToEditProgram(program);
+  // Edit Training Request
+  const editRequest = (request: any) => {
+    setToEditRequest(request);
     reset({
-      title: program.title,
-      description: program.description,
-      durationInWeeks: program.durationInWeeks,
-      price: program.price,
-      level: program.level,
-      maxSlot: program.maxSlot,
-      category: program.category,
+      goal: request.goal,
+      description: request.description,
+      preferredDaysPerWeek: request.preferredDaysPerWeek,
+      budgetPerWeek: request.budgetPerWeek,
+      availableTimeSlots: request.availableTimeSlots || [],
+      status: request.status || "Active",
     });
-    setLevel(program?.level);
-    setStatus(program?.status || "Active");
+    setStatus(request?.status || "Active");
+    setSelectedSlots(request.availableTimeSlots || []);
     setOpen(true);
   };
 
@@ -247,16 +259,15 @@ export default function CreateProgramForm() {
   // Clear states before opening new form
   const clearStates = () => {
     reset({
-      title: "",
+      goal: "",
       description: "",
-      durationInWeeks: 0,
-      price: 0,
-      maxSlot: 0,
-      category: "",
-      status: "Active", // Add status reset
+      preferredDaysPerWeek: 0,
+      budgetPerWeek: 0,
+      availableTimeSlots: [],
+      status: "Active",
     });
-    setLevel("Beginner");
     setStatus("Active");
+    setSelectedSlots([]);
   };
 
   return (
@@ -264,16 +275,17 @@ export default function CreateProgramForm() {
       <Card className="p-6 rounded-lg">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <h1 className="text-xl font-semibold">
-            {user.role === "Trainer"
-              ? "My Training Programs"
-              : "My Current Plan"}
+            {user.role === "Member"
+              ? "My Training Requests"
+              : "Training Requests"}
           </h1>
           <Dialog
             open={open}
             onOpenChange={(isOpen) => {
               if (!isOpen) {
-                setToEditProgram(null);
+                setToEditRequest(null);
                 reset();
+                setSelectedSlots([]);
               }
               setOpen(isOpen);
             }}
@@ -284,7 +296,7 @@ export default function CreateProgramForm() {
                 className="gap-2 py-5 rounded-sm cursor-pointer"
               >
                 <MdAdd className="h-4 w-4" />
-                <span>Create Program</span>
+                <span>Create Training Request</span>
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[625px] dark:bg-gray-900 p-0 rounded-lg">
@@ -294,10 +306,10 @@ export default function CreateProgramForm() {
                     <BookOpen className="h-6 w-6 text-orange-500" />
                     <div>
                       <DialogTitle className="text-2xl">
-                        Program Details
+                        Training Request Form
                       </DialogTitle>
                       <DialogDescription>
-                        Fill in the details to create or edit a training program
+                        Fill in the details to create or edit a training request
                       </DialogDescription>
                     </div>
                   </div>
@@ -305,24 +317,21 @@ export default function CreateProgramForm() {
 
                 <ScrollArea className="h-[calc(90vh-180px)] p-4">
                   <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    {/* Title */}
+                    {/* Goal */}
                     <div className="space-y-2">
-                      <Label
-                        htmlFor="title"
-                        className="flex items-center gap-2"
-                      >
+                      <Label htmlFor="goal" className="flex items-center gap-2">
                         <Layers className="h-4 w-4 text-orange-500" />
-                        Program Title
+                        Goal
                       </Label>
                       <Input
-                        id="title"
-                        {...register("title")}
-                        placeholder="e.g., 12-Week Fat Loss Program"
+                        id="goal"
+                        {...register("goal")}
+                        placeholder="e.g., I have to lost 10 kg in 5 months"
                         className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
                       />
-                      {errors.title && (
+                      {errors.goal && (
                         <p className="text-sm text-red-500">
-                          {errors.title.message}
+                          {errors.goal.message}
                         </p>
                       )}
                     </div>
@@ -339,7 +348,7 @@ export default function CreateProgramForm() {
                       <Textarea
                         id="description"
                         {...register("description")}
-                        placeholder="Detailed description of the program..."
+                        placeholder="Detailed description of your training goals..."
                         rows={4}
                         className="focus-visible:ring-1 focus-visible:ring-orange-500 min-h-[120px] rounded-sm"
                       />
@@ -350,162 +359,106 @@ export default function CreateProgramForm() {
                       )}
                     </div>
 
-                    {/* Duration & Price */}
+                    {/* Preferred days per week and Budget */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <Label
-                          htmlFor="durationInWeeks"
+                          htmlFor="preferredDaysPerWeek"
                           className="flex items-center gap-2"
                         >
                           <Calendar className="h-4 w-4 text-orange-500" />
-                          Duration (weeks)
+                          Preferred days per week
                         </Label>
                         <Input
-                          id="durationInWeeks"
+                          id="preferredDaysPerWeek"
                           type="number"
-                          {...register("durationInWeeks", {
+                          {...register("preferredDaysPerWeek", {
                             valueAsNumber: true,
                           })}
-                          placeholder="e.g., 12"
+                          placeholder="e.g., 3"
                           className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
                         />
-                        {errors.durationInWeeks && (
+                        {errors.preferredDaysPerWeek && (
                           <p className="text-sm text-red-500">
-                            {errors.durationInWeeks.message}
+                            {errors.preferredDaysPerWeek.message}
                           </p>
                         )}
                       </div>
 
                       <div className="space-y-2">
                         <Label
-                          htmlFor="price"
+                          htmlFor="budgetPerWeek"
                           className="flex items-center gap-2"
                         >
                           <DollarSign className="h-4 w-4 text-orange-500" />
-                          Price ($)
+                          Budget per week ($)
                         </Label>
                         <Input
-                          id="price"
+                          id="budgetPerWeek"
                           type="number"
                           step="0.01"
-                          {...register("price", { valueAsNumber: true })}
+                          {...register("budgetPerWeek", {
+                            valueAsNumber: true,
+                          })}
                           placeholder="e.g., 199.99"
                           className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
                         />
-                        {errors.price && (
+                        {errors.budgetPerWeek && (
                           <p className="text-sm text-red-500">
-                            {errors.price.message}
+                            {errors.budgetPerWeek.message}
                           </p>
                         )}
                       </div>
                     </div>
 
-                    {/* Level & Max Slots */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <Label
-                          htmlFor="level"
-                          className="flex items-center gap-2"
-                        >
-                          <Award className="h-4 w-4 text-orange-500" />
-                          Difficulty Level
-                        </Label>
-                        <Select
-                          onValueChange={(value: any) => setValue("level", value)}
-                          {...register("level")}
-                          defaultValue={level}
-                        >
-                          <SelectTrigger className="w-full focus:ring-1 focus:ring-orange-500 py-6 rounded-sm cursor-pointer">
-                            <SelectValue placeholder="Select level" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem
-                              value="Beginner"
-                              className="cursor-pointer"
-                            >
-                              Beginner
-                            </SelectItem>
-                            <SelectItem
-                              value="Intermediate"
-                              className="cursor-pointer"
-                            >
-                              Intermediate
-                            </SelectItem>
-                            <SelectItem
-                              value="Advanced"
-                              className="cursor-pointer"
-                            >
-                              Advanced
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        {errors.level && (
-                          <p className="text-sm text-red-500">
-                            {errors.level.message}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label
-                          htmlFor="maxSlot"
-                          className="flex items-center gap-2"
-                        >
-                          <User className="h-4 w-4 text-orange-500" />
-                          Max Participants
-                        </Label>
-                        <Input
-                          id="maxSlot"
-                          type="number"
-                          {...register("maxSlot", { valueAsNumber: true })}
-                          placeholder="e.g., 20"
-                          className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
-                        />
-                        {errors.maxSlot && (
-                          <p className="text-sm text-red-500">
-                            {errors.maxSlot.message}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Category */}
+                    {/* Available Time Slots */}
                     <div className="space-y-2">
-                      <Label
-                        htmlFor="category"
-                        className="flex items-center gap-2"
-                      >
-                        <Tag className="h-4 w-4 text-orange-500" />
-                        Category
+                      <Label className="flex items-center gap-2">
+                        <Award className="h-4 w-4 text-orange-500" />
+                        Available Time Slots
                       </Label>
-                      <Input
-                        id="category"
-                        {...register("category")}
-                        placeholder="e.g., Fat Loss, Muscle Building"
-                        className="focus-visible:ring-1 focus-visible:ring-orange-500 py-6 rounded-sm"
-                      />
-                      {errors.category && (
+
+                      <div className="grid grid-cols-2 gap-2">
+                        {timeSlotOptions.map((slot) => (
+                          <button
+                            type="button"
+                            key={slot}
+                            onClick={() => toggleSlot(slot)}
+                            className={`py-2 px-4 rounded border ${
+                              selectedSlots.includes(slot)
+                                ? "bg-orange-500 text-white border-orange-500"
+                                : "bg-white text-gray-700 border-gray-300"
+                            }`}
+                          >
+                            {slot}
+                          </button>
+                        ))}
+                      </div>
+
+                      {errors.availableTimeSlots && (
                         <p className="text-sm text-red-500">
-                          {errors.category.message}
+                          {errors.availableTimeSlots.message}
                         </p>
                       )}
                     </div>
 
                     <div className="space-y-2">
                       <Label
-                        htmlFor="level"
+                        htmlFor="status"
                         className="flex items-center gap-2"
                       >
                         <Award className="h-4 w-4 text-orange-500" />
                         Status
                       </Label>
                       <Select
-                        onValueChange={(value) => setValue("status", value)}
+                        onValueChange={(value: any) =>
+                          setValue("status", value)
+                        }
                         {...register("status")}
                         defaultValue={status}
                       >
                         <SelectTrigger className="w-full focus:ring-1 focus:ring-orange-500 py-6 rounded-sm cursor-pointer">
-                          <SelectValue placeholder="Select level" />
+                          <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Active" className="cursor-pointer">
@@ -521,7 +474,7 @@ export default function CreateProgramForm() {
                             value="Disabled"
                             className="cursor-pointer"
                           >
-                            Disable
+                            Disabled
                           </SelectItem>
                           <SelectItem
                             value="Pending"
@@ -557,11 +510,13 @@ export default function CreateProgramForm() {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        {toEditProgram ? "Updating..." : "Creating..."}
+                        {toEditRequest ? "Updating..." : "Creating..."}
                       </>
                     ) : (
                       <>
-                        {toEditProgram ? "Update Program" : "Create Program"}
+                        {toEditRequest
+                          ? "Update Training Request"
+                          : "Create Training Request"}
                         <ArrowRight className="h-4 w-4 ml-2" />
                       </>
                     )}
@@ -573,18 +528,18 @@ export default function CreateProgramForm() {
         </div>
       </Card>
 
-      {/* Programs List */}
+      {/* Training Requests List */}
       <Card className="p-6 rounded-lg">
         <CardHeader className="p-0 pb-6">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Your Programs</CardTitle>
+              <CardTitle>Your Training Requests</CardTitle>
               <CardDescription>
-                {programs?.length || 0} program
-                {programs?.length !== 1 ? "s" : ""} available
+                {trainingRequests?.length || 0} request
+                {trainingRequests?.length !== 1 ? "s" : ""} available
               </CardDescription>
             </div>
-            {selectedPrograms.length > 0 && (
+            {selectedRequests.length > 0 && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -603,8 +558,8 @@ export default function CreateProgramForm() {
                       Confirm Deletion
                     </AlertDialogTitle>
                     <AlertDialogDescription className="text-zinc-700 dark:text-zinc-300 mt-2">
-                      {selectedPrograms.length} are selected. Are you sure you
-                      want to delete those programs? This action{" "}
+                      {selectedRequests.length} are selected. Are you sure you
+                      want to delete those training requests? This action{" "}
                       <span className="font-semibold text-red-600 dark:text-red-400">
                         cannot be undone and this action will remove data from
                         our server completely.
@@ -619,7 +574,7 @@ export default function CreateProgramForm() {
                     </AlertDialogCancel>
                     <AlertDialogAction
                       className="cursor-pointer bg-red-600 hover:bg-red-700 text-white rounded px-4 py-1.5 shadow"
-                      onClick={deletePrograms}
+                      onClick={deleteRequests}
                     >
                       Delete
                     </AlertDialogAction>
@@ -635,52 +590,55 @@ export default function CreateProgramForm() {
             <div className="flex justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin" />
             </div>
-          ) : programs?.length === 0 ? (
+          ) : trainingRequests?.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              No programs found. Create your first program to get started.
+              No training requests found. Create your first training request to
+              get started.
             </div>
           ) : (
             <div className="space-y-4">
-              {programs?.map((program: any) => (
-                <Card key={program._id} className="relative overflow-hidden">
+              {trainingRequests?.map((request: any) => (
+                <Card key={request._id} className="relative overflow-hidden">
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-orange-500"></div>
                   <div className="p-4 flex items-start gap-4">
                     <Checkbox
-                      checked={selectedPrograms.includes(program._id)}
+                      checked={selectedRequests.includes(request._id)}
                       onCheckedChange={() =>
-                        toggleProgramSelection(program._id)
+                        toggleRequestSelection(request._id)
                       }
                       className="mt-1"
                     />
 
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-lg">{program.title}</h3>
-                        <span className="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-800">
-                          {program.level}
-                        </span>
+                        <h3 className="font-medium text-lg">{request.goal}</h3>
+                        {getBadge(request?.status)}
                       </div>
-                      {getBadge(program?.status)}
                       <p className="text-sm text-gray-600 mt-1">
-                        {program.description}
+                        {request.description}
                       </p>
 
                       <div className="w-full mt-3 grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                         <div className="flex items-center gap-2">
-                          <Tag className="h-4 w-4 text-gray-500" />
-                          <span>{program.category}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4 text-gray-500" />
-                          <span>{program.durationInWeeks} weeks</span>
+                          <span>{request.preferredDaysPerWeek} days/week</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <DollarSign className="h-4 w-4 text-gray-500" />
-                          <span>${program.price}</span>
+                          <span>${request.budgetPerWeek}/week</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-gray-500" />
-                          <span>{program.maxSlot} slots</span>
+                          <Award className="h-4 w-4 text-gray-500" />
+                          <span>
+                            {request.availableTimeSlots?.length || 0} time slots
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Tag className="h-4 w-4 text-gray-500" />
+                          <span>
+                            {request.availableTimeSlots?.join(", ") ||
+                              "No slots"}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -690,7 +648,7 @@ export default function CreateProgramForm() {
                         <TooltipTrigger>
                           <Button
                             onClick={() => {
-                              editProgram(program);
+                              editRequest(request);
                             }}
                             variant="ghost"
                             size="icon"
@@ -700,7 +658,7 @@ export default function CreateProgramForm() {
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Delete Program</p>
+                          <p>Edit Training Request</p>
                         </TooltipContent>
                       </Tooltip>
 
@@ -715,7 +673,7 @@ export default function CreateProgramForm() {
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Share Program</p>
+                          <p>Share Training Request</p>
                         </TooltipContent>
                       </Tooltip>
 
@@ -730,7 +688,7 @@ export default function CreateProgramForm() {
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Promote Program</p>
+                          <p>Promote Training Request</p>
                         </TooltipContent>
                       </Tooltip>
                     </div>

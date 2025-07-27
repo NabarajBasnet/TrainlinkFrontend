@@ -19,7 +19,7 @@ import {
 const PricingPage = () => {
     const [expandedFaq, setExpandedFaq] = useState(null);
 
-    const toggleFaq = (index) => {
+    const toggleFaq = (index: any) => {
         setExpandedFaq(expandedFaq === index ? null : index);
     };
 

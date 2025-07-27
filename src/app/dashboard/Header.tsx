@@ -28,8 +28,9 @@ import { useUser } from "@/components/Providers/LoggedInUser/LoggedInUserProvide
 import { useRef } from "react";
 
 const Header = () => {
-    const LoggedInUser = useUser();
-    const { user, loading } = LoggedInUser || {};
+    const userContext = useUser();
+    const user = (userContext as any)?.user;
+    const loading = (userContext as any)?.loading;
 
     const dispatch = useDispatch();
     const router = useRouter();
@@ -256,8 +257,16 @@ const Header = () => {
                         onClick={() => setShowProfile(!showProfile)}
                         className="flex items-center cursor-pointer space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200"
                     >
-                        <div className="w-8 h-8 bg-orange-500 cursor-pointer rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {user ? getInitials(user.fullName) : <User className="h-4 w-4" />}
+                        <div className="w-8 h-8 bg-orange-500 cursor-pointer rounded-full flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+                            {user?.avatarUrl ? (
+                                <img 
+                                    src={user?.avatarUrl} 
+                                    alt={user.fullName || 'User avatar'} 
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                getInitials(user?.fullName)
+                            )}
                         </div>
                         <ChevronDown
                             className={`h-4 w-4 transition-transform duration-200 ${showProfile ? 'rotate-180' : ''}`}
@@ -272,8 +281,16 @@ const Header = () => {
                                     {/* Authenticated User Dropdown */}
                                     <div className="p-4 border-b border-gray-100">
                                         <div className="flex items-center space-x-3 cursor-pointer">
-                                            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                                                {getInitials(user?.fullName)}
+                                            <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
+                                                {user?.avatarUrl ? (
+                                                    <img 
+                                                        src={user.avatarUrl} 
+                                                        alt={user.fullName || 'User avatar'} 
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    getInitials(user?.fullName)
+                                                )}
                                             </div>
                                             <div>
                                                 <p className="text-sm font-medium text-gray-900">

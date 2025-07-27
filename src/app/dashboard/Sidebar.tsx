@@ -24,7 +24,7 @@ import {
 
 const Sidebar = () => {
     const router = useRouter();
-    const clientSidebar = useSelector((state: boolean) => state.rtkreducer.sidebarMinimized);
+    const clientSidebar = useSelector((state: any) => state.rtkreducer.sidebarMinimized);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {

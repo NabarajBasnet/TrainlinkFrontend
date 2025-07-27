@@ -6,7 +6,7 @@ type UserProps = {
     children: React.ReactNode
 }
 
-const UserContext = createContext();
+const UserContext = createContext<any>(null);
 
 const LoggedInUserProvider = ({ children }: UserProps) => {
 

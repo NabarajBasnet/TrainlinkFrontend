@@ -102,7 +102,7 @@ const TestimonialsPage = () => {
 
   const currentTestimonials = activeTab === 'members' ? memberTestimonials : trainerTestimonials;
 
-  const renderStars = (rating) => {
+  const renderStars = (rating: any) => {
     return [...Array(5)].map((_, i) => (
       <Star
         key={i}
