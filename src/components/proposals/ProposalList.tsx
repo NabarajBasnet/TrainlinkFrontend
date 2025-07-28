@@ -1,5 +1,17 @@
 'use client';
 
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
@@ -12,6 +24,8 @@ import { Calendar, Clock, DollarSign, Target } from 'lucide-react';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser } from '../Providers/LoggedInUser/LoggedInUserProvider';
+import { MdCheck, MdClose } from "react-icons/md";
+import { Textarea } from "../ui/textarea";
 
 interface User {
   _id: string;
@@ -53,10 +67,11 @@ export const ProposalList: React.FC = () => {
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL;
   const { user, loading, refetch, setRefetch } = useUser();
+  const userRole = user?.role;
 
   const getAllProposals = async (): Promise<ProposalResponse> => {
     try {
-      const url = user?.role === 'Trainer' ? `${API_BASE}/get-proposals` : `${API_BASE}/get-members-proposals`;
+      const url = userRole === 'Trainer' ? `${API_BASE}/get-proposals` : `${API_BASE}/get-members-proposals`;
 
       const response = await fetch(url);
       const resBody = await response.json();
@@ -131,9 +146,93 @@ export const ProposalList: React.FC = () => {
         <CardFooter className="flex justify-between items-center">
           <p className="text-sm text-muted-foreground">Sent on {formattedDate}</p>
           {status === 'Pending' && (
-            <div className="space-x-2">
-              <Button variant="outline" size="sm">View Details</Button>
-              <Button size="sm">Respond</Button>
+            <div className="space-x-2 flex items-center">
+              <Button variant="outline" className='cursor-pointer' size="sm">View Details</Button>
+              {userRole === 'Trainer' ? (
+                <Dialog>
+                  <form>
+                    <DialogTrigger asChild>
+                      <Button size="sm" className="cursor-pointer">Cancel Proposal</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px] dark:bg-gray-900">
+                      <DialogHeader>
+                        <DialogTitle>Cancel Proposal</DialogTitle>
+                        <DialogDescription>
+                          Optionally provide a reason for cancellation.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-3">
+                          <Label htmlFor="cancel-reason">Reason</Label>
+                          <Input
+                            id="cancel-reason"
+                            name="cancelReason"
+                            className="py-5 rounded-sm"
+                            placeholder="E.g. Client is unresponsive or unavailable"
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant="outline" className="py-5 rounded-sm cursor-pointer">Close</Button>
+                        </DialogClose>
+                        <Button type="submit" variant="destructive" className="py-5 rounded-sm cursor-pointer">Confirm Cancel</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </form>
+                </Dialog>
+              ) : (
+                <Dialog>
+                  <form>
+                    <DialogTrigger asChild>
+                      <Button size="sm" className="cursor-pointer">Respond</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px] dark:bg-gray-900">
+                      <DialogHeader>
+                        <DialogTitle>Respond to Proposal</DialogTitle>
+                        <DialogDescription>
+                          Provide a short response message before accepting or rejecting the proposal.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid gap-3">
+                          <Label htmlFor="response-title">Title</Label>
+                          <Input
+                            id="response-title"
+                            name="responseTitle"
+                            className="py-5 rounded-sm"
+                            placeholder="E.g. Training request accepted"
+                            required
+                          />
+                        </div>
+                        <div className="grid gap-3">
+                          <Label htmlFor="response-message">Message</Label>
+                          <Textarea
+                            id="response-message"
+                            name="responseMessage"
+                            placeholder="You have been assigned a trainer. Let's get started!"
+                            className="border rounded-sm px-3 py-2 focus:outline-orange-500"
+                            rows={7}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant="outline" className="py-5 rounded-sm cursor-pointer">
+                            <MdClose />
+                            <span>Reject</span>
+                          </Button>
+                        </DialogClose>
+                        <Button type="submit" className="py-5 rounded-sm cursor-pointer">
+                          <MdCheck />
+                          <span>Accept</span>
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </form>
+                </Dialog>
+              )}
             </div>
           )}
         </CardFooter>
