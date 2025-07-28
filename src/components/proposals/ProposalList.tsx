@@ -12,15 +12,15 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, DollarSign, Target } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Loader2, Send, SendHorizonal, Target } from 'lucide-react';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUser } from '../Providers/LoggedInUser/LoggedInUserProvider';
@@ -53,7 +53,7 @@ interface Proposal {
   memberId: User;
   planId: Plan;
   message: string;
-  status: 'Pending' | 'Accepted' | 'Rejected';
+  status: 'Pending' | 'Accepted' | 'Rejected' | 'Cancelled';
   createdAt: string;
   updatedAt: string;
 }
@@ -68,6 +68,11 @@ export const ProposalList: React.FC = () => {
   const API_BASE = process.env.NEXT_PUBLIC_API_URL;
   const { user, loading, refetch, setRefetch } = useUser();
   const userRole = user?.role;
+  const queryClient = useQueryClient();
+
+  // states
+  const [cancellationReason, setCancellationReason] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   const getAllProposals = async (): Promise<ProposalResponse> => {
     try {
@@ -101,6 +106,54 @@ export const ProposalList: React.FC = () => {
     const { trainerId, planId, message, status, createdAt } = proposal;
     const date = new Date(createdAt);
     const formattedDate = format(date, 'MMM d, yyyy');
+
+    const cancellProposal = async (id: string) => {
+      setIsProcessing(true)
+      try {
+        const response = await fetch(`${API_BASE}/cancell-proposal`, {
+          method: "PATCH",
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id, cancellationReason })
+        });
+
+        const resBody = await response.json();
+        if (response.ok) {
+          queryClient.invalidateQueries(['proposals']);
+          setIsProcessing(false)
+          toast.success(resBody.message);
+        };
+      } catch (error) {
+        setIsProcessing(false)
+        console.log("Error: ", error);
+        toast.error(error.message);
+      };
+    };
+
+    const resendProposal = async (id: string) => {
+      setIsProcessing(true)
+      try {
+        const response = await fetch(`${API_BASE}/resend-proposal`, {
+          method: "PATCH",
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ id })
+        });
+
+        const resBody = await response.json();
+        if (response.ok) {
+          queryClient.invalidateQueries(['proposals']);
+          setIsProcessing(false)
+          toast.success(resBody.message);
+        };
+      } catch (error) {
+        setIsProcessing(false)
+        console.log("Error: ", error);
+        toast.error(error.message);
+      };
+    };
 
     return (
       <Card key={proposal._id} className="hover:shadow-md transition-shadow">
@@ -145,41 +198,59 @@ export const ProposalList: React.FC = () => {
         </CardContent>
         <CardFooter className="flex justify-between items-center">
           <p className="text-sm text-muted-foreground">Sent on {formattedDate}</p>
+          <div className="flex items-end justify-end">
+            {proposal?.status === 'Cancelled' &&
+              <Button onClick={() => resendProposal(proposal._id)} className='rounded-sm py-5 cursor-pointer' size="sm">
+                {isProcessing ? <Loader2 className="animate-spin duration-500" /> : <SendHorizonal />}
+                <span>
+                  {isProcessing ? 'Resending...' : 'Resend Proposal'}
+                </span>
+              </Button>
+            }
+          </div>
           {status === 'Pending' && (
             <div className="space-x-2 flex items-center">
               <Button variant="outline" className='cursor-pointer' size="sm">View Details</Button>
               {userRole === 'Trainer' ? (
                 <Dialog>
-                  <form>
-                    <DialogTrigger asChild>
-                      <Button size="sm" className="cursor-pointer">Cancel Proposal</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px] dark:bg-gray-900">
-                      <DialogHeader>
-                        <DialogTitle>Cancel Proposal</DialogTitle>
-                        <DialogDescription>
-                          Optionally provide a reason for cancellation.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div className="grid gap-3">
-                          <Label htmlFor="cancel-reason">Reason</Label>
-                          <Input
-                            id="cancel-reason"
-                            name="cancelReason"
-                            className="py-5 rounded-sm"
-                            placeholder="E.g. Client is unresponsive or unavailable"
-                          />
-                        </div>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="cursor-pointer">Cancel Proposal</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px] dark:bg-gray-900">
+                    <DialogHeader>
+                      <DialogTitle>Cancel Proposal</DialogTitle>
+                      <DialogDescription>
+                        Optionally provide a reason for cancellation.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-3">
+                        <Label htmlFor="cancel-reason">Reason</Label>
+                        <Input
+                          id="cancel-reason"
+                          name="cancelReason"
+                          value={cancellationReason}
+                          onChange={(e) => setCancellationReason(e.target.value)}
+                          className="py-5 rounded-sm"
+                          placeholder="E.g. Client is unresponsive or unavailable"
+                        />
                       </div>
-                      <DialogFooter>
-                        <DialogClose asChild>
-                          <Button variant="outline" className="py-5 rounded-sm cursor-pointer">Close</Button>
-                        </DialogClose>
-                        <Button type="submit" variant="destructive" className="py-5 rounded-sm cursor-pointer">Confirm Cancel</Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </form>
+                    </div>
+                    <DialogFooter>
+                      <DialogClose asChild>
+                        <Button variant="outline" className="py-5 rounded-sm cursor-pointer">Close</Button>
+                      </DialogClose>
+                      <Button onClick={() => cancellProposal(proposal._id)}
+                        variant="destructive"
+                        className="py-5 rounded-sm cursor-pointer"
+                      >
+                        {isProcessing ? <Loader2 className="animate-spin duration-500" /> : <MdClose />}
+                        <span>
+                          {isProcessing ? 'Cancelling...' : 'Confirm Cancel'}
+                        </span>
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
                 </Dialog>
               ) : (
                 <Dialog>
@@ -255,12 +326,12 @@ export const ProposalList: React.FC = () => {
       </div>
 
       <Tabs defaultValue="pending" className="w-full">
-        <TabsList className="grid grid-cols-2 w-[400px]">
-          <TabsTrigger value="pending">
-            Pending ({pendingProposals.length})
+        <TabsList className="grid grid-cols-2 w-[400px] rounded-sm">
+          <TabsTrigger value="pending" className="cursor-pointer rounded-sm">
+            Pending ({pendingProposals?.length})
           </TabsTrigger>
-          <TabsTrigger value="responded">
-            Responded ({resolvedProposals.length})
+          <TabsTrigger value="responded" className="cursor-pointer rounded-sm">
+            Responded ({resolvedProposals?.length})
           </TabsTrigger>
         </TabsList>
 
@@ -304,7 +375,7 @@ export const ProposalList: React.FC = () => {
               </p>
             </div>
           ) : (
-            resolvedProposals.map(renderProposalCard)
+            resolvedProposals?.map(renderProposalCard)
           )}
         </TabsContent>
       </Tabs>

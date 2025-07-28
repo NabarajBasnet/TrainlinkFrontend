@@ -167,15 +167,15 @@ export const ActiveCollaborations: React.FC = () => {
         <h2 className="text-2xl font-bold">Active Collaborations</h2>
       </div>
 
-      <Tabs defaultValue="active" className="w-full">
-        <TabsList>
-          <TabsTrigger value="active">
+      <Tabs defaultValue="active" className="w-full cursor-pointer rounded-sm">
+        <TabsList className="cursor-pointer rounded-sm">
+          <TabsTrigger value="active" className="cursor-pointer rounded-sm">
             Active ({activeCollaborations.length})
           </TabsTrigger>
-          <TabsTrigger value="completed">
+          <TabsTrigger value="completed" className="cursor-pointer rounded-sm">
             Completed ({completedCollaborations.length})
           </TabsTrigger>
-          <TabsTrigger value="cancelled">
+          <TabsTrigger value="cancelled" className="cursor-pointer rounded-sm">
             Cancelled ({cancelledCollaborations.length})
           </TabsTrigger>
         </TabsList>
@@ -235,8 +235,8 @@ export const ActiveCollaborations: React.FC = () => {
                         value={
                           collaboration.progress.totalSessions > 0
                             ? (collaboration.progress.completedSessions /
-                                collaboration.progress.totalSessions) *
-                              100
+                              collaboration.progress.totalSessions) *
+                            100
                             : 0
                         }
                         className="w-full"
