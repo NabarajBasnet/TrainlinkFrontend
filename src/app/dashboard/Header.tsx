@@ -154,6 +154,18 @@ const Header = () => {
             .slice(0, 2);
     }
 
+    // Close dropdowns when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: any) => {
+            if (profileRef.current && !(profileRef.current as any).contains(event.target)) {
+                setShowProfile(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     return (
         <div className="w-full sticky top-0 flex items-center justify-between p-3 dark:bg-gray-900 bg-white shadow z-50">
             <div>
@@ -259,9 +271,9 @@ const Header = () => {
                     >
                         <div className="w-8 h-8 bg-orange-500 cursor-pointer rounded-full flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
                             {user?.avatarUrl ? (
-                                <img 
-                                    src={user?.avatarUrl} 
-                                    alt={user.fullName || 'User avatar'} 
+                                <img
+                                    src={user?.avatarUrl}
+                                    alt={user.fullName || 'User avatar'}
                                     className="w-full h-full object-cover"
                                 />
                             ) : (
@@ -283,9 +295,9 @@ const Header = () => {
                                         <div className="flex items-center space-x-3 cursor-pointer">
                                             <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center text-white font-semibold text-sm overflow-hidden">
                                                 {user?.avatarUrl ? (
-                                                    <img 
-                                                        src={user.avatarUrl} 
-                                                        alt={user.fullName || 'User avatar'} 
+                                                    <img
+                                                        src={user.avatarUrl}
+                                                        alt={user.fullName || 'User avatar'}
                                                         className="w-full h-full object-cover"
                                                     />
                                                 ) : (

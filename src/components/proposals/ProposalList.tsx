@@ -60,7 +60,6 @@ export const ProposalList: React.FC = () => {
 
       const response = await fetch(url);
       const resBody = await response.json();
-      console.log(resBody);
 
       if (!response.ok) toast.error(resBody.message);
       return resBody;
