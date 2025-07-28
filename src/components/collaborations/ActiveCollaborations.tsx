@@ -162,10 +162,7 @@ export const ActiveCollaborations: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Active Collaborations</h2>
-      </div>
+    <div>
 
       <Tabs defaultValue="active" className="w-full cursor-pointer rounded-sm">
         <TabsList className="cursor-pointer rounded-sm">
@@ -187,7 +184,7 @@ export const ActiveCollaborations: React.FC = () => {
             </p>
           ) : (
             activeCollaborations.map((collaboration) => (
-              <Card key={collaboration._id} className="w-full">
+              <Card key={collaboration._id} className="w-full dark:border-none">
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
