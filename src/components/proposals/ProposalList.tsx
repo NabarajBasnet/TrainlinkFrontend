@@ -1,212 +1,215 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { ProposalCard } from './ProposalCard';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { io, Socket } from 'socket.io-client';
+import { useQuery } from '@tanstack/react-query';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Calendar, Clock, DollarSign, Target } from 'lucide-react';
+import { format } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useUser } from '../Providers/LoggedInUser/LoggedInUserProvider';
 
-interface Proposal {
+interface User {
   _id: string;
-  trainerId: {
-    firstName: string;
-    lastName: string;
-    profilePicture?: string;
+  fullName: string;
+  avatarUrl?: string;
+  trainerProfile?: {
+    experties: string[];
+    ratings: number;
   };
-  memberId: {
-    firstName: string;
-    lastName: string;
-    profilePicture?: string;
-  };
-  planId: {
-    title: string;
-    description: string;
-  };
-  message: string;
-  status: 'pending' | 'accepted' | 'rejected';
+}
+
+interface Plan {
+  _id: string;
+  goal: string;
+  description: string;
+  budgetPerWeek: number;
+  preferredDaysPerWeek: number;
+  availableTimeSlots: string[];
   createdAt: string;
 }
 
+interface Proposal {
+  _id: string;
+  trainerId: User;
+  memberId: User;
+  planId: Plan;
+  message: string;
+  status: 'Pending' | 'Accepted' | 'Rejected';
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ProposalResponse {
+  pendingProposals: Proposal[];
+  resolvedProposals: Proposal[];
+}
+
 export const ProposalList: React.FC = () => {
-  const [proposals, setProposals] = useState<Proposal[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<'trainer' | 'member'>('member');
-  const [socket, setSocket] = useState<Socket | null>(null);
 
-  useEffect(() => {
-    // Initialize socket connection
-    const newSocket = io('http://localhost:5000');
-    setSocket(newSocket);
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL;
+  const { user, loading, refetch, setRefetch } = useUser();
 
-    // Get user role and proposals
-    fetchProposals();
-
-    return () => {
-      newSocket.close();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!socket) return;
-
-    // Listen for new proposals
-    socket.on('newProposal', (data) => {
-      setProposals(prev => [data.proposal, ...prev]);
-      toast.success("You have received a new training proposal!");
-    });
-
-    // Listen for proposal responses
-    socket.on('proposalResponse', (data) => {
-      setProposals(prev => 
-        prev.map(proposal => 
-          proposal._id === data.proposalId 
-            ? { ...proposal, status: data.status }
-            : proposal
-        )
-      );
-      
-      toast.success(`Your proposal has been ${data.action}!`);
-    });
-
-    return () => {
-      socket.off('newProposal');
-      socket.off('proposalResponse');
-    };
-  }, [socket]);
-
-  const fetchProposals = async () => {
+  const getAllProposals = async (): Promise<ProposalResponse> => {
     try {
-      const response = await fetch('/api/proposals', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setProposals(data.data);
-        
-        // Determine user role based on first proposal
-        if (data.data.length > 0) {
-          const firstProposal = data.data[0];
-          // This is a simplified logic - you might want to get user role from auth context
-          setUserRole('member'); // Default to member for now
-        }
-      }
+      const url = user?.role === 'Trainer' ? `${API_BASE}/get-proposals` : `${API_BASE}/get-members-proposals`;
+
+      const response = await fetch(url);
+      const resBody = await response.json();
+      console.log(resBody);
+
+      if (!response.ok) toast.error(resBody.message);
+      return resBody;
     } catch (error) {
-      console.error('Error fetching proposals:', error);
-      toast.error("Failed to load proposals");
-    } finally {
-      setLoading(false);
+      toast.error(error instanceof Error ? error.message : 'Failed to fetch proposals');
+      console.error("Fetch proposals error:", error);
+      throw error;
     }
   };
 
-  const handleRespond = async (proposalId: string, action: 'accept' | 'reject') => {
-    try {
-      const response = await fetch(`/api/proposals/${proposalId}/respond`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({ action })
-      });
+  const { data, isLoading, error } = useQuery<ProposalResponse>({
+    queryKey: ['proposals'],
+    queryFn: getAllProposals
+  });
 
-      if (response.ok) {
-        const data = await response.json();
-        setProposals(prev => 
-          prev.map(proposal => 
-            proposal._id === proposalId 
-              ? { ...proposal, status: data.data.status }
-              : proposal
-          )
-        );
-        
-        toast.success(`Proposal ${action}ed successfully!`);
-      }
-    } catch (error) {
-      console.error('Error responding to proposal:', error);
-      toast.error("Failed to respond to proposal");
-    }
+  const pendingProposals = data?.pendingProposals || [];
+  const resolvedProposals = data?.resolvedProposals || [];
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
-  const handleDelete = async (proposalId: string) => {
-    try {
-      const response = await fetch(`/api/proposals/${proposalId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+  const renderProposalCard = (proposal: Proposal) => {
+    const { trainerId, planId, message, status, createdAt } = proposal;
+    const date = new Date(createdAt);
+    const formattedDate = format(date, 'MMM d, yyyy');
 
-      if (response.ok) {
-        setProposals(prev => prev.filter(proposal => proposal._id !== proposalId));
-        toast.success("Proposal deleted successfully!");
-      }
-    } catch (error) {
-      console.error('Error deleting proposal:', error);
-      toast.error("Failed to delete proposal");
-    }
+    return (
+      <Card key={proposal._id} className="hover:shadow-md transition-shadow">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <div className="flex items-center space-x-4">
+            <Avatar>
+              <AvatarImage src={trainerId.avatarUrl} />
+              <AvatarFallback>{getInitials(trainerId.fullName)}</AvatarFallback>
+            </Avatar>
+            <div>
+              <h3 className="font-medium">{trainerId.fullName}</h3>
+              <p className="text-sm text-muted-foreground">
+                {trainerId.trainerProfile?.experties.join(', ') || 'No specialties listed'}
+              </p>
+            </div>
+          </div>
+          <Badge variant={status === 'Accepted' ? 'default' : status === 'Rejected' ? 'destructive' : 'secondary'}>
+            {status}
+          </Badge>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4">{message}</p>
+
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="flex items-center">
+              <Target className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>{planId.goal}</span>
+            </div>
+            <div className="flex items-center">
+              <DollarSign className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>${planId.budgetPerWeek}/week</span>
+            </div>
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>{planId.preferredDaysPerWeek} days/week</span>
+            </div>
+            <div className="flex items-center">
+              <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+              <span>{planId.availableTimeSlots.join(', ')}</span>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="flex justify-between items-center">
+          <p className="text-sm text-muted-foreground">Sent on {formattedDate}</p>
+          {status === 'Pending' && (
+            <div className="space-x-2">
+              <Button variant="outline" size="sm">View Details</Button>
+              <Button size="sm">Respond</Button>
+            </div>
+          )}
+        </CardFooter>
+      </Card>
+    );
   };
 
-  const pendingProposals = proposals.filter(p => p.status === 'pending');
-  const respondedProposals = proposals.filter(p => p.status !== 'pending');
-
-  if (loading) {
-    return <div>Loading proposals...</div>;
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-red-500">Failed to load proposals. Please try again.</p>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Proposals</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Proposals</h2>
       </div>
 
       <Tabs defaultValue="pending" className="w-full">
-        <TabsList>
+        <TabsList className="grid grid-cols-2 w-[400px]">
           <TabsTrigger value="pending">
             Pending ({pendingProposals.length})
           </TabsTrigger>
           <TabsTrigger value="responded">
-            Responded ({respondedProposals.length})
+            Responded ({resolvedProposals.length})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending" className="space-y-4">
-          {pendingProposals.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">
-              No pending proposals
-            </p>
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-[200px] w-full rounded-xl" />
+              ))}
+            </div>
+          ) : pendingProposals.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+              <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center">
+                <Clock className="h-12 w-12 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-medium">No pending proposals</h3>
+              <p className="text-muted-foreground text-center max-w-md">
+                You don't have any pending proposals at the moment. Check back later for new requests.
+              </p>
+            </div>
           ) : (
-            pendingProposals.map(proposal => (
-              <ProposalCard
-                key={proposal._id}
-                proposal={proposal}
-                userRole={userRole}
-                onRespond={handleRespond}
-                onDelete={handleDelete}
-              />
-            ))
+            pendingProposals.map(renderProposalCard)
           )}
         </TabsContent>
 
         <TabsContent value="responded" className="space-y-4">
-          {respondedProposals.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">
-              No responded proposals
-            </p>
+          {isLoading ? (
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-[200px] w-full rounded-xl" />
+              ))}
+            </div>
+          ) : resolvedProposals.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 space-y-4">
+              <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center">
+                <Calendar className="h-12 w-12 text-muted-foreground" />
+              </div>
+              <h3 className="text-xl font-medium">No responded proposals</h3>
+              <p className="text-muted-foreground text-center max-w-md">
+                Your responses to proposals will appear here once you've accepted or rejected them.
+              </p>
+            </div>
           ) : (
-            respondedProposals.map(proposal => (
-              <ProposalCard
-                key={proposal._id}
-                proposal={proposal}
-                userRole={userRole}
-              />
-            ))
+            resolvedProposals.map(renderProposalCard)
           )}
         </TabsContent>
       </Tabs>
     </div>
   );
-}; 
+};

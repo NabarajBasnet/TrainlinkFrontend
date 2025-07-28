@@ -8,7 +8,7 @@ export const useSocketAuth = () => {
     
     if (!token || !userId) return;
 
-    const socket = io('http://localhost:5000');
+    const socket = io('http://localhost:4000');
     
     // Authenticate with user ID
     socket.emit('authenticate', userId);

@@ -72,7 +72,9 @@ export default function FindPrograms() {
   const user = (userContext as any)?.user;
   const userLoading = (userContext as any)?.loading;
 
+  const [openDialogPlanId, setOpenDialogPlanId] = useState<null>(null);
   const [proposalMessage, setProposalMessage] = useState<string>('');
+  const [proposalMemberId, setProposalMemberId] = useState<string>('');
 
   const [priceRange, setPriceRange] = useState([500]);
   const [budgetRange, setBudgetRange] = useState([500]);
@@ -353,6 +355,16 @@ export default function FindPrograms() {
     </Card>
   );
 
+  const handleSendProposal = async () => {
+    await ProposalService.sendProposal({
+      memberId: proposalMemberId,
+      planId: openDialogPlanId,
+      message: proposalMessage,
+    });
+    setProposalMessage("");
+    setOpenDialogPlanId(null);
+  };
+
   // Training Request Card Component  
   const TrainingRequestCard = ({ request }: { request: any }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:border-orange-300 rounded-lg shadow-sm">
@@ -471,50 +483,16 @@ export default function FindPrograms() {
             >
               View Profile
             </Button>
-
-
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  size="sm"
-                  className="py-5 bg-orange-500 cursor-pointer hover:bg-orange-600"
-                >
-                  Send Proposal
-                </Button>
-              </DialogTrigger>
-
-              <DialogContent className="sm:max-w-xl">
-                <DialogHeader>
-                  <DialogTitle>Send Proposal</DialogTitle>
-                  <DialogDescription>
-                    Write a short message explaining your offer to the member.
-                  </DialogDescription>
-                </DialogHeader>
-
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="message">Your Message</Label>
-                    <Textarea
-                      id="message"
-                      value={proposalMessage}
-                      onChange={(e) => setProposalMessage(e.target.value)}
-                      className="min-h-[100px] px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                      placeholder="Hi, I’d love to help you with your transformation journey..."
-                    />
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <DialogClose asChild className="cursor-pointer py-5 rounded-sm">
-                    <Button variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button onClick={() => ProposalService.sendProposal({ memberId: user?.user_id, planId: request._id, message: proposalMessage })} className="cursor-pointer bg-orange-500 hover:bg-orange-600 py-5 rounded-sm">
-                    Send
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
+            <Button
+              key={request._id} onClick={() => {
+                setOpenDialogPlanId(request._id)
+                setProposalMemberId(request.memberId?._id);
+              }}
+              size="sm"
+              className="py-5 bg-orange-500 cursor-pointer hover:bg-orange-600"
+            >
+              Send Proposal
+            </Button>
           </div>
         </div>
       </CardContent>
@@ -524,6 +502,38 @@ export default function FindPrograms() {
   return (
     <div className="w-full min-h-screen bg-orange-500">
       <div className="w-full px-4 py-8">
+
+        <Dialog open={!!openDialogPlanId} onOpenChange={(open) => !open && setOpenDialogPlanId(null)}>
+          <DialogContent className="sm:max-w-xl">
+            <DialogHeader>
+              <DialogTitle>Send Proposal</DialogTitle>
+              <DialogDescription>
+                Write a short message explaining your offer to the member.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid gap-4 py-4">
+              <Label htmlFor="message">Your Message</Label>
+              <Textarea
+                id="message"
+                value={proposalMessage}
+                onChange={(e) => setProposalMessage(e.target.value)}
+                placeholder="Hi, I’d love to help you with your transformation journey..."
+                className="min-h-[100px] px-3 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" className="py-5 rounded-sm cursor-pointer" onClick={() => setOpenDialogPlanId(null)}>
+                Cancel
+              </Button>
+              <Button disabled={!proposalMemberId} onClick={handleSendProposal} className="py-5 rounded-sm cursor-pointer bg-orange-500 hover:bg-orange-600">
+                Send
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         {/* Header */}
         <header className="mb-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 rounded-full text-white text-sm font-medium">

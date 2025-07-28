@@ -4,13 +4,12 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 interface ProposalFace {
   memberId: string;
-  planId: string;
+  planId: string | null;
   message: string;
 }
 
 export class ProposalService {
   static async sendProposal(data: ProposalFace) {
-    console.log("Data in class: ", data);
     try {
       const response = await fetch(`${API_BASE}/create-proposal`, {
         method: "POST",
@@ -19,29 +18,24 @@ export class ProposalService {
         },
         body: JSON.stringify(data),
       });
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      return await response.json();
+      const resBody = await response.json();
+      toast.success(resBody.message);
+      return resBody;
     } catch (error) {
       console.error("Proposal error:", error);
       toast.error(error.message);
-      throw error; // Re-throw to let components handle if needed
+      throw error;
     }
   }
 
-  static async getProposals(params: { role?: string; status?: string }) {
+  // Trainers only
+  static async getProposals() {
     try {
-      const query = new URLSearchParams(params);
-      const response = await fetch(`${API_BASE}/proposals?${query}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      return await response.json();
+      const response = await fetch(`${API_BASE}/get-proposals`);
+      const resBody = await response.json();
+      return resBody;
     } catch (error) {
+      toast.error(error.message);
       console.error("Fetch proposals error:", error);
       throw error;
     }

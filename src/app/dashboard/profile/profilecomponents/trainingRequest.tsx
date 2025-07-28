@@ -424,11 +424,10 @@ export default function CreateTrainingRequestForm() {
                             type="button"
                             key={slot}
                             onClick={() => toggleSlot(slot)}
-                            className={`py-2 px-4 rounded border ${
-                              selectedSlots.includes(slot)
+                            className={`py-2 px-4 rounded border ${selectedSlots.includes(slot)
                                 ? "bg-orange-500 text-white border-orange-500"
                                 : "bg-white text-gray-700 border-gray-300"
-                            }`}
+                              }`}
                           >
                             {slot}
                           </button>

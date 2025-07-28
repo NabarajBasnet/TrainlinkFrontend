@@ -9,7 +9,7 @@ export const useSocket = () => {
     if (!token) return;
 
     // Create socket connection
-    const socket = io("http://localhost:5000");
+    const socket = io("http://localhost:4000");
     socketRef.current = socket;
 
     // Authenticate with user ID
