@@ -169,16 +169,17 @@ export const ProposalList: React.FC = () => {
     };
   };
 
-  const handleProposalResponse = async (proposalId: string, action: 'accept' | 'reject') => {
+  const handleProposalResponse = async (proposalId: string, action: 'Accepted' | 'Rejected') => {
     setIsProcessing(true);
     try {
-      const response = await fetch(`${API_BASE}/${action}-proposal`, {
+      const response = await fetch(`${API_BASE}/respond-proposal`, {
         method: "PATCH",
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           id: proposalId,
+          action,
           responseTitle,
           responseMessage
         })
@@ -570,7 +571,7 @@ export const ProposalList: React.FC = () => {
                           <Button
                             variant="outline"
                             className="py-5 rounded-sm cursor-pointer"
-                            onClick={() => handleProposalResponse(proposal._id, 'reject')}
+                            onClick={() => handleProposalResponse(proposal._id, 'Rejected')}
                             disabled={isProcessing || !responseTitle.trim() || !responseMessage.trim()}
                           >
                             {isProcessing ? <Loader2 className="animate-spin h-4 w-4" /> : <MdClose className="h-4 w-4" />}
@@ -579,7 +580,7 @@ export const ProposalList: React.FC = () => {
                         </DialogClose>
                         <Button
                           className="py-5 rounded-sm cursor-pointer"
-                          onClick={() => handleProposalResponse(proposal._id, 'accept')}
+                          onClick={() => handleProposalResponse(proposal._id, 'Accepted')}
                           disabled={isProcessing || !responseTitle.trim() || !responseMessage.trim()}
                         >
                           {isProcessing ? <Loader2 className="animate-spin h-4 w-4" /> : <MdCheck className="h-4 w-4" />}
