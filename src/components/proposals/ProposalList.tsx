@@ -463,15 +463,23 @@ export const ProposalList: React.FC = () => {
         <CardFooter className="flex justify-between items-center">
           <p className="text-sm text-muted-foreground">Sent on {formattedDate}</p>
           <div className="flex items-center gap-2">
-            {proposal?.status === 'Cancelled' && (
-              <Button onClick={() => resendProposal(proposal._id)} className='rounded-sm py-5 cursor-pointer' size="sm" disabled={isProcessing}>
-                {isProcessing ? <Loader2 className="animate-spin duration-500 h-4 w-4" /> : <SendHorizonal className="h-4 w-4" />}
+            {user?.role === 'Trainer' && proposal?.status === 'Cancelled' && (
+              <Button
+                onClick={() => resendProposal(proposal._id)}
+                className='rounded-sm py-5 cursor-pointer'
+                size="sm"
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <Loader2 className="animate-spin duration-500 h-4 w-4" />
+                ) : (
+                  <SendHorizonal className="h-4 w-4" />
+                )}
                 <span className="ml-1">
                   {isProcessing ? 'Resending...' : 'Resend'}
                 </span>
               </Button>
             )}
-
             {status === 'Pending' && (
               <>
                 {renderProposalDetailsDialog(proposal)}
