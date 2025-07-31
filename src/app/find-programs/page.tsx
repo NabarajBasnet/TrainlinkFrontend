@@ -500,7 +500,7 @@ export default function FindPrograms() {
   );
 
   return (
-    <div className="w-full min-h-screen bg-orange-500">
+    <div className="w-full min-h-screen bg-white">
       <div className="w-full px-4 py-8">
 
         <Dialog open={!!openDialogPlanId} onOpenChange={(open) => !open && setOpenDialogPlanId(null)}>
@@ -536,14 +536,14 @@ export default function FindPrograms() {
 
         {/* Header */}
         <header className="mb-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 rounded-full text-white text-sm font-medium">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500 rounded-full text-white text-sm font-medium">
             <Zap size={16} />
             {isTrainer ? "Find Training Opportunities" : "Find Your Perfect Trainer"}
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold py-4 bg-gradient-to-r from-white to-gray-300 text-transparent bg-clip-text">
+          <h1 className="text-4xl md:text-5xl font-bold py-4 bg-gradient-to-r from-orange-500 to-orange-300 text-transparent bg-clip-text">
             {isTrainer ? "Training Requests Marketplace" : "Expert Fitness Programs"}
           </h1>
-          <p className="text-xl text-gray-600 text-white max-w-2xl mx-auto">
+          <p className="text-lg text-black max-w-2xl mx-auto">
             {isTrainer
               ? "Connect with members looking for personalized training programs"
               : "Connect with certified trainers and transform your fitness journey"}
@@ -675,14 +675,14 @@ export default function FindPrograms() {
             {/* Results Count and Sort */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Target size={20} className="text-white" />
-                <p className="text-sm font-medium text-white">
-                  <span className="text-white font-bold">{items.length}</span>{" "}
+                <Target size={20} className="text-primary" />
+                <p className="text-sm font-medium text-primary">
+                  <span className="text-primary font-bold">{items.length}</span>{" "}
                   {isTrainer ? "requests" : "programs"} found
                 </p>
               </div>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-48 border-orange-200 focus:border-orange-500 text-white cursor-pointer">
+                <SelectTrigger className="w-48 border-orange-200 focus:border-orange-500 text-primary cursor-pointer">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
