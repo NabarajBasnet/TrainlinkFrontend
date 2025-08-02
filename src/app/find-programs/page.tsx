@@ -1,5 +1,6 @@
 "use client";
 
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/dialog"
 import { ProposalService } from "@/services/ProposalServices/ProposalServices";
 import { HiMiniMapPin } from "react-icons/hi2";
-import { Tag, Globe, ThumbsUp, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,32 +35,41 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
-  MessageSquare,
+  Tag,
   Utensils,
-  Star,
-  Clock,
-  DollarSign,
   Heart,
   Filter,
   Search,
   RotateCcw,
   Zap,
-  Target,
-  User,
-  AlertCircle,
-  MapPin,
-  Calendar,
-  Award,
   TrendingUp,
-  Eye,
   MessageCircle,
   Send,
   Briefcase,
-  Users,
-  CheckCircle,
+  AlignLeft,
   BookOpen,
+  Clock,
   BarChart2,
-  AlignLeft
+  Target,
+  User,
+  Star,
+  Calendar,
+  Users,
+  MapPin,
+  Shield,
+  CheckCircle,
+  Loader2,
+  Award,
+  DollarSign,
+  Globe,
+  UserCheck,
+  AlertCircle,
+  Eye,
+  ThumbsUp,
+  MessageSquare,
+  Phone,
+  Mail,
+  FileText
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -84,6 +93,10 @@ export default function FindPrograms() {
   const [programDetails, setProgramDetails] = useState<null>(null);
   const [openEnrollModel, setOpenEnrollModel] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+
+  const canEnroll = agreedToTerms && agreedToPrivacy;
 
   const [priceRange, setPriceRange] = useState([500]);
   const [budgetRange, setBudgetRange] = useState([500]);
@@ -880,133 +893,328 @@ export default function FindPrograms() {
         </Dialog>
 
         <Dialog open={!!openEnrollModel} onOpenChange={() => setOpenEnrollModel(!openEnrollModel)}>
-          <DialogContent className="sm:max-w-2xl max-h-[95vh] h-[95vh] flex flex-col p-0">
+          <DialogContent className="sm:max-w-4xl max-h-[95vh] h-[95vh] flex flex-col p-0">
             {/* Sticky Header */}
-            <DialogHeader className="flex-shrink-0 bg-background z-10 p-6 pb-4 border-b">
-              <DialogTitle className="text-2xl font-bold flex items-center gap-3">
-                <BookOpen className="w-6 h-6 text-orange-500" />
-                Confirm Enrollment
+            <DialogHeader className="flex-shrink-0 bg-gradient-to-r from-orange-50 to-white z-10 p-6 pb-4 border-b">
+              <DialogTitle className="text-3xl font-bold flex items-center gap-3 text-gray-800">
+                <BookOpen className="w-8 h-8 text-orange-500" />
+                Program Enrollment
               </DialogTitle>
+              <p className="text-gray-600 mt-2">Review program details and complete your enrollment</p>
             </DialogHeader>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto py-4 px-6 min-h-0">
+            <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
               {programDetails && (
                 <div className="space-y-8">
-                  {/* Program Summary */}
-                  <div className="bg-gradient-to-r from-orange-50 to-white p-6 rounded-lg border">
-                    <h2 className="text-2xl font-bold text-orange-600 mb-2">{programDetails.title}</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-gray-600" />
-                        <span>{programDetails.durationInWeeks} weeks</span>
+
+                  {/* Program Overview Card */}
+                  <div className="bg-gradient-to-br from-orange-50 via-white to-orange-25 p-8 rounded-xl border-2 border-orange-100 shadow-sm">
+                    <div className="flex flex-col lg:flex-row gap-6">
+                      <div className="flex-1">
+                        <div className="flex items-start justify-between mb-4">
+                          <div>
+                            <h2 className="text-3xl font-bold text-gray-900 mb-2">{programDetails.title}</h2>
+                            <p className="text-gray-700 leading-relaxed">{programDetails.description}</p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-3xl font-bold text-orange-600">${programDetails.price}</div>
+                            <div className="text-sm text-gray-500">Total Program Fee</div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+                          <div className="bg-white p-4 rounded-lg border border-orange-100">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Clock className="w-5 h-5 text-orange-500" />
+                              <span className="font-semibold">Duration</span>
+                            </div>
+                            <span className="text-2xl font-bold text-gray-800">{programDetails.durationInWeeks}</span>
+                            <span className="text-gray-600 ml-1">weeks</span>
+                          </div>
+
+                          <div className="bg-white p-4 rounded-lg border border-orange-100">
+                            <div className="flex items-center gap-2 mb-2">
+                              <BarChart2 className="w-5 h-5 text-orange-500" />
+                              <span className="font-semibold">Level</span>
+                            </div>
+                            <Badge variant="secondary" className="text-lg py-1">{programDetails.level}</Badge>
+                          </div>
+
+                          <div className="bg-white p-4 rounded-lg border border-orange-100">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Target className="w-5 h-5 text-orange-500" />
+                              <span className="font-semibold">Focus</span>
+                            </div>
+                            <span className="text-lg font-medium text-gray-800">{programDetails.category}</span>
+                          </div>
+
+                          <div className="bg-white p-4 rounded-lg border border-orange-100">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Users className="w-5 h-5 text-orange-500" />
+                              <span className="font-semibold">Spots</span>
+                            </div>
+                            <span className="text-2xl font-bold text-gray-800">{programDetails.availableSlots}</span>
+                            <span className="text-gray-600">/{programDetails.maxSlot}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <BarChart2 className="w-4 h-4 text-gray-600" />
-                        <span className="capitalize">{programDetails.level}</span>
+                    </div>
+                  </div>
+
+                  {/* Program Features */}
+                  <div className="bg-white p-6 rounded-xl border shadow-sm">
+                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                      <Star className="w-5 h-5 text-orange-500" />
+                      Program Features & Tags
+                    </h3>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {programDetails.tags?.map((tag, index) => (
+                        <Badge key={index} variant="outline" className="px-3 py-1 bg-orange-50 text-orange-700 border-orange-200">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <Globe className="w-5 h-5 text-blue-500" />
+                        <div>
+                          <span className="font-medium">Format: </span>
+                          <span className={programDetails.isOnline ? "text-green-600" : "text-blue-600"}>
+                            {programDetails.isOnline ? "Online" : "In-Person"}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Target className="w-4 h-4 text-gray-600" />
-                        <span>{programDetails.category}</span>
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <MapPin className="w-5 h-5 text-red-500" />
+                        <div>
+                          <span className="font-medium">Location: </span>
+                          <span>{programDetails.location}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Trainer Information */}
-                  <div className="bg-white p-6 rounded-lg border">
-                    <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                      <User className="w-5 h-5 text-gray-600" />
-                      Your Trainer
+                  <div className="bg-white p-6 rounded-xl border shadow-sm">
+                    <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                      <User className="w-5 h-5 text-orange-500" />
+                      Meet Your Trainer
                     </h3>
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-14 w-14 border-2 border-orange-200">
-                        <AvatarImage src={programDetails.trainerId?.avatarUrl} />
-                        <AvatarFallback>
-                          {programDetails.trainerId?.fullName?.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h4 className="text-lg font-bold">{programDetails.trainerId?.fullName}</h4>
-                        <p className="text-gray-600 text-sm line-clamp-2">
-                          {programDetails.trainerId?.trainerProfile?.bio || "Certified fitness trainer"}
-                        </p>
+                    <div className="flex flex-col lg:flex-row gap-6">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="h-20 w-20 border-4 border-orange-200">
+                          <AvatarImage src={programDetails.trainerId?.avatarUrl} />
+                          <AvatarFallback className="text-2xl">
+                            {programDetails.trainerId?.fullName?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h4 className="text-2xl font-bold text-gray-900">{programDetails.trainerId?.fullName}</h4>
+                            {programDetails.trainerId?.trainerProfile?.isVerified && (
+                              <UserCheck className="w-6 h-6 text-blue-500" />
+                            )}
+                          </div>
+                          <p className="text-gray-600 mb-4">{programDetails.trainerId?.trainerProfile?.bio}</p>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <h5 className="font-semibold mb-2 flex items-center gap-2">
+                                <Award className="w-4 h-4 text-orange-500" />
+                                Expertise
+                              </h5>
+                              <div className="space-y-1">
+                                {programDetails.trainerId?.trainerProfile?.experties?.map((expertise, index) => (
+                                  <Badge key={index} variant="secondary" className="mr-1 mb-1">{expertise}</Badge>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Star className="w-4 h-4 text-yellow-500" />
+                                <span>Rating: {programDetails.trainerId?.trainerProfile?.ratings}/5</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Users className="w-4 h-4 text-green-500" />
+                                <span>{programDetails.trainerId?.trainerProfile?.completedPrograms} Programs Completed</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Program Highlights */}
-                  <div className="bg-white p-6 rounded-lg border">
-                    <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                      <Star className="w-5 h-5 text-gray-600" />
-                      Program Highlights
+                  {/* Program Statistics */}
+                  <div className="bg-white p-6 rounded-xl border shadow-sm">
+                    <h3 className="text-xl font-bold mb-4">Program Statistics</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 bg-gray-50 rounded-lg">
+                        <Eye className="w-6 h-6 text-blue-500 mx-auto mb-2" />
+                        <div className="text-2xl font-bold text-gray-800">{programDetails.views}</div>
+                        <div className="text-sm text-gray-600">Views</div>
+                      </div>
+                      <div className="text-center p-4 bg-gray-50 rounded-lg">
+                        <ThumbsUp className="w-6 h-6 text-green-500 mx-auto mb-2" />
+                        <div className="text-2xl font-bold text-gray-800">{programDetails.likes}</div>
+                        <div className="text-sm text-gray-600">Likes</div>
+                      </div>
+                      <div className="text-center p-4 bg-gray-50 rounded-lg">
+                        <Star className="w-6 h-6 text-yellow-500 mx-auto mb-2" />
+                        <div className="text-2xl font-bold text-gray-800">{programDetails.rating}</div>
+                        <div className="text-sm text-gray-600">Rating</div>
+                      </div>
+                      <div className="text-center p-4 bg-gray-50 rounded-lg">
+                        <Calendar className="w-6 h-6 text-purple-500 mx-auto mb-2" />
+                        <div className="text-sm font-medium text-gray-800">Created</div>
+                        <div className="text-xs text-gray-600">{formatDate(programDetails.createdAt)}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* What You'll Get */}
+                  <div className="bg-white p-6 rounded-xl border shadow-sm">
+                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-orange-500" />
+                      What You'll Get
                     </h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <Calendar className="w-5 h-5 text-orange-500" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg">
+                        <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
                         <div>
-                          <h4 className="font-medium">Weekly Sessions</h4>
-                          <p className="text-gray-600 text-sm">3-5 sessions per week based on your level</p>
+                          <h4 className="font-semibold text-green-800">Personalized Training Plan</h4>
+                          <p className="text-green-700 text-sm">Customized {programDetails.durationInWeeks}-week program tailored to your {programDetails.level.toLowerCase()} level</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Utensils className="w-5 h-5 text-orange-500" />
+                      <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
+                        <MessageSquare className="w-5 h-5 text-blue-500 mt-0.5" />
                         <div>
-                          <h4 className="font-medium">Meal Plans</h4>
-                          <p className="text-gray-600 text-sm">Customized nutrition guidance included</p>
+                          <h4 className="font-semibold text-blue-800">Direct Trainer Support</h4>
+                          <p className="text-blue-700 text-sm">24/7 chat support and weekly check-ins with your trainer</p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <MessageSquare className="w-5 h-5 text-orange-500" />
+                      <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg">
+                        <FileText className="w-5 h-5 text-purple-500 mt-0.5" />
                         <div>
-                          <h4 className="font-medium">24/7 Support</h4>
-                          <p className="text-gray-600 text-sm">Direct chat with trainer and community</p>
+                          <h4 className="font-semibold text-purple-800">Comprehensive Resources</h4>
+                          <p className="text-purple-700 text-sm">Workout guides, nutrition plans, and progress tracking tools</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg">
+                        <Users className="w-5 h-5 text-orange-500 mt-0.5" />
+                        <div>
+                          <h4 className="font-semibold text-orange-800">Community Access</h4>
+                          <p className="text-orange-700 text-sm">Join our supportive community of like-minded individuals</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Payment Summary */}
-                  <div className="bg-white p-6 rounded-lg border">
-                    <h3 className="text-xl font-semibold mb-4">Payment Summary</h3>
+                  <div className="bg-white p-6 rounded-xl border shadow-sm">
+                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-orange-500" />
+                      Payment Summary
+                    </h3>
                     <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Program Fee</span>
-                        <span className="font-medium">${programDetails.price}</span>
+                      <div className="flex justify-between py-2">
+                        <span className="text-gray-700">Program Fee ({programDetails.durationInWeeks} weeks)</span>
+                        <span className="font-semibold">${programDetails.price}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Taxes</span>
-                        <span className="font-medium">$0.00</span>
+                      <div className="flex justify-between py-2">
+                        <span className="text-gray-700">Platform Fee</span>
+                        <span className="font-semibold text-green-600">FREE</span>
+                      </div>
+                      <div className="flex justify-between py-2">
+                        <span className="text-gray-700">Taxes & Fees</span>
+                        <span className="font-semibold">$0.00</span>
                       </div>
                       <div className="border-t pt-3 flex justify-between">
-                        <span className="font-semibold">Total</span>
-                        <span className="font-bold text-orange-600">${programDetails.price}</span>
+                        <span className="text-xl font-bold">Total Amount</span>
+                        <span className="text-2xl font-bold text-orange-600">${programDetails.price}</span>
+                      </div>
+                      <div className="bg-orange-50 p-3 rounded-lg mt-4">
+                        <p className="text-sm text-orange-800">
+                          <AlertCircle className="w-4 h-4 inline mr-1" />
+                          One-time payment. No hidden fees or recurring charges.
+                        </p>
                       </div>
                     </div>
                   </div>
+
+                  {/* Terms and Conditions */}
+                  <div className="bg-gray-50 p-6 rounded-xl border">
+                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                      <Shield className="w-5 h-5 text-gray-600" />
+                      Terms & Privacy
+                    </h3>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-3">
+                        <Checkbox
+                          id="terms"
+                          checked={agreedToTerms}
+                          onCheckedChange={setAgreedToTerms}
+                          className="mt-1 h-5 w-5 cursor-pointer"
+                        />
+                        <label htmlFor="terms" className="text-sm text-gray-700 leading-relaxed cursor-pointer">
+                          I agree to the <button className="text-orange-600 hover:underline font-medium">Terms of Service</button> and understand that this program requires commitment and active participation for {programDetails.durationInWeeks} weeks.
+                        </label>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <Checkbox
+                          id="privacy"
+                          checked={agreedToPrivacy}
+                          onCheckedChange={setAgreedToPrivacy}
+                          className="mt-1 h-5 w-5 cursor-pointer"
+                        />
+                        <label htmlFor="privacy" className="text-sm text-gray-700 leading-relaxed cursor-pointer">
+                          I acknowledge the <button className="text-orange-600 hover:underline font-medium">Privacy Policy</button> and consent to sharing my progress data with my assigned trainer for program optimization.
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
               )}
             </div>
 
             {/* Sticky Footer */}
-            <DialogFooter className="flex-shrink-0 bg-background pt-4 pb-6 px-6 border-t">
-              <Button
-                variant="outline"
-                onClick={() => setOpenEnrollModel(false)}
-                className="py-5 rounded-sm cursor-pointer"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={enrollProgram}
-                className="py-5 rounded-sm cursor-pointer bg-orange-500 hover:bg-orange-600"
-              >
-                {processing ? (
-                  <Loader2 className="animate-spin h-4 w-4" />
-                ) : (
-                  <CheckCircle className="h-4 w-4" />
-                )}
-                {processing ? 'Processing...' : 'Confirm Enrollment'}
-              </Button>
+            <DialogFooter className="flex-shrink-0 bg-white pt-6 pb-6 px-6 border-t shadow-lg">
+              <div className="flex flex-col sm:flex-row gap-3 w-full">
+                <Button
+                  variant="outline"
+                  onClick={() => setOpenEnrollModel(false)}
+                  className="py-6 px-6 text-base rounded-sm font-medium border-gray-300 hover:bg-gray-50"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={enrollProgram}
+                  disabled={!canEnroll || processing}
+                  className={`py-6 px-8 rounded-sm text-base font-semibold flex-1 ${canEnroll
+                    ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                >
+                  {processing ? (
+                    <>
+                      <Loader2 className="animate-spin mr-2 h-5 w-5" />
+                      Processing Payment...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="mr-2 h-5 w-5" />
+                      Enroll Now - ${programDetails?.price}
+                    </>
+                  )}
+                </Button>
+              </div>
+              {!canEnroll && (
+                <p className="text-xs text-gray-500 mt-2 text-center w-full">
+                  Please accept the terms and privacy policy to continue
+                </p>
+              )}
             </DialogFooter>
           </DialogContent>
         </Dialog>
