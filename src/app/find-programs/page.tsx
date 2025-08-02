@@ -56,6 +56,9 @@ import {
   Briefcase,
   Users,
   CheckCircle,
+  BookOpen,
+  BarChart2,
+  AlignLeft
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -75,6 +78,8 @@ export default function FindPrograms() {
   const [openDialogPlanId, setOpenDialogPlanId] = useState<null>(null);
   const [proposalMessage, setProposalMessage] = useState<string>('');
   const [proposalMemberId, setProposalMemberId] = useState<string>('');
+  const [openViewDetailsCard, setOpenViewDetailsCard] = useState<boolean>(false);
+  const [programDetails, setProgramDetails] = useState<null>(null);
 
   const [priceRange, setPriceRange] = useState([500]);
   const [budgetRange, setBudgetRange] = useState([500]);
@@ -337,6 +342,10 @@ export default function FindPrograms() {
           </div>
           <div className="flex gap-3">
             <Button
+              onClick={() => {
+                setProgramDetails(program);
+                setOpenViewDetailsCard(true)
+              }}
               variant="outline"
               size="sm"
               className="border-orange-200 py-5 cursor-pointer text-orange-700 hover:bg-orange-50"
@@ -498,6 +507,27 @@ export default function FindPrograms() {
       </CardContent>
     </Card>
   );
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'active':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'inactive':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
 
   return (
     <div className="w-full min-h-screen bg-white">
@@ -1002,6 +1032,292 @@ export default function FindPrograms() {
                   </div>
                 </Card>
               )}
+
+              <Dialog open={!!openViewDetailsCard} onOpenChange={() => setOpenViewDetailsCard(!openViewDetailsCard)}>
+                <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-y-auto">
+                  <DialogHeader className="pb-4">
+                    <DialogTitle className="text-2xl font-bold flex items-center gap-3">
+                      <BookOpen className="w-6 h-6 text-orange-500" />
+                      Program Details
+                    </DialogTitle>
+                  </DialogHeader>
+
+                  {programDetails && (
+                    <div className="space-y-8">
+                      {/* Program Header */}
+                      <div className="bg-gradient-to-r from-orange-50 to-white p-6 rounded-lg border">
+                        <div className="space-y-4">
+                          <div className="flex items-start justify-between">
+                            <h1 className="text-3xl font-bold text-orange-600 leading-tight">
+                              {programDetails.title}
+                            </h1>
+                            <Badge className={`px-3 py-1 text-sm font-medium ${getStatusColor(programDetails.status)}`}>
+                              {programDetails.status}
+                            </Badge>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <User className="w-4 h-4" />
+                              <span className="font-medium">{programDetails.trainerId?.fullName}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-4 h-4" />
+                              <span>{programDetails.location}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <BarChart2 className="w-4 h-4" />
+                              <span className="capitalize">{programDetails.level}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Eye className="w-4 h-4" />
+                              <span>{programDetails.views} views</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Key Metrics Grid */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="bg-white p-4 rounded-lg border shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-blue-100 rounded-lg">
+                              <Clock className="w-5 h-5 text-blue-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Duration</p>
+                              <p className="text-lg font-bold text-gray-900">{programDetails.durationInWeeks} weeks</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white p-4 rounded-lg border shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-100 rounded-lg">
+                              <Users className="w-5 h-5 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Available Slots</p>
+                              <p className="text-lg font-bold text-gray-900">
+                                {programDetails.availableSlots}/{programDetails.maxSlot}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white p-4 rounded-lg border shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-purple-100 rounded-lg">
+                              <DollarSign className="w-5 h-5 text-purple-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Price</p>
+                              <p className="text-lg font-bold text-gray-900">${programDetails.price}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white p-4 rounded-lg border shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-yellow-100 rounded-lg">
+                              <Star className="w-5 h-5 text-yellow-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Rating</p>
+                              <p className="text-lg font-bold text-gray-900">
+                                {programDetails.rating > 0 ? `${programDetails.rating}/5` : 'Not rated'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Program Information */}
+                      <div className="grid md:grid-cols-2 gap-8">
+                        {/* Left Column */}
+                        <div className="space-y-6">
+                          {/* Description */}
+                          <div className="bg-white p-6 rounded-lg border">
+                            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                              <AlignLeft className="w-5 h-5 text-gray-600" />
+                              Description
+                            </h3>
+                            <p className="text-gray-700 leading-relaxed">{programDetails.description}</p>
+                          </div>
+
+                          {/* Program Details */}
+                          <div className="bg-white p-6 rounded-lg border">
+                            <h3 className="text-lg font-semibold mb-4">Program Information</h3>
+                            <div className="space-y-4">
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Category:</span>
+                                <span className="font-medium">{programDetails.category}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Format:</span>
+                                <span className="font-medium">
+                                  {programDetails.isOnline && (
+                                    <Badge variant="outline" className="mr-2">
+                                      <Globe className="w-3 h-3 mr-1" />
+                                      Online
+                                    </Badge>
+                                  )}
+                                  {programDetails.isInPerson && (
+                                    <Badge variant="outline">
+                                      <MapPinIcon className="w-3 h-3 mr-1" />
+                                      In-person
+                                    </Badge>
+                                  )}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Created:</span>
+                                <span className="font-medium">{formatDate(programDetails.createdAt)}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Last Updated:</span>
+                                <span className="font-medium">{formatDate(programDetails.updatedAt)}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Engagement Stats */}
+                          <div className="bg-white p-6 rounded-lg border">
+                            <h3 className="text-lg font-semibold mb-4">Engagement</h3>
+                            <div className="grid grid-cols-3 gap-4 text-center">
+                              <div>
+                                <p className="text-2xl font-bold text-green-600">{programDetails.likes}</p>
+                                <p className="text-sm text-gray-600">Likes</p>
+                              </div>
+                              <div>
+                                <p className="text-2xl font-bold text-red-600">{programDetails.dislikes}</p>
+                                <p className="text-sm text-gray-600">Dislikes</p>
+                              </div>
+                              <div>
+                                <p className="text-2xl font-bold text-blue-600">{programDetails.views}</p>
+                                <p className="text-sm text-gray-600">Views</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Right Column */}
+                        <div className="space-y-6">
+                          {/* Tags */}
+                          {programDetails.tags && programDetails.tags.length > 0 && (
+                            <div className="bg-white p-6 rounded-lg border">
+                              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                <Tag className="w-5 h-5 text-gray-600" />
+                                Tags
+                              </h3>
+                              <div className="flex flex-wrap gap-2">
+                                {programDetails.tags.map((tag, index) => (
+                                  <Badge key={index} variant="default" className="px-3 py-1">
+                                    #{tag}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Trainer Information */}
+                          <div className="bg-white p-6 rounded-lg border">
+                            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                              <User className="w-5 h-5 text-gray-600" />
+                              Trainer Information
+                            </h3>
+
+                            <div className="flex items-start gap-4 mb-4">
+                              <Avatar className="h-16 w-16 border-2 border-gray-200">
+                                <AvatarImage src={programDetails.trainerId?.avatarUrl} />
+                                <AvatarFallback className="text-lg font-semibold">
+                                  {programDetails.trainerId?.fullName?.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className="text-xl font-semibold text-gray-900">
+                                    {programDetails.trainerId?.fullName}
+                                  </h4>
+                                  {programDetails.trainerId?.trainerProfile?.isVerified && (
+                                    <Shield className="w-5 h-5 text-blue-600" />
+                                  )}
+                                </div>
+                                <p className="text-gray-600 text-sm mb-2">{programDetails.trainerId?.email}</p>
+                                <p className="text-gray-700 leading-relaxed">
+                                  {programDetails.trainerId?.trainerProfile?.bio}
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* Trainer Stats */}
+                            <div className="grid grid-cols-2 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                              <div className="text-center">
+                                <p className="text-lg font-bold text-gray-900">
+                                  {programDetails.trainerId?.trainerProfile?.completedPrograms}
+                                </p>
+                                <p className="text-sm text-gray-600">Programs Completed</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-lg font-bold text-gray-900">
+                                  {programDetails.trainerId?.trainerProfile?.ratings}/5
+                                </p>
+                                <p className="text-sm text-gray-600">Trainer Rating</p>
+                              </div>
+                            </div>
+
+                            {/* Expertise */}
+                            {programDetails.trainerId?.trainerProfile?.experties && (
+                              <div className="mb-4">
+                                <h5 className="font-medium text-gray-900 mb-2">Expertise</h5>
+                                <div className="flex flex-wrap gap-2">
+                                  {programDetails.trainerId.trainerProfile.experties.map((exp, index) => (
+                                    <Badge key={index} variant="default" className="">
+                                      {exp}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Certifications */}
+                            {programDetails.trainerId?.trainerProfile?.certifications &&
+                              programDetails.trainerId.trainerProfile.certifications.length > 0 && (
+                                <div>
+                                  <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                                    <Award className="w-4 h-4" />
+                                    Certifications
+                                  </h5>
+                                  <div className="space-y-2">
+                                    {programDetails.trainerId.trainerProfile.certifications.map((cert, index) => (
+                                      <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex items-center justify-between">
+                                          <div>
+                                            <p className="font-medium text-gray-900">{cert.name}</p>
+                                            <p className="text-sm text-gray-600">{cert.issuingOrganization}</p>
+                                          </div>
+                                          <div className="text-right">
+                                            <p className="text-sm font-medium text-gray-900">{cert.yearObtained}</p>
+                                            {cert.isVerified && (
+                                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                                                Verified
+                                              </Badge>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
+
             </div>
           </div>
         </div>
