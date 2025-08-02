@@ -261,94 +261,99 @@ export default function FindPrograms() {
   // Program Card Component
   const ProgramCard = ({ program }: { program: any }) => (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:border-orange-300 rounded-lg shadow-sm">
-      <CardContent className="p-6">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-start gap-4">
-            <Avatar className="h-12 w-12 border-2 border-orange-200">
+      <CardContent className="p-4 sm:p-6">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
+          <div className="flex items-start gap-3 sm:gap-4 flex-1">
+            <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-orange-200 flex-shrink-0">
               <AvatarImage
                 src={program.trainerId?.avatarUrl}
                 alt={program.trainerId?.fullName}
               />
-              <AvatarFallback className="bg-orange-100 text-orange-700">
+              <AvatarFallback className="bg-orange-100 text-orange-700 text-sm sm:text-base">
                 {program.trainerId?.fullName
                   ?.split(" ")
                   .map((n: string) => n[0])
                   .join("") || "T"}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 group-hover:text-orange-700 transition-colors">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-orange-700 transition-colors leading-tight">
                 {program.title}
               </h3>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="text-sm text-gray-600 font-medium">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-1">
+                <span className="text-xs sm:text-sm text-gray-600 font-medium truncate">
                   by {program.trainerId?.fullName || "Trainer"}
                 </span>
                 {program.rating > 0 && (
-                  <div className="flex items-center gap-1 text-sm bg-yellow-50 text-yellow-800 px-2 py-0.5 rounded-full">
+                  <div className="flex items-center gap-1 text-xs sm:text-sm bg-yellow-50 text-yellow-800 px-2 py-0.5 rounded-full">
                     <Star size={12} className="fill-yellow-400 text-yellow-400" />
                     <span className="font-medium">{program.rating}</span>
                   </div>
                 )}
-                <Badge variant={getLevelVariant(program.level)}>
+                <Badge variant={getLevelVariant(program.level)} className="text-xs">
                   {program.level}
                 </Badge>
-                <Badge variant={getStatusVariant(program.status)}>
+                <Badge variant={getStatusVariant(program.status)} className="text-xs">
                   {program.status}
                 </Badge>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div>
-              <span className="text-sm text-gray-500">{formatTimeAgo(program.createdAt)}</span>
-              <div className="flex items-center gap-1 mt-1">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 cursor-pointer hover:bg-orange-50"
-                >
-                  <ThumbsUp size={16} className="text-gray-400 hover:text-green-500" />
-                </Button>
-                <span className="text-sm text-gray-500">{program.likes || 0}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 cursor-pointer hover:bg-orange-50"
-                >
-                  <Heart size={16} className="text-gray-400 hover:text-red-500" />
-                </Button>
-              </div>
+          <div className="flex items-center justify-between sm:justify-end sm:flex-col sm:items-end gap-2 sm:gap-1">
+            <span className="text-xs sm:text-sm text-gray-500 whitespace-nowrap">
+              {formatTimeAgo(program.createdAt)}
+            </span>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 sm:h-8 sm:w-8 cursor-pointer hover:bg-orange-50"
+              >
+                <ThumbsUp size={14} className="text-gray-400 hover:text-green-500" />
+              </Button>
+              <span className="text-xs sm:text-sm text-gray-500">{program.likes || 0}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 sm:h-8 sm:w-8 cursor-pointer hover:bg-orange-50"
+              >
+                <Heart size={14} className="text-gray-400 hover:text-red-500" />
+              </Button>
             </div>
           </div>
         </div>
 
-        <p className="text-gray-600 mb-4 leading-relaxed">{program.description}</p>
+        {/* Description */}
+        <p className="text-sm sm:text-base text-gray-600 mb-4 leading-relaxed line-clamp-2 sm:line-clamp-none">
+          {program.description}
+        </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        {/* Program Details Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Tag className="h-4 w-4 text-gray-500" />
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <Tag className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
               <span className="font-medium">Category:</span>
-              <span>{program.category}</span>
+              <span className="truncate">{program.category}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-gray-500" />
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
               <span className="font-medium">Duration:</span>
               <span>{program.durationInWeeks} weeks</span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Users className="h-4 w-4 text-gray-500" />
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
               <span className="font-medium">Slots:</span>
               <span>{program.availableSlots}/{program.maxSlot} available</span>
             </div>
           </div>
           <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Globe className="h-4 w-4 text-gray-500" />
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <Globe className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
               <span className="font-medium">Delivery:</span>
-              <span>
+              <span className="truncate">
                 {program.isOnline && program.isInPerson
                   ? "Online & In-Person"
                   : program.isOnline
@@ -356,26 +361,27 @@ export default function FindPrograms() {
                     : "In-Person"}
               </span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <HiMiniMapPin className="h-4 w-4 text-gray-500" />
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <HiMiniMapPin className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
               <span className="font-medium">Location:</span>
-              <span>{program.location || "Online"}</span>
+              <span className="truncate">{program.location || "Online"}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Eye className="h-4 w-4 text-gray-500" />
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <Eye className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
               <span className="font-medium">Views:</span>
               <span>{program.views || 0}</span>
             </div>
           </div>
         </div>
 
+        {/* Tags */}
         {program?.tags?.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-1 sm:gap-2 mb-4">
             {program.tags.map((tag: string, i: number) => (
               <Badge
                 key={i}
                 variant="secondary"
-                className="px-3 py-1 bg-orange-50 text-orange-700"
+                className="px-2 sm:px-3 py-1 bg-orange-50 text-orange-700 text-xs"
               >
                 {tag}
               </Badge>
@@ -385,30 +391,34 @@ export default function FindPrograms() {
 
         <Separator className="my-4" />
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6 text-sm">
+        {/* Footer Section */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Price and Info */}
+          <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm">
             <div className="flex items-center gap-2 text-green-600 font-semibold">
-              <DollarSign size={16} />
-              <span>${program.price}</span>
+              <DollarSign size={14} className="sm:size-4" />
+              <span className="text-lg sm:text-xl font-bold">${program.price}</span>
             </div>
             <div className="flex items-center gap-2 text-gray-500">
-              <Clock size={16} />
+              <Clock size={14} className="sm:size-4" />
               <span>{program.durationInWeeks} weeks</span>
             </div>
             <div className="flex items-center gap-2 text-gray-500">
-              <Users size={16} />
-              <span>{program.availableSlots} slots left</span>
+              <Users size={14} className="sm:size-4" />
+              <span className="whitespace-nowrap">{program.availableSlots} slots left</span>
             </div>
           </div>
-          <div className="flex gap-3">
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <Button
               onClick={() => {
                 setProgramDetails(program);
-                setOpenViewDetailsCard(true)
+                setOpenViewDetailsCard(true);
               }}
               variant="outline"
               size="sm"
-              className="border-orange-200 py-5 cursor-pointer text-orange-700 hover:bg-orange-50"
+              className="w-full sm:w-auto border-orange-200 py-5 rounded-sm cursor-pointer text-orange-700 hover:bg-orange-50 text-sm font-medium"
             >
               View Details
             </Button>
@@ -418,7 +428,7 @@ export default function FindPrograms() {
                 setProgramDetails(program);
               }}
               size="sm"
-              className="bg-orange-500 py-5 cursor-pointer hover:bg-orange-600"
+              className="w-full sm:w-auto bg-orange-500 py-5 rounded-sm cursor-pointer hover:bg-orange-600 text-sm font-medium"
             >
               Enroll Now
             </Button>
