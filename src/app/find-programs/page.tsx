@@ -586,6 +586,7 @@ export default function FindPrograms() {
     <div className="w-full min-h-screen bg-white">
       <div className="w-full px-4 py-8">
 
+        {/* Proposal model */}
         <Dialog open={!!openDialogPlanId} onOpenChange={(open) => !open && setOpenDialogPlanId(null)}>
           <DialogContent className="sm:max-w-xl">
             <DialogHeader>
@@ -617,6 +618,7 @@ export default function FindPrograms() {
           </DialogContent>
         </Dialog>
 
+        {/* Program details model */}
         <Dialog open={!!openViewDetailsCard} onOpenChange={() => setOpenViewDetailsCard(!openViewDetailsCard)}>
           <DialogContent className="sm:max-w-2xl max-h-[95vh] overflow-y-auto">
             <DialogHeader className="pb-4">
@@ -662,7 +664,7 @@ export default function FindPrograms() {
                 </div>
 
                 {/* Key Metrics Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-white p-4 rounded-lg border shadow-sm">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-blue-100 rounded-lg">
@@ -717,7 +719,7 @@ export default function FindPrograms() {
                 </div>
 
                 {/* Program Information */}
-                <div className="grid md:grid-cols-2 gap-8">
+                <div className="grid md:grid-cols-2 gap-4">
                   {/* Left Column */}
                   <div className="space-y-6">
                     {/* Description */}
@@ -805,7 +807,7 @@ export default function FindPrograms() {
                     )}
 
                     {/* Trainer Information */}
-                    <div className="bg-white p-6 rounded-lg border">
+                    <div className="bg-white p-4 rounded-lg border">
                       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <User className="w-5 h-5 text-gray-600" />
                         Trainer Information
@@ -902,10 +904,11 @@ export default function FindPrograms() {
           </DialogContent>
         </Dialog>
 
+        {/* Enrollment details model */}
         <Dialog open={!!openEnrollModel} onOpenChange={() => setOpenEnrollModel(!openEnrollModel)}>
           <DialogContent className="sm:max-w-4xl max-h-[95vh] h-[95vh] flex flex-col p-0">
             {/* Sticky Header */}
-            <DialogHeader className="flex-shrink-0 bg-gradient-to-r from-orange-50 to-white z-10 p-6 pb-4 border-b">
+            <DialogHeader className="flex-shrink-0 bg-gradient-to-r from-orange-50 to-white z-10 p-6 pb-4 border-b rounded-t-lg">
               <DialogTitle className="text-3xl font-bold flex items-center gap-3 text-gray-800">
                 <BookOpen className="w-8 h-8 text-orange-500" />
                 Program Enrollment
@@ -1190,7 +1193,7 @@ export default function FindPrograms() {
             </div>
 
             {/* Sticky Footer */}
-            <DialogFooter className="flex-shrink-0 bg-white pt-6 pb-6 px-6 border-t shadow-lg">
+            <DialogFooter className="flex-shrink-0 bg-white pt-6 pb-6 px-6 border-t shadow-lg border-b-none rounded-b-lg">
               <div className="flex flex-col sm:flex-row gap-3 w-full">
                 <Button
                   variant="outline"
