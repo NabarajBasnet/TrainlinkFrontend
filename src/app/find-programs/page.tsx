@@ -269,7 +269,6 @@ export default function FindPrograms() {
 
         setProcessing(false);
         setOpenEnrollModel(false);
-        toast.success(resBody.message);
       } else {
         window.scrollTo({ top: 0, behavior: 'smooth' })
         setErrorToast(true);
@@ -277,7 +276,6 @@ export default function FindPrograms() {
           setErrorToast(false);
         }, 4000);
 
-        toast.error(resBody.message);
         setProcessing(false);
       }
     } catch (error: any) {
@@ -290,7 +288,6 @@ export default function FindPrograms() {
 
       setProcessing(false);
       console.log("Error: ", error);
-      toast.error(error.message);
     }
   }
 
@@ -654,6 +651,31 @@ export default function FindPrograms() {
   return (
     <div className="w-full min-h-screen bg-white">
       <div className="w-full px-4 py-8">
+
+        {/* Alert toast dialog */}
+        {(successToast || errorToast) && (
+          <div className="fixed top-18 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm">
+            {successToast && (
+              <Alert variant="success" className="bg-green-100 border-green-500 text-green-800">
+                <CheckCircle2Icon className="w-5 h-5" />
+                <AlertTitle>Success</AlertTitle>
+                <AlertDescription>
+                  Your enrollment was successful!
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {errorToast && (
+              <Alert variant="destructive" className="bg-red-100 border-red-500 text-red-800 mt-2">
+                <CheckCircle2Icon className="w-5 h-5" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                  Something went wrong. Please try again.
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        )}
 
         {/* Proposal model */}
         <Dialog open={!!openDialogPlanId} onOpenChange={(open) => !open && setOpenDialogPlanId(null)}>
@@ -1315,34 +1337,6 @@ export default function FindPrograms() {
               ? "Connect with members looking for personalized training programs"
               : "Connect with certified trainers and transform your fitness journey"}
           </p>
-
-          {/* Alert toast dialog */}
-          <div className="space-y-2 flex items-center w-full">
-            <div className="w-full flex items-center justify-center">
-              {successToast && (
-                <Alert variant="success" className="bg-green-100 max-w-sm border-green-500 text-green-800">
-                  <CheckCircle2Icon className="w-5 h-5" />
-                  <AlertTitle>Success</AlertTitle>
-                  <AlertDescription>
-                    Your enrollment was successful!
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
-
-            <div className="w-full flex items-center justify-center">
-              {errorToast && (
-                <Alert variant="destructive" className="max-w-sm bg-red-100 border-red-500 text-red-800">
-                  <CheckCircle2Icon className="w-5 h-5" />
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>
-                    Something went wrong. Please try again.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
-          </div>
-
         </header>
 
         <div className="w-full md:flex gap-6">
