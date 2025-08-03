@@ -240,18 +240,18 @@ export default function FindPrograms() {
   const enrollProgram = async () => {
     setProcessing(true);
     try {
-      const response = await fetch(`${api}/enroll-program`, {
+      const response = await fetch(`${api}/create-enrollment`, {
         method: "POST",
         headers: {
           'Content-Type': "application/json"
         },
-        body: JSON.stringify({ programDetails }),
+        body: JSON.stringify({ ...user?._id,programDetails }),
       })
 
       if (!response.ok) {
         setProcessing(false);
       }
-    } catch (error) {
+    } catch (error: any) {
       setProcessing(false);
       console.log("Error: ", error);
       toast.error(error.message);
@@ -418,7 +418,7 @@ export default function FindPrograms() {
               }}
               variant="outline"
               size="sm"
-              className="w-full sm:w-auto border-orange-200 py-5 rounded-sm cursor-pointer text-orange-700 hover:bg-orange-50 text-sm font-medium"
+              className="w-full cursor-pointer sm:w-auto border-orange-200 py-5 rounded-sm cursor-pointer text-orange-700 hover:bg-orange-50 text-sm font-medium"
             >
               View Details
             </Button>
@@ -428,7 +428,7 @@ export default function FindPrograms() {
                 setProgramDetails(program);
               }}
               size="sm"
-              className="w-full sm:w-auto bg-orange-500 py-5 rounded-sm cursor-pointer hover:bg-orange-600 text-sm font-medium"
+              className="w-full cursor-pointer sm:w-auto bg-orange-500 py-5 rounded-sm cursor-pointer hover:bg-orange-600 text-sm font-medium"
             >
               Enroll Now
             </Button>
@@ -1231,14 +1231,14 @@ export default function FindPrograms() {
                 <Button
                   variant="outline"
                   onClick={() => setOpenEnrollModel(false)}
-                  className="py-6 px-6 text-base rounded-sm font-medium border-gray-300 hover:bg-gray-50"
+                  className="py-6 px-6 text-base cursor-pointer rounded-sm font-medium border-gray-300 hover:bg-gray-50"
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={enrollProgram}
                   disabled={!canEnroll || processing}
-                  className={`py-6 px-8 rounded-sm text-base font-semibold flex-1 ${canEnroll
+                  className={`py-6 px-8 rounded-sm cursor-pointer text-base font-semibold flex-1 ${canEnroll
                     ? 'bg-orange-500 hover:bg-orange-600 text-white'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
@@ -1281,128 +1281,10 @@ export default function FindPrograms() {
           </p>
         </header>
 
-        <div className="w-full grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar Filters */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card className="p-6 sticky top-18 rounded-lg shadow-sm border-orange-200">
-              <CardHeader className="px-0 pt-0">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-lg font-semibold flex items-center gap-2 text-orange-700">
-                    <Filter size={18} />
-                    Filters
-                  </h2>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={resetFilters}
-                    className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                  >
-                    <RotateCcw size={14} className="mr-1" />
-                    Reset
-                  </Button>
-                </div>
-              </CardHeader>
-
-              <CardContent className="px-0 space-y-6">
-                {/* Search */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-gray-700">
-                    Search {isTrainer ? "Requests" : "Programs"}
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      type="text"
-                      placeholder={
-                        isTrainer
-                          ? "Goal, description, or keyword..."
-                          : "Title, trainer, or keyword..."
-                      }
-                      value={search}
-                      onChange={(e) => setSearch(e.target.value)}
-                      className="pl-9 border-orange-200 focus:border-orange-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Price/Budget Range */}
-                <div className="space-y-3">
-                  <label className="text-sm font-medium text-gray-700">
-                    {isTrainer ? "Maximum Budget per Week" : "Maximum Price"}
-                  </label>
-                  <div className="px-3">
-                    <Slider
-                      value={isTrainer ? budgetRange : priceRange}
-                      onValueChange={isTrainer ? setBudgetRange : setPriceRange}
-                      max={500}
-                      min={50}
-                      step={25}
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>$50</span>
-                    <div className="flex items-center gap-1">
-                      <DollarSign size={14} />
-                      <span className="font-medium text-orange-600">
-                        {isTrainer ? budgetRange[0] : priceRange[0]}
-                      </span>
-                    </div>
-                    <span>$500+</span>
-                  </div>
-                </div>
-
-                {/* Category Filter - Only for members */}
-                {!isTrainer && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Category</label>
-                    <Select
-                      value={filters.category}
-                      onValueChange={(value) => setFilters({ ...filters, category: value })}
-                    >
-                      <SelectTrigger className="border-orange-200 focus:border-orange-500">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="All">All Categories</SelectItem>
-                        <SelectItem value="Weight Loss">Weight Loss</SelectItem>
-                        <SelectItem value="Fat loss">Fat Loss</SelectItem>
-                        <SelectItem value="Strength Training">Strength Training</SelectItem>
-                        <SelectItem value="Cardio">Cardio</SelectItem>
-                        <SelectItem value="Yoga">Yoga</SelectItem>
-                        <SelectItem value="Flexibility">Flexibility</SelectItem>
-                        <SelectItem value="Nutrition">Nutrition</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {/* Level Filter - Only for members */}
-                {!isTrainer && (
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">Experience Level</label>
-                    <Select
-                      value={filters.level}
-                      onValueChange={(value) => setFilters({ ...filters, level: value })}
-                    >
-                      <SelectTrigger className="border-orange-200 focus:border-orange-500">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="All">All Levels</SelectItem>
-                        <SelectItem value="Beginner">Beginner</SelectItem>
-                        <SelectItem value="Intermediate">Intermediate</SelectItem>
-                        <SelectItem value="Advanced">Advanced</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+        <div className="w-full md:flex gap-6">
 
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="md:w-9/12 w-full space-y-6">
             {/* Results Count and Sort */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -1504,8 +1386,8 @@ export default function FindPrograms() {
           </div>
 
           {/* Profile Sidebar */}
-          <div>
-            <div className="sticky top-18 lg:col-span-1 space-y-4">
+          <div className='md:w-3/12 w-full sticky top-18 space-y-4'>
+            <div className="lg:col-span-1 space-y-4">
               <Card className="p-6 rounded-lg shadow-sm border-orange-200">
                 {userLoading ? (
                   <div className="space-y-4">
@@ -1727,7 +1609,126 @@ export default function FindPrograms() {
               )}
 
             </div>
+
+            <div className="space-y-6">
+              <Card className="p-6 rounded-lg shadow-sm border-orange-200">
+                <CardHeader className="px-0 pt-0">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold flex items-center gap-2 text-orange-700">
+                      <Filter size={18} />
+                      Filters
+                    </h2>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={resetFilters}
+                      className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    >
+                      <RotateCcw size={14} className="mr-1" />
+                      Reset
+                    </Button>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="px-0 space-y-6">
+                  {/* Search */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Search {isTrainer ? "Requests" : "Programs"}
+                    </label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        type="text"
+                        placeholder={
+                          isTrainer
+                            ? "Goal, description, or keyword..."
+                            : "Title, trainer, or keyword..."
+                        }
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="pl-9 border-orange-200 focus:border-orange-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Price/Budget Range */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-gray-700">
+                      {isTrainer ? "Maximum Budget per Week" : "Maximum Price"}
+                    </label>
+                    <div className="px-3">
+                      <Slider
+                        value={isTrainer ? budgetRange : priceRange}
+                        onValueChange={isTrainer ? setBudgetRange : setPriceRange}
+                        max={500}
+                        min={50}
+                        step={25}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-sm text-gray-500">
+                      <span>$50</span>
+                      <div className="flex items-center gap-1">
+                        <DollarSign size={14} />
+                        <span className="font-medium text-orange-600">
+                          {isTrainer ? budgetRange[0] : priceRange[0]}
+                        </span>
+                      </div>
+                      <span>$500+</span>
+                    </div>
+                  </div>
+
+                  {/* Category Filter - Only for members */}
+                  {!isTrainer && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Category</label>
+                      <Select
+                        value={filters.category}
+                        onValueChange={(value) => setFilters({ ...filters, category: value })}
+                      >
+                        <SelectTrigger className="border-orange-200 focus:border-orange-500">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="All">All Categories</SelectItem>
+                          <SelectItem value="Weight Loss">Weight Loss</SelectItem>
+                          <SelectItem value="Fat loss">Fat Loss</SelectItem>
+                          <SelectItem value="Strength Training">Strength Training</SelectItem>
+                          <SelectItem value="Cardio">Cardio</SelectItem>
+                          <SelectItem value="Yoga">Yoga</SelectItem>
+                          <SelectItem value="Flexibility">Flexibility</SelectItem>
+                          <SelectItem value="Nutrition">Nutrition</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {/* Level Filter - Only for members */}
+                  {!isTrainer && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">Experience Level</label>
+                      <Select
+                        value={filters.level}
+                        onValueChange={(value) => setFilters({ ...filters, level: value })}
+                      >
+                        <SelectTrigger className="border-orange-200 focus:border-orange-500">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="All">All Levels</SelectItem>
+                          <SelectItem value="Beginner">Beginner</SelectItem>
+                          <SelectItem value="Intermediate">Intermediate</SelectItem>
+                          <SelectItem value="Advanced">Advanced</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
