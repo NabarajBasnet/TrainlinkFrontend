@@ -110,7 +110,7 @@ export default function CreateProgramForm() {
 
   const [open, setOpen] = useState(false);
   const [toEditProgram, setToEditProgram] = useState<any>(null);
-  const [level, setLevel] = useState("");
+  const [level, setLevel] = useState<"" | "Beginner" | "Intermediate" | "Advanced">("");
   const [status, setStatus] = useState<string>("Inactive");
 
   const [selectedPrograms, setSelectedPrograms] = useState<string[]>([]);
@@ -433,7 +433,7 @@ export default function CreateProgramForm() {
                             Difficulty Level
                           </Label>
                           <Select
-                            onValueChange={(value) => setValue("level", value)}
+                            onValueChange={(value) => setValue("level", value as "Beginner" | "Intermediate" | "Advanced")}
                             {...register("level")}
                             defaultValue={level}
                           >
