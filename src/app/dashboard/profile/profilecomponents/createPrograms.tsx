@@ -136,6 +136,7 @@ export default function CreateProgramForm() {
       status: "Active",
       isOnline: true,
       isInPerson: false,
+      location: '',
       tags: [],
     },
   });

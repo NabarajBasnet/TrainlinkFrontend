@@ -450,35 +450,36 @@ export default function FindPrograms() {
 
   // Training Request Card Component  
   const TrainingRequestCard = ({ request }: { request: any }) => (
-    <Card className="group hover:shadow-lg transition-all duration-300 hover:border-orange-300 rounded-lg shadow-sm">
-      <CardContent className="p-6">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex items-start gap-4">
-            <Avatar className="h-12 w-12 border-2 border-orange-200">
+    <Card className="group hover:shadow-xl transition-all duration-300 hover:border-orange-300 rounded-xl shadow-sm border border-gray-100 bg-white overflow-hidden">
+      <CardContent className="p-4 sm:p-6">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
+          <div className="flex items-start gap-3 sm:gap-4 flex-1">
+            <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-orange-200 flex-shrink-0">
               <AvatarImage
                 src={request.memberId?.avatarUrl}
                 alt={request.memberId?.fullName}
               />
-              <AvatarFallback className="bg-orange-100 text-orange-700">
+              <AvatarFallback className="bg-orange-100 text-orange-700 text-sm sm:text-base">
                 {request.memberId?.fullName
                   ?.split(" ")
                   .map((n: string) => n[0])
                   .join("") || "M"}
               </AvatarFallback>
             </Avatar>
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 group-hover:text-orange-700 transition-colors">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 group-hover:text-orange-700 transition-colors leading-tight mb-2">
                 {request.goal}
               </h3>
-              <div className="flex items-center gap-3 mt-1">
-                <span className="text-sm text-gray-600 font-medium">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <span className="text-xs sm:text-sm text-gray-600 font-medium">
                   by {request.memberId?.fullName || "Member"}
                 </span>
-                <Badge variant={getStatusVariant(request.status)}>
+                <Badge variant={getStatusVariant(request.status)} className="text-xs">
                   {request.status}
                 </Badge>
                 {request.memberId?.memberProfile?.fitnessLevel && (
-                  <Badge variant="outline">
+                  <Badge variant="outline" className="text-xs">
                     {request.memberId.memberProfile.fitnessLevel}
                   </Badge>
                 )}
@@ -486,51 +487,78 @@ export default function FindPrograms() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">{formatTimeAgo(request.createdAt)}</span>
+          <div className="flex items-center justify-end sm:justify-start">
+            <span className="text-xs sm:text-sm text-gray-500 bg-gray-50 px-2 py-1 rounded-full">
+              {formatTimeAgo(request.createdAt)}
+            </span>
           </div>
         </div>
 
-        <p className="text-gray-600 mb-4 leading-relaxed">{request.description}</p>
+        {/* Description */}
+        <p className="text-gray-600 mb-6 leading-relaxed text-sm sm:text-base">
+          {request.description}
+        </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <DollarSign className="h-4 w-4 text-gray-500" />
-              <span className="font-medium">Budget per week:</span>
-              <span className="text-green-600 font-semibold">${request.budgetPerWeek}</span>
+        {/* Details Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 text-sm bg-green-50 p-3 rounded-lg">
+              <DollarSign className="h-4 w-4 text-green-600 flex-shrink-0" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <span className="font-medium text-gray-700">Budget per week:</span>
+                <span className="text-green-600 font-bold text-base">
+                  ${request.budgetPerWeek}
+                </span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-gray-500" />
-              <span className="font-medium">Days per week:</span>
-              <span>{request.preferredDaysPerWeek} days</span>
+            <div className="flex items-center gap-3 text-sm bg-blue-50 p-3 rounded-lg">
+              <Calendar className="h-4 w-4 text-blue-600 flex-shrink-0" />
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                <span className="font-medium text-gray-700">Days per week:</span>
+                <span className="text-blue-600 font-semibold">
+                  {request.preferredDaysPerWeek} days
+                </span>
+              </div>
             </div>
           </div>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4 text-gray-500" />
-              <span className="font-medium">Available times:</span>
-              <span>{request.availableTimeSlots?.join(", ") || "Flexible"}</span>
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 text-sm bg-purple-50 p-3 rounded-lg">
+              <Clock className="h-4 w-4 text-purple-600 flex-shrink-0 mt-0.5" />
+              <div className="flex flex-col gap-1">
+                <span className="font-medium text-gray-700">Available times:</span>
+                <span className="text-purple-600 font-medium text-xs">
+                  {request.availableTimeSlots?.join(", ") || "Flexible"}
+                </span>
+              </div>
             </div>
             {request.memberId?.memberProfile?.gender && (
-              <div className="flex items-center gap-2 text-sm">
-                <User className="h-4 w-4 text-gray-500" />
-                <span className="font-medium">Gender:</span>
-                <span>{request.memberId.memberProfile.gender}</span>
+              <div className="flex items-center gap-3 text-sm bg-gray-50 p-3 rounded-lg">
+                <User className="h-4 w-4 text-gray-600 flex-shrink-0" />
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                  <span className="font-medium text-gray-700">Gender:</span>
+                  <span className="text-gray-600 font-medium">
+                    {request.memberId.memberProfile.gender}
+                  </span>
+                </div>
               </div>
             )}
           </div>
         </div>
 
+        {/* Member Goals */}
         {request.memberId?.memberProfile?.goals?.length > 0 && (
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">Member's Goals:</h4>
+          <div className="mb-6">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+              <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+              Member's Goals
+            </h4>
             <div className="flex flex-wrap gap-2">
               {request.memberId.memberProfile.goals.map((goal: string, i: number) => (
                 <Badge
                   key={i}
                   variant="secondary"
-                  className="px-3 py-1 bg-orange-50 text-orange-700"
+                  className="px-3 py-1.5 bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors text-xs"
                 >
                   {goal}
                 </Badge>
@@ -539,40 +567,45 @@ export default function FindPrograms() {
           </div>
         )}
 
-        <Separator className="my-4" />
+        <Separator className="my-6 bg-gray-200" />
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-6 text-sm">
-            <div className="flex items-center gap-2 text-green-600 font-semibold">
-              <DollarSign size={16} />
+        {/* Footer */}
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          {/* Stats */}
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm">
+            <div className="flex items-center gap-2 text-green-600 font-semibold bg-green-50 px-3 py-1.5 rounded-full">
+              <DollarSign size={14} />
               <span>${request.budgetPerWeek}/week</span>
             </div>
-            <div className="flex items-center gap-2 text-gray-500">
-              <Calendar size={16} />
+            <div className="flex items-center gap-2 text-blue-600 font-medium bg-blue-50 px-3 py-1.5 rounded-full">
+              <Calendar size={14} />
               <span>{request.preferredDaysPerWeek} days/week</span>
             </div>
             {request.memberId?.memberProfile?.completedPlans && (
-              <div className="flex items-center gap-2 text-gray-500">
-                <CheckCircle size={16} />
+              <div className="flex items-center gap-2 text-gray-600 font-medium bg-gray-50 px-3 py-1.5 rounded-full">
+                <CheckCircle size={14} />
                 <span>{request.memberId.memberProfile.completedPlans} completed</span>
               </div>
             )}
           </div>
-          <div className="flex gap-3">
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
             <Button
               variant="outline"
               size="sm"
-              className="py-5 border-orange-200 cursor-pointer text-orange-700 hover:bg-orange-50"
+              className="flex-1 sm:flex-none py-5 px-4 rounded-sm cursor-pointer border-orange-200 text-orange-700 hover:bg-orange-50 hover:border-orange-300 transition-all duration-200 font-medium"
             >
               View Profile
             </Button>
             <Button
-              key={request._id} onClick={() => {
+              key={request._id}
+              onClick={() => {
                 setOpenDialogPlanId(request._id)
                 setProposalMemberId(request.memberId?._id);
               }}
               size="sm"
-              className="py-5 bg-orange-500 cursor-pointer hover:bg-orange-600"
+              className="flex-1 sm:flex-none py-5 px-4 rounded-sm cursor-pointer bg-orange-500 hover:bg-orange-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
             >
               Send Proposal
             </Button>
@@ -1380,7 +1413,7 @@ export default function FindPrograms() {
                 </p>
               </div>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-48 border-orange-200 focus:border-orange-500 text-primary cursor-pointer">
+                <SelectTrigger className="w-48 py-5 border-orange-200 focus:border-orange-500 text-primary cursor-pointer">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -1645,57 +1678,49 @@ export default function FindPrograms() {
 
               {/* Action Cards */}
               {user && (
-                <Card className="p-6 rounded-lg shadow-sm border-orange-200">
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                <Card className="p-4 rounded-lg shadow-sm border-orange-200">
+                  <h4 className="text-sm font-medium text-gray-700">
                     Quick Actions
                   </h4>
-                  <div className="space-y-2">
+                  <div className="space-y-2 flex flex-col">
                     {isTrainer ? (
-                      <>
-                        <Link href="/dashboard/programs/create">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full border-orange-200 text-orange-700 hover:bg-orange-50"
-                          >
-                            <Briefcase size={16} className="mr-2" />
-                            Create Program
-                          </Button>
-                        </Link>
-                        <Link href="/dashboard/proposals">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full border-orange-200 text-orange-700 hover:bg-orange-50"
-                          >
-                            <MessageCircle size={16} className="mr-2" />
-                            My Proposals
-                          </Button>
-                        </Link>
-                      </>
+                      <div className='space-y-2'>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full py-5 cursor-pointer border-orange-200 text-orange-700 hover:bg-orange-50"
+                        >
+                          <Briefcase size={16} className="mr-2" />
+                          Create Program
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full py-5 cursor-pointer border-orange-200 text-orange-700 hover:bg-orange-50"
+                        >
+                          <MessageCircle size={16} className="mr-2" />
+                          My Proposals
+                        </Button>
+                      </div>
                     ) : (
-                      <>
-                        <Link href="/dashboard/requests/create">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full border-orange-200 text-orange-700 hover:bg-orange-50"
-                          >
-                            <Send size={16} className="mr-2" />
-                            Post Request
-                          </Button>
-                        </Link>
-                        <Link href="/dashboard/programs">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full border-orange-200 text-orange-700 hover:bg-orange-50"
-                          >
-                            <Eye size={16} className="mr-2" />
-                            My Programs
-                          </Button>
-                        </Link>
-                      </>
+                      <div className='space-y-2'>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full py-5 cursor-pointer border-orange-200 text-orange-700 hover:bg-orange-50"
+                        >
+                          <Send size={16} className="mr-2" />
+                          Post Request
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full py-5 cursor-pointer border-orange-200 text-orange-700 hover:bg-orange-50"
+                        >
+                          <Eye size={16} className="mr-2" />
+                          My Programs
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </Card>
