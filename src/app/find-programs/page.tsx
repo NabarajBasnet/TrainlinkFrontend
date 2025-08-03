@@ -1,5 +1,11 @@
 "use client";
 
+import { AlertCircleIcon, CheckCircle2Icon, PopcornIcon } from "lucide-react"
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from "@/components/ui/label";
 import {
@@ -85,6 +91,7 @@ export default function FindPrograms() {
   const userContext = useUser();
   const user = (userContext as any)?.user;
   const userLoading = (userContext as any)?.loading;
+  const userId = user?._id;
 
   const [openDialogPlanId, setOpenDialogPlanId] = useState<null>(null);
   const [proposalMessage, setProposalMessage] = useState<string>('');
@@ -93,8 +100,10 @@ export default function FindPrograms() {
   const [programDetails, setProgramDetails] = useState<null>(null);
   const [openEnrollModel, setOpenEnrollModel] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState<boolean>(false);
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState<boolean>(false);
+  const [successToast, setSuccessToast] = useState<boolean>(false);
+  const [errorToast, setErrorToast] = useState<boolean>(false);
 
   const canEnroll = agreedToTerms && agreedToPrivacy;
 
@@ -245,13 +254,40 @@ export default function FindPrograms() {
         headers: {
           'Content-Type': "application/json"
         },
-        body: JSON.stringify({ ...user?._id,programDetails }),
-      })
+        body: JSON.stringify({ userId, programDetails }),
+      });
 
-      if (!response.ok) {
+      const resBody = await response.json();
+
+      if (response.ok) {
+        setSuccessToast(true);
+        setTimeout(() => {
+          setSuccessToast(false);
+        }, 4000);
+
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+
+        setProcessing(false);
+        setOpenEnrollModel(false);
+        toast.success(resBody.message);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        setErrorToast(true);
+        setTimeout(() => {
+          setErrorToast(false);
+        }, 4000);
+
+        toast.error(resBody.message);
         setProcessing(false);
       }
     } catch (error: any) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+
+      setErrorToast(true);
+      setTimeout(() => {
+        setErrorToast(false);
+      }, 4000);
+
       setProcessing(false);
       console.log("Error: ", error);
       toast.error(error.message);
@@ -1279,6 +1315,34 @@ export default function FindPrograms() {
               ? "Connect with members looking for personalized training programs"
               : "Connect with certified trainers and transform your fitness journey"}
           </p>
+
+          {/* Alert toast dialog */}
+          <div className="space-y-2 flex items-center w-full">
+            <div className="w-full flex items-center justify-center">
+              {successToast && (
+                <Alert variant="success" className="bg-green-100 max-w-sm border-green-500 text-green-800">
+                  <CheckCircle2Icon className="w-5 h-5" />
+                  <AlertTitle>Success</AlertTitle>
+                  <AlertDescription>
+                    Your enrollment was successful!
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+
+            <div className="w-full flex items-center justify-center">
+              {errorToast && (
+                <Alert variant="destructive" className="max-w-sm bg-red-100 border-red-500 text-red-800">
+                  <CheckCircle2Icon className="w-5 h-5" />
+                  <AlertTitle>Error</AlertTitle>
+                  <AlertDescription>
+                    Something went wrong. Please try again.
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          </div>
+
         </header>
 
         <div className="w-full md:flex gap-6">
