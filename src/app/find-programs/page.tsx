@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
+  MapPinIcon,
   Tag,
   Utensils,
   Heart,
