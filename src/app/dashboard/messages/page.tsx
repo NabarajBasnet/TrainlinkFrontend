@@ -6,9 +6,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, MoreVertical, Smile, Paperclip, Send, MessageSquare, User } from "lucide-react";
+import { useState } from "react";
 
 const Messages = () => {
     const API = process.env.NEXT_PUBLIC_API_URL;
+    const [selectedUser, setSelectedUser] = useState(null);
 
     const getConnections = async () => {
         try {
@@ -29,22 +31,20 @@ const Messages = () => {
 
     const { myConnections, chatList } = data || {};
 
-    console.log(chatList)
-
     if (isLoading) {
         return (
-            <div className="w-full flex h-[calc(100vh-5rem)] items-center justify-center">
+            <div className="w-full flex h-[calc(100vh-4.5rem)] items-center justify-center">
                 <div className="animate-pulse">Loading messages...</div>
             </div>
         );
     }
 
     return (
-        <div className="w-full flex h-[calc(100vh-5rem)]">
+        <div className="w-full flex h-[calc(100vh-4.5rem)] p-0.5 dark:bg-gray-900">
             {/* Left sidebar - Conversation list */}
             <div className="w-full md:w-3/12 border-r bg-white dark:bg-gray-900">
                 <div className="p-4 border-b">
-                    <h2 className="text-xl font-bold">Messages</h2>
+                    <h2 className="text-xl font-bold text-orange-500">Messages</h2>
                 </div>
 
                 {/* Search bar */}
@@ -60,35 +60,59 @@ const Messages = () => {
 
                 {/* Conversation list */}
                 <div className="overflow-y-auto h-[calc(100%-7.5rem)]">
-                    {chatList?.map((connection: any) => (
-                        <div
-                            key={connection._id}
-                            className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer border-b"
-                        >
-                            <Avatar className="h-10 w-10">
-                                <AvatarImage src={connection?.user?.avatarUrl} />
-                                <AvatarFallback>
-                                    <User className="h-10 w-10"/>
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="ml-3 flex-1">
-                                <div className="items-start">
-                                    <h3 className="font-medium">{connection?.user?.fullName}</h3>
-                                    <span className="text-xs text-gray-500">
-                                        {new Date(connection.lastEngagementAt).toLocaleTimeString('en-US',{
-                                            hour:'2-digit',
-                                            minute:'2-digit',
-                                            second:'2-digit',
-                                            hour12:true
-                                        })}
-                                    </span>
+                    <div className="h-full flex flex-col">
+                        {/* Horizontal List: Favorites or Recent */}
+                        <div className="flex overflow-x-auto p-3 gap-4 border-b">
+                            {chatList?.map((connection: any) => (
+                                <div key={connection._id} onClick={() => setSelectedUser(connection)} className="cursor-pointer flex-shrink-0 text-center">
+                                    <Avatar className="h-12 w-12 mx-auto">
+                                        <AvatarImage src={connection?.user?.avatarUrl} />
+                                        <AvatarFallback>
+                                            <User className="h-6 w-6" />
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <p className="text-xs mt-1 text-center truncate max-w-[60px] text-gray-600 dark:text-gray-300">
+                                        {connection?.user?.fullName}
+                                    </p>
                                 </div>
-                                <p className="text-sm text-gray-500 truncate">
-                                    {/* {connection.lastMessage} */}
-                                </p>
-                            </div>
+                            ))}
                         </div>
-                    ))}
+
+                        {/* Vertical List: Full Conversations */}
+                        <div className="overflow-y-auto h-[calc(100%-6rem)]">
+                            {chatList?.map((connection: any) => (
+                                <div
+                                    key={connection._id}
+                                    onClick={() => setSelectedUser(connection)}
+                                    className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer border-b"
+                                >
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage src={connection?.user?.avatarUrl} />
+                                        <AvatarFallback>
+                                            <User className="h-10 w-10" />
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="ml-3 flex-1">
+                                        <div className="flex justify-between items-center">
+                                            <h3 className="font-medium text-orange-500">
+                                                {connection?.user?.fullName}
+                                            </h3>
+                                            <span className="text-xs text-gray-500">
+                                                {new Date(connection.lastEngagementAt).toLocaleTimeString('en-US', {
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: true,
+                                                })}
+                                            </span>
+                                        </div>
+                                        <p className="text-sm text-gray-500 truncate">
+                                            {connection.lastMessage || 'No messages'}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -98,11 +122,11 @@ const Messages = () => {
                 <div className="p-4 border-b flex items-center justify-between bg-white dark:bg-gray-900">
                     <div className="flex items-center">
                         <Avatar className="h-10 w-10">
-                            <AvatarImage src="/placeholder-user.jpg" />
+                            <AvatarImage src={selectedUser?.user?.avatarUrl} />
                             <AvatarFallback>U</AvatarFallback>
                         </Avatar>
                         <div className="ml-3">
-                            <h3 className="font-medium">Selected User</h3>
+                            <h3 className="font-medium">{selectedUser?.user?.fullName}</h3>
                             <p className="text-xs text-gray-500">Online</p>
                         </div>
                     </div>
@@ -132,7 +156,7 @@ const Messages = () => {
                         {/* Sent message */}
                         <div className="flex justify-end">
                             <div className="max-w-xs">
-                                <div className="bg-blue-500 text-white p-3 rounded-lg rounded-tr-none shadow">
+                                <div className="bg-orange-500 text-white p-3 rounded-lg rounded-tr-none shadow">
                                     <p>I'm doing great! Just working on this new project.</p>
                                 </div>
                                 <p className="text-xs text-gray-500 mt-1 text-right">10:32 AM</p>
@@ -154,7 +178,7 @@ const Messages = () => {
                             placeholder="Type a message"
                             className="flex-1 mx-2 bg-gray-100 dark:bg-gray-800 border-none"
                         />
-                        <Button size="icon" className="bg-blue-500 hover:bg-blue-600 text-white">
+                        <Button size="icon" className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white">
                             <Send className="h-5 w-5" />
                         </Button>
                     </div>
