@@ -60,9 +60,9 @@ const AboutPage = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-orange-500 text-white">
+        <div className="w-full min-h-screen bg-orange-500 text-white px-6 md:px-20">
             {/* Header Section */}
-            <div className="container mx-auto px-4 py-16 text-center">
+            <div className="w-full mx-auto px-4 py-16 text-center">
                 <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-b from-white to-white/70 bg-clip-text text-transparent">
                     Our Story
                 </h1>
@@ -72,8 +72,8 @@ const AboutPage = () => {
             </div>
 
             {/* Mission Section */}
-            <div className="container mx-auto px-4 py-16">
-                <div className="max-w-4xl mx-auto text-center">
+            <div className="w-full mx-auto px-4 py-16">
+                <div className="w-full mx-auto text-center">
                     <div className="flex justify-center mb-6">
                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                             <Target className="w-8 h-8 text-white" />
@@ -92,8 +92,8 @@ const AboutPage = () => {
 
             {/* Vision Section */}
             <div className="bg-white/5 backdrop-blur-sm border-y border-white/10">
-                <div className="container mx-auto px-4 py-16">
-                    <div className="max-w-4xl mx-auto text-center">
+                <div className="mx-auto px-4 py-16">
+                    <div className="max-w-8xl mx-auto text-center">
                         <div className="flex justify-center mb-6">
                             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                                 <Globe className="w-8 h-8 text-white" />
@@ -112,7 +112,7 @@ const AboutPage = () => {
             </div>
 
             {/* Core Values Section */}
-            <div className="container mx-auto px-4 py-16">
+            <div className="mx-auto px-4 py-16">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                         Our Core Values
@@ -147,7 +147,7 @@ const AboutPage = () => {
 
             {/* Team Section */}
             <div className="bg-white/5 backdrop-blur-sm border-y border-white/10">
-                <div className="container mx-auto px-4 py-16">
+                <div className="mx-auto px-4 py-16">
                     <div className="text-center mb-12">
                         <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                             Meet the Team
@@ -157,7 +157,7 @@ const AboutPage = () => {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-8xl mx-auto">
                         {teamMembers.map((member, index) => (
                             <div
                                 key={index}
@@ -184,7 +184,7 @@ const AboutPage = () => {
             </div>
 
             {/* Stats Section */}
-            <div className="container mx-auto px-4 py-16">
+            <div className="mx-auto px-4 py-16">
                 <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 md:p-12 border border-white/20 shadow-xl">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
                         <div>
@@ -211,7 +211,7 @@ const AboutPage = () => {
 
             {/* Call to Action Section */}
             <div className="bg-white/5 backdrop-blur-sm border-t border-white/20">
-                <div className="container mx-auto px-4 py-16 text-center">
+                <div className="mx-auto px-4 py-16 text-center">
                     <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">
                         Join our movement to transform fitness accessibility
                     </h2>

@@ -102,9 +102,9 @@ const PricingPage = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-orange-500 text-white">
+        <div className="w-full min-h-screen bg-orange-500 text-white px-6 md:px-20">
             {/* Header Section */}
-            <div className="container mx-auto px-4 py-16 text-center">
+            <div className="mx-auto px-6 md:px-10 py-16 text-center">
                 <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">
                     Choose Your Trainer Plan
                 </h1>
@@ -114,8 +114,8 @@ const PricingPage = () => {
             </div>
 
             {/* Pricing Cards */}
-            <div className="container mx-auto px-4 pb-16">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-6xl mx-auto">
+            <div className="w-full mx-auto px-4 pb-16">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mx-auto">
                     {pricingPlans.map((plan, index) => {
                         const IconComponent = plan.icon;
                         return (
@@ -214,8 +214,8 @@ const PricingPage = () => {
             </div>
 
             {/* FAQ Section */}
-            <div className="container mx-auto px-4 py-16">
-                <div className="max-w-4xl mx-auto">
+            <div className="mx-auto px-4 py-16">
+                <div className="max-w-7xl mx-auto">
                     <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-white">
                         Frequently Asked Questions
                     </h2>

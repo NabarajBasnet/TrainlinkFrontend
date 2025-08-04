@@ -2,8 +2,8 @@ import { Instagram, Twitter, Youtube, Linkedin, Mail, MapPin, Phone, Clock, Trop
 
 const Footer = () => {
     return (
-        <footer className="bg-white text-gray-950 pt-16 pb-10 px-6 md:px-16 border-t border-gray-200">
-            <div className="max-w-7xl mx-auto">
+        <footer className="bg-orange-50 text-gray-950 pt-16 pb-10 px-6 md:px-16 border-t border-gray-200">
+            <div className="w-full mx-auto">
                 {/* Main Footer Content */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
 

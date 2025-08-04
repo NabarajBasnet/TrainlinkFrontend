@@ -46,7 +46,7 @@ const Features = () => {
             </div>
 
             {/* Main Content */}
-            <div className="w-full relative z-10 container mx-auto px-6 py-16">
+            <div className="w-full relative z-10 mx-auto px-6 md:px-10 py-16">
                 {/* Header */}
                 <div className="text-center mb-16">
                     <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-white to-orange-100 bg-clip-text text-transparent">

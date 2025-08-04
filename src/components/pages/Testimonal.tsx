@@ -112,9 +112,9 @@ const TestimonialsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-orange-500 text-white">
+    <div className="w-full px-6 md:px-10 min-h-screen bg-orange-500 text-white">
       {/* Header Section */}
-      <div className="container mx-auto px-4 py-16 text-center">
+      <div className="w-full mx-auto px-4 py-16 text-center">
         <div className="mb-4">
           <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-b from-white to-white/80 bg-clip-text text-transparent">
             What Our Users Say
@@ -154,7 +154,7 @@ const TestimonialsPage = () => {
       </div>
 
       {/* Testimonials Grid */}
-      <div className="container mx-auto px-4 pb-16">
+      <div className="mx-auto px-4 pb-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {currentTestimonials.map((testimonial) => (
             <div

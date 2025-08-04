@@ -48,14 +48,14 @@ const FAQSection = () => {
     };
 
     return (
-        <section className="bg-orange-500 py-20 px-4 relative overflow-hidden">
+        <section className="bg-orange-500 py-20 px-6 md:px-20 relative overflow-hidden">
             {/* Background decorative elements */}
             <div className="absolute inset-0 opacity-20">
                 <div className="absolute top-10 left-10 w-72 h-72 bg-gradient-to-br from-white to-orange-200 rounded-full blur-3xl"></div>
                 <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-tl from-orange-300 to-white rounded-full blur-3xl"></div>
             </div>
 
-            <div className="max-w-4xl mx-auto relative z-10">
+            <div className="w-full mx-auto relative z-10">
                 {/* Header */}
                 <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">

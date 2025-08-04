@@ -131,7 +131,7 @@ const HowItWorks = () => {
   );
 
   return (
-    <section className="w-full bg-orange-500 py-20 px-4 relative overflow-hidden">
+    <section className="w-full bg-orange-500 py-20 px-6 md:px-10 relative overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-gradient-to-br from-white/20 to-transparent rounded-full blur-2xl animate-pulse" />
@@ -139,7 +139,7 @@ const HowItWorks = () => {
         <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-gradient-to-r from-white/10 to-orange-300/20 rounded-full blur-2xl animate-pulse delay-500 -translate-x-1/2 -translate-y-1/2" />
       </div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
+      <div className="w-full mx-auto relative z-10">
         {/* Main header */}
         <div className="text-center mb-20">
           <div className="inline-block">
