@@ -63,18 +63,13 @@ const Messages = () => {
         <div className="w-full flex h-[calc(100vh-4.5rem)] md:p-0.5 dark:bg-gray-900">
             {/* Mobile - Chat List (shown only when no user is selected) */}
             <div className={`${selectedUser ? 'hidden' : 'flex'} md:hidden w-full bg-white dark:bg-gray-900 flex-col`}>
-                {/* Mobile header */}
-                <div className="py-5.5 px-3 border-b">
-                    <h2 className="text-xl font-bold text-orange-500">Messages</h2>
-                </div>
-
                 {/* Mobile search */}
                 <div className="p-3">
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
                             placeholder="Search messages"
-                            className="pl-10 bg-gray-100 dark:bg-gray-800 border-none"
+                            className="pl-10 rounded-sm py-5 bg-gray-100 dark:bg-gray-800 border-none"
                         />
                     </div>
                 </div>
@@ -82,7 +77,7 @@ const Messages = () => {
                 {/* Mobile conversation list */}
                 <div className="flex-1 overflow-y-auto">
                     {/* Horizontal List: Favorites or Recent */}
-                    <div className="flex overflow-x-auto p-3 gap-4 border-b">
+                    <div className="flex overflow-x-auto sticky top-0 z-50 dark:bg-gray-900 bg-white p-3 gap-4 border-b">
                         {chatList?.map((connection) => (
                             <div
                                 key={connection._id}
@@ -235,7 +230,7 @@ const Messages = () => {
                 {/* Desktop conversation list */}
                 <div className="flex-1 overflow-y-auto">
                     {/* Horizontal List: Favorites or Recent */}
-                    <div className="flex overflow-x-auto p-2 sticky -top-2 dark:bg-gray-900 gap-4 border-b z-50">
+                    <div className="flex overflow-x-auto p-2 sticky -top-1 dark:bg-gray-900 bg-white gap-4 border-b z-50">
                         {chatList?.map((connection) => (
                             <div
                                 key={connection._id}
