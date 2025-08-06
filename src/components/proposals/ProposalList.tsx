@@ -79,6 +79,10 @@ interface ProposalResponse {
   resolvedProposals: Proposal[];
 }
 
+interface QueryKeyI {
+
+}
+
 export const ProposalList: React.FC = () => {
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -133,12 +137,12 @@ export const ProposalList: React.FC = () => {
 
       const resBody = await response.json();
       if (response.ok) {
-        queryClient.invalidateQueries(['proposals']);
+        queryClient.invalidateQueries({ queryKey: ['proposals'] });
         setIsProcessing(false)
         setCancellationReason('');
         toast.success(resBody.message);
       };
-    } catch (error) {
+    } catch (error: any) {
       setIsProcessing(false)
       console.log("Error: ", error);
       toast.error(error.message);
@@ -158,11 +162,11 @@ export const ProposalList: React.FC = () => {
 
       const resBody = await response.json();
       if (response.ok) {
-        queryClient.invalidateQueries(['proposals']);
+        queryClient.invalidateQueries({ queryKey: ['proposals'] });
         setIsProcessing(false)
         toast.success(resBody.message);
       };
-    } catch (error) {
+    } catch (error: any) {
       setIsProcessing(false)
       console.log("Error: ", error);
       toast.error(error.message);
@@ -181,19 +185,19 @@ export const ProposalList: React.FC = () => {
           id: proposalId,
           action,
           responseTitle,
-          responseMessage
+          responseMessage,
         })
       });
 
       const resBody = await response.json();
       if (response.ok) {
-        queryClient.invalidateQueries(['proposals']);
+        queryClient.invalidateQueries({ queryKey: ['proposals'] });
         setResponseTitle('');
         setResponseMessage('');
         setIsProcessing(false);
         toast.success(resBody.message);
       }
-    } catch (error) {
+    } catch (error: any) {
       setIsProcessing(false);
       console.log("Error: ", error);
       toast.error(error.message);
@@ -415,7 +419,7 @@ export const ProposalList: React.FC = () => {
 
     // Determine which user to display based on current user role
     const displayUser = userRole === 'Trainer' ? memberId : trainerId;
-    const displayProfile = userRole === 'Trainer' ? memberId.memberProfile : trainerId.trainerProfile;
+    const displayProfile: any = userRole === 'Trainer' ? memberId.memberProfile : trainerId.trainerProfile;
 
     return (
       <Card key={proposal._id} className="hover:shadow-md transition-shadow">
