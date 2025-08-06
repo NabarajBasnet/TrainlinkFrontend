@@ -1,8 +1,30 @@
 import React from 'react';
 import { Search, UserCheck, MessageCircle, Calendar, Trophy, Users, Star, BarChart3, ArrowDown } from 'lucide-react';
 
+interface TimeLineStep {
+  step: any;
+  index: number;
+  isLast: boolean;
+  side: string
+}
+
+interface ProcessFlow {
+  steps: any;
+  title: string;
+  subtitle: string;
+  icon: any;
+  side?: string
+}
+
+interface Step {
+  icon: any;
+  title: string;
+  description: string;
+  color: string
+}
+
 const HowItWorks = () => {
-  const clientSteps = [
+  const clientSteps: Step[] = [
     {
       icon: Search,
       title: "Browse & Discover",
@@ -29,7 +51,7 @@ const HowItWorks = () => {
     }
   ];
 
-  const trainerSteps = [
+  const trainerSteps: Step[] = [
     {
       icon: UserCheck,
       title: "Create Your Profile",
@@ -56,7 +78,7 @@ const HowItWorks = () => {
     }
   ];
 
-  const TimelineStep = ({ step, index, isLast, side = 'left' }) => {
+  const TimelineStep = ({ step, index, isLast, side = 'left' }: TimeLineStep) => {
     const IconComponent = step.icon;
     const isLeft = side === 'left';
 
@@ -104,7 +126,7 @@ const HowItWorks = () => {
     );
   };
 
-  const ProcessFlow = ({ steps, title, subtitle, icon: Icon, side }) => (
+  const ProcessFlow = ({ steps, title, subtitle, icon: Icon, side }: ProcessFlow) => (
     <div className="relative">
       {/* Section header */}
       <div className="text-center mb-12">
@@ -117,7 +139,7 @@ const HowItWorks = () => {
 
       {/* Timeline steps */}
       <div className="space-y-8">
-        {steps.map((step, index) => (
+        {steps.map((step: Step, index: number) => (
           <TimelineStep
             key={index}
             step={step}
