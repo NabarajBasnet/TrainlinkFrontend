@@ -620,7 +620,7 @@ export default function CreateProgramForm() {
                       </div>
                     </div>
 
-                    <div className="border-t p-4 z-50 sticky bottom-0 bg-gray-900 flex justify-end">
+                    <div className="border-t p-4 z-50 sticky bottom-0 bg-white dark:bg-gray-900 flex justify-end">
                       <Button
                         type="button"
                         variant="outline"
