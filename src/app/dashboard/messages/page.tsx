@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, MoreVertical, Smile, Paperclip, Send, MessageSquare, User, ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { socket } from "@/services/SocketConnection/SocketConnection";
 
 interface User {
     _id: string;
@@ -31,6 +32,10 @@ const Messages = () => {
     const [selectedUser, setSelectedUser] = useState<Connection | null>(null);
 
     console.log(selectedUser);
+
+    socket.on('broadcasting', (data) => {
+        console.log('Broadcasting Data', data)
+    })
 
     const getConnections = async (): Promise<ConnectionsData> => {
         try {

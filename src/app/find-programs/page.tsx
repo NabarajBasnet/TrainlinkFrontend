@@ -98,7 +98,7 @@ export default function FindPrograms() {
   const [proposalMessage, setProposalMessage] = useState<string>('');
   const [proposalMemberId, setProposalMemberId] = useState<string>('');
   const [openViewDetailsCard, setOpenViewDetailsCard] = useState<boolean>(false);
-  const [programDetails, setProgramDetails] = useState(null);
+  const [programDetails, setProgramDetails] = useState<null>(null);
   const [openEnrollModel, setOpenEnrollModel] = useState<boolean>(false);
   const [processing, setProcessing] = useState<boolean>(false);
   const [agreedToTerms, setAgreedToTerms] = useState<boolean>(false);

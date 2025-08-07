@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import TrainLinkHero from '@/components/pages/Home';
 import Features from '@/components/pages/Features';
@@ -10,7 +8,7 @@ import ContactPage from '@/components/pages/Contactus';
 import AboutPage from '@/components/pages/Aboutus';
 import PricingPage from '@/components/pages/Pricing';
 
-export default function Home() {
+export default async function Home() {
 
   return (
     <div>

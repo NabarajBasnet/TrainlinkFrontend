@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { ChevronDown, Users, Calendar, Shield, CreditCard, MessageCircle, Star } from 'lucide-react';
 
@@ -73,8 +75,8 @@ const FAQSection = () => {
                         <div
                             key={faq.id}
                             className={`border rounded-2xl cursor-pointer transition-all duration-300 overflow-hidden ${openIndex === index
-                                    ? 'border-white bg-gradient-to-br from-white to-white/90'
-                                    : 'border-white/30 bg-gradient-to-br from-white to-white/90 hover:border-white'
+                                ? 'border-white bg-gradient-to-br from-white to-white/90'
+                                : 'border-white/30 bg-gradient-to-br from-white to-white/90 hover:border-white'
                                 }`}
                         >
                             {/* Question Header */}
@@ -92,8 +94,8 @@ const FAQSection = () => {
                                 </div>
                                 <ChevronDown
                                     className={`w-5 h-5 transition-all duration-300 flex-shrink-0 ${openIndex === index
-                                            ? 'text-orange-500 rotate-180'
-                                            : 'text-orange-500/80'
+                                        ? 'text-orange-500 rotate-180'
+                                        : 'text-orange-500/80'
                                         }`}
                                 />
                             </button>
