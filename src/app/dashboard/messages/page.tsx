@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Search, MoreVertical, Smile, Paperclip, Send, MessageSquare, User, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { socket } from "@/services/SocketConnection/SocketConnection";
+import { sendUserMessage } from "@/services/ChatServices/sendMessage";
 
 interface User {
     _id: string;
     fullName: string;
     avatarUrl?: string;
+    role?: string;
 }
 
 interface Connection {
@@ -20,6 +22,7 @@ interface Connection {
     user: User;
     lastEngagementAt: string;
     lastMessage?: string;
+    role?: string;
 }
 
 interface ConnectionsData {
@@ -30,12 +33,7 @@ interface ConnectionsData {
 const Messages = () => {
     const API = process.env.NEXT_PUBLIC_API_URL;
     const [selectedUser, setSelectedUser] = useState<Connection | null>(null);
-
-    console.log(selectedUser);
-
-    socket.on('broadcasting', (data) => {
-        console.log('Broadcasting Data', data)
-    })
+    const [message, setMessage] = useState<string>('');
 
     const getConnections = async (): Promise<ConnectionsData> => {
         try {
@@ -54,7 +52,7 @@ const Messages = () => {
         queryFn: getConnections
     });
 
-    const { myConnections, chatList } = data || {};
+    const { chatList } = data || {};
 
     if (isLoading) {
         return (
@@ -62,6 +60,13 @@ const Messages = () => {
                 <div className="animate-pulse">Loading messages...</div>
             </div>
         );
+    }
+
+    let userId: string | any;
+    userId = selectedUser?.user._id
+
+    const handleSendMessage = async () => {
+        sendUserMessage({ receiverId: userId, message: message, read: false, sentAt: new Date() })
     }
 
     return (
@@ -208,7 +213,7 @@ const Messages = () => {
                             placeholder="Type a message"
                             className="flex-1 mx-2 bg-gray-100 dark:bg-gray-800 border-none"
                         />
-                        <Button size="icon" className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white">
+                        <Button onClick={() => handleSendMessage()} size="icon" className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white">
                             <Send className="h-5 w-5" />
                         </Button>
                     </div>
@@ -226,6 +231,8 @@ const Messages = () => {
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
                         <Input
+                            type='text'
+                            onChange={(e) => setMessage(e.target.value)}
                             placeholder="Search messages"
                             className="pl-10 bg-gray-100 dark:bg-gray-800 border-none"
                         />
@@ -353,10 +360,12 @@ const Messages = () => {
                                     <Paperclip className="h-5 w-5" />
                                 </Button>
                                 <Input
+                                    type='text'
+                                    onChange={(e) => setMessage(e.target.value)}
                                     placeholder="Type a message"
                                     className="flex-1 mx-2 bg-gray-100 dark:bg-gray-800 border-none"
                                 />
-                                <Button size="icon" className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white">
+                                <Button onClick={() => handleSendMessage()} size="icon" className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white">
                                     <Send className="h-5 w-5" />
                                 </Button>
                             </div>
