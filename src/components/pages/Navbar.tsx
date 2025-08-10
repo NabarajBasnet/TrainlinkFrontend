@@ -25,13 +25,6 @@ import {
     Award,
     Briefcase,
     TrendingUp,
-    Globe,
-    Smartphone,
-    Code,
-    Database,
-    Camera,
-    PenTool,
-    Target,
     CheckCircle,
     AlertCircle,
     Info,
@@ -56,6 +49,7 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
     const loading = (userContext as any)?.loading;
 
     const searchRef = useRef(null);
+    console.log(searchRef)
     const notificationRef = useRef(null);
     const helpRef = useRef(null);
     const profileRef = useRef(null);
@@ -69,7 +63,6 @@ export default function MainNavbar({ isScrolled = false, variant = 'hero' }) {
             .toUpperCase()
             .slice(0, 2);
     }
-
 
     useEffect(() => {
         const handleScroll = () => {

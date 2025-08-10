@@ -9,6 +9,7 @@ import { Search, MoreVertical, Smile, Paperclip, Send, MessageSquare, User, Arro
 import { useState } from "react";
 import { socket } from "@/services/SocketConnection/SocketConnection";
 import { sendUserMessage } from "@/services/ChatServices/sendMessage";
+import { useUser } from "@/components/Providers/LoggedInUser/LoggedInUserProvider";
 
 interface User {
     _id: string;
@@ -31,9 +32,21 @@ interface ConnectionsData {
 }
 
 const Messages = () => {
+    const user = useUser();
     const API = process.env.NEXT_PUBLIC_API_URL;
+
+    const [roomId, setRoomId] = useState<string>('');
     const [selectedUser, setSelectedUser] = useState<Connection | null>(null);
+
+    console.log('Room Id: ', roomId)
+
     const [message, setMessage] = useState<string>('');
+
+    const handleUserSelection = (connection: Connection) => {
+        const roomId = [user?.user?._id, connection?.user?._id].join('-');
+        setRoomId(roomId);
+        setSelectedUser(connection)
+    }
 
     const getConnections = async (): Promise<ConnectionsData> => {
         try {
@@ -66,7 +79,7 @@ const Messages = () => {
     userId = selectedUser?.user._id
 
     const handleSendMessage = async () => {
-        sendUserMessage({ receiverId: userId, message: message, read: false, sentAt: new Date() })
+        sendUserMessage({ roomId: roomId, senderId: user?.user?._id, receiverId: userId, message: message, read: false, sentAt: new Date() })
     }
 
     return (
@@ -91,7 +104,7 @@ const Messages = () => {
                         {chatList?.map((connection) => (
                             <div
                                 key={connection._id}
-                                onClick={() => setSelectedUser(connection)}
+                                onClick={() => handleUserSelection(connection)}
                                 className="cursor-pointer flex-shrink-0 text-center"
                             >
                                 <Avatar className="h-12 w-12 mx-auto">
@@ -112,7 +125,7 @@ const Messages = () => {
                         {chatList?.map((connection) => (
                             <div
                                 key={connection._id}
-                                onClick={() => setSelectedUser(connection)}
+                                onClick={() => handleUserSelection(connection)}
                                 className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer border-b"
                             >
                                 <Avatar className="h-10 w-10">
@@ -246,7 +259,7 @@ const Messages = () => {
                         {chatList?.map((connection) => (
                             <div
                                 key={connection._id}
-                                onClick={() => setSelectedUser(connection)}
+                                onClick={() => handleUserSelection(connection)}
                                 className="cursor-pointer flex-shrink-0 text-center"
                             >
                                 <Avatar className="h-12 w-12 mx-auto">
@@ -267,7 +280,7 @@ const Messages = () => {
                         {chatList?.map((connection) => (
                             <div
                                 key={connection._id}
-                                onClick={() => setSelectedUser(connection)}
+                                onClick={() => handleUserSelection(connection)}
                                 className={`flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer border-b ${selectedUser?._id === connection._id ? 'bg-gray-100 dark:bg-gray-900' : ''
                                     }`}
                             >

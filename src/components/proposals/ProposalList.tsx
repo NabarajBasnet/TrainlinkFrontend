@@ -27,7 +27,7 @@ import { useUser } from '../Providers/LoggedInUser/LoggedInUserProvider';
 import { MdCheck, MdClose } from "react-icons/md";
 import { Textarea } from "../ui/textarea";
 
-interface User {
+export interface User {
   _id: string;
   fullName: string;
   email: string;
