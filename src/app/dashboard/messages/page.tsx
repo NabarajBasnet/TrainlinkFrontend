@@ -6,8 +6,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, MoreVertical, Smile, Paperclip, Send, MessageSquare, User, ArrowLeft } from "lucide-react";
-import { useState } from "react";
-import { socket } from "@/services/SocketConnection/SocketConnection";
+import { useEffect, useState } from "react";
+import { socketConnector } from "@/services/SocketConnection/SocketConnection";
 import { sendUserMessage } from "@/services/ChatServices/sendMessage";
 import { useUser } from "@/components/Providers/LoggedInUser/LoggedInUserProvider";
 
@@ -38,15 +38,25 @@ const Messages = () => {
     const [roomId, setRoomId] = useState<string>('');
     const [selectedUser, setSelectedUser] = useState<Connection | null>(null);
 
-    console.log('Room Id: ', roomId)
-
     const [message, setMessage] = useState<string>('');
 
     const handleUserSelection = (connection: Connection) => {
-        const roomId = [user?.user?._id, connection?.user?._id].join('-');
+        const roomId = [user?.user?._id, connection?.user?._id].sort().join('-');
         setRoomId(roomId);
+        console.log('Room Id: ', roomId)
         setSelectedUser(connection)
-    }
+        socketConnector.emit('join-message-room', roomId)
+    };
+
+    useEffect(() => {
+        socketConnector.on('receive-message', (messageData) => {
+            console.log('Received', messageData)
+        })
+
+        return () => {
+            socketConnector.off('receive-message')
+        }
+    }, [])
 
     const getConnections = async (): Promise<ConnectionsData> => {
         try {
@@ -79,7 +89,7 @@ const Messages = () => {
     userId = selectedUser?.user._id
 
     const handleSendMessage = async () => {
-        sendUserMessage({ roomId: roomId, senderId: user?.user?._id, receiverId: userId, message: message, read: false, sentAt: new Date() })
+        sendUserMessage({ roomId: roomId, senderId: user?.user?._id, receiverId: userId, message, read: false, sentAt: new Date() })
     }
 
     return (
@@ -224,6 +234,7 @@ const Messages = () => {
                         </Button>
                         <Input
                             placeholder="Type a message"
+                            onChange={(e) => setMessage(e.target.value)}
                             className="flex-1 mx-2 bg-gray-100 dark:bg-gray-800 border-none"
                         />
                         <Button onClick={() => handleSendMessage()} size="icon" className="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white">

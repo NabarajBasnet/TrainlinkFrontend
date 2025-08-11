@@ -1,4 +1,4 @@
-import { socket } from "../SocketConnection/SocketConnection";
+import { socketConnector } from "../SocketConnection/SocketConnection";
 
 interface Message {
   roomId: string;
@@ -11,6 +11,5 @@ interface Message {
 }
 
 export const sendUserMessage = (message: Message) => {
-  console.log(message);
-  socket.emit("send-user-message", message);
+  socketConnector.emit("sed-message", message);
 };
